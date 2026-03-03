@@ -1,6 +1,7 @@
 index-old.html
 node_modules/
 dist/
+.DS_Store
 .pnpm-debug.log
 test-results/
 playwright-report/
