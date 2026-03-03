@@ -5,7 +5,7 @@ description: "Mind-blowing things you never knew about the animal kingdom. This 
 
 sections:
   - title: "Ocean Creatures"
-    video: "https://www.youtube.com/watch?v=eOjkHiGHSd8"
+    video: "https://www.youtube.com/watch?v=aqz-KE-bpKQ"
     explanation: |
       The ocean covers **71%** of Earth's surface, and we've explored less than 5% of it.
       Here are some incredible facts about the creatures living down there.
@@ -41,6 +41,7 @@ sections:
           - ["lobster", "crustacean with copper-based blood"]
 
   - title: "Insects & Tiny Creatures"
+    video: "video/sample.mp4"
     explanation: |
       Insects make up about **80%** of all known animal species.
       Some of their abilities put science fiction to shame.
