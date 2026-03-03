@@ -66,13 +66,13 @@ Die Assessment-Results-Seite wurde um vier Features erweitert: Sent-Status-Track
 
 Sections koennen jetzt sowohl YouTube-Videos als auch lokale Videodateien (MP4, WebM) einbinden. YouTube-URLs werden automatisch erkannt und als Embed-Iframe gerendert. Lokale Videopfade werden relativ zum Lesson-Ordner aufgeloest und mit dem HTML5 `<video>`-Element dargestellt.
 
-### Demo
+### Demo (Open Learn Showcase → Lesson 1: Amazing Animal Facts)
 
-1. **YouTube Video** — Section mit `video: "https://www.youtube.com/watch?v=xxx"` → Iframe-Embed wird angezeigt.
-2. **YouTube Short URL** — Section mit `video: "https://youtu.be/xxx"` → wird korrekt zu Embed-URL konvertiert.
-3. **Lokales Video** — Section mit `video: "video/intro.mp4"` → HTML5-Video mit Controls wird angezeigt.
-4. **Responsive** — Videos passen sich der Breite an (aspect-video).
-5. **Kein Video** — Sections ohne `video`-Feld bleiben unveraendert.
+1. **YouTube Video** — Section "Ocean Creatures" zeigt ein YouTube-Video (Big Buck Bunny). Iframe-Embed wird angezeigt und ist abspielbar.
+2. **Lokales Video** — Section "Insects & Tiny Creatures" zeigt ein lokales MP4-Video mit HTML5-Video-Controls.
+3. **Responsive** — Videos passen sich der Breite an (aspect-video).
+4. **Kein Video** — Section "Mammals Gone Wild" hat kein Video-Feld und zeigt keinen Player.
+5. **YouTube Short URL** — URLs wie `https://youtu.be/xxx` werden korrekt zu Embed-URL konvertiert.
 
 ---
 
