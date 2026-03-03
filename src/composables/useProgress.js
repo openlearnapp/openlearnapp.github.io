@@ -79,6 +79,13 @@ function initializeWatchers() {
   watch(progress, () => {
     saveProgress()
   }, { deep: true })
+
+  // Listen for real-time Gun sync events from other devices/tabs
+  window.addEventListener('gun-sync', (e) => {
+    if (e.detail.key === 'progress' && e.detail.data) {
+      mergeProgress(e.detail.data)
+    }
+  })
 }
 
 // Return raw progress object

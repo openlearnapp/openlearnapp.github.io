@@ -20,8 +20,12 @@
               <Input v-model="gunPassword" type="password" placeholder="Password" />
             </div>
             <div class="flex gap-3">
-              <Button @click="handleLogin" :disabled="!gunUsername || !gunPassword">Login</Button>
-              <Button variant="secondary" @click="handleRegister" :disabled="!gunUsername || !gunPassword">Register</Button>
+              <Button @click="handleLogin" :disabled="!gunUsername || !gunPassword || isAuthLoading">
+                {{ isAuthLoading ? 'Logging in...' : 'Login' }}
+              </Button>
+              <Button variant="secondary" @click="handleRegister" :disabled="!gunUsername || !gunPassword || isAuthLoading">
+                {{ isAuthLoading ? 'Registering...' : 'Register' }}
+              </Button>
             </div>
           </div>
         </template>
@@ -29,11 +33,9 @@
         <template v-else>
           <p class="text-sm text-muted-foreground mb-4">
             Signed in as <span class="font-semibold text-foreground">{{ gunUser }}</span>
+            <span v-if="isSyncing" class="ml-2 text-xs text-muted-foreground">(syncing...)</span>
           </p>
           <div class="flex gap-3">
-            <Button @click="handleSync" :disabled="isSyncing">
-              {{ isSyncing ? 'Syncing...' : 'Sync Now' }}
-            </Button>
             <Button variant="secondary" @click="handleLogout">Logout</Button>
           </div>
         </template>
@@ -220,7 +222,7 @@ import { Input } from '@/components/ui/input'
 const { settings } = useSettings()
 const { progress, getProgress, mergeProgress } = useProgress()
 const { assessments, getAssessments, mergeAssessments } = useAssessments()
-const { isLoggedIn, username: gunUser, authError, isSyncing, login, register, logout, syncAll, loadFromGun } = useGun()
+const { isLoggedIn, username: gunUser, authError, isSyncing, login, register, logout, loadFromGun } = useGun()
 
 const importMessage = ref('')
 const importMessageError = ref(false)
@@ -230,52 +232,51 @@ const selectedWorkshop = ref('')
 const gunUsername = ref('')
 const gunPassword = ref('')
 const syncMessage = ref('')
+const isAuthLoading = ref(false)
 
 async function handleLogin() {
+  if (isAuthLoading.value) return
+  isAuthLoading.value = true
   syncMessage.value = ''
-  const ok = await login(gunUsername.value, gunPassword.value)
-  if (ok) {
-    gunUsername.value = ''
-    gunPassword.value = ''
-    // Load remote data and merge
-    const remote = await loadFromGun()
-    if (remote) {
-      if (remote.progress) mergeProgress(remote.progress)
-      if (remote.assessments) mergeAssessments(remote.assessments)
-      if (remote.settings) {
-        Object.assign(settings, remote.settings)
+  try {
+    const ok = await login(gunUsername.value, gunPassword.value)
+    if (ok) {
+      gunUsername.value = ''
+      gunPassword.value = ''
+      const remote = await loadFromGun()
+      if (remote) {
+        if (remote.progress) mergeProgress(remote.progress)
+        if (remote.assessments) mergeAssessments(remote.assessments)
+        if (remote.settings) {
+          Object.assign(settings, remote.settings)
+        }
       }
+      syncMessage.value = 'Logged in and synced.'
     }
-    syncMessage.value = 'Logged in and synced.'
+  } finally {
+    isAuthLoading.value = false
   }
 }
 
 async function handleRegister() {
+  if (isAuthLoading.value) return
+  isAuthLoading.value = true
   syncMessage.value = ''
-  const ok = await register(gunUsername.value, gunPassword.value)
-  if (ok) {
-    gunUsername.value = ''
-    gunPassword.value = ''
-    // Push local data to Gun after registration
-    await syncAll()
-    syncMessage.value = 'Registered and synced.'
+  try {
+    const ok = await register(gunUsername.value, gunPassword.value)
+    if (ok) {
+      gunUsername.value = ''
+      gunPassword.value = ''
+      syncMessage.value = 'Registered and synced.'
+    }
+  } finally {
+    isAuthLoading.value = false
   }
 }
 
 function handleLogout() {
   logout()
   syncMessage.value = ''
-}
-
-async function handleSync() {
-  syncMessage.value = ''
-  await syncAll()
-  const remote = await loadFromGun()
-  if (remote) {
-    if (remote.progress) mergeProgress(remote.progress)
-    if (remote.assessments) mergeAssessments(remote.assessments)
-  }
-  syncMessage.value = 'Sync complete.'
 }
 
 // Collect all unique workshop keys (learning:workshop) from progress + assessments

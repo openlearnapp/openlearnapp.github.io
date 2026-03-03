@@ -20,16 +20,18 @@ UI-Komponenten (Button, Card, Switch, Input, Checkbox, Radio, Select, Badge) dur
 
 ## #27 — Store Progress and Assessment Results (GunDB Sync)
 
-Lernfortschritt, Assessment-Antworten und Einstellungen werden ueber GunDB zwischen Geraeten/Tabs synchronisiert. Verschluesselte User-Accounts via SEA, kein Server noetig — laeuft komplett im Browser (Multicast im selben Netzwerk).
+Lernfortschritt, Assessment-Antworten und Einstellungen werden ueber GunDB zwischen Geraeten/Tabs synchronisiert. Verschluesselte User-Accounts via SEA, kein Server noetig — laeuft komplett im Browser. WebRTC fuer Browser-zu-Browser Sync im selben Netzwerk. Session wird via Gun's recall() wiederhergestellt — kein Passwort in localStorage.
 
 ### Demo
 
 1. **Register** — Settings oeffnen → Username + Passwort eingeben → "Register" klicken → Erfolgsmeldung.
-2. **Sync nach Login** — Abmelden, Vokabeln lernen, wieder einloggen → Fortschritt wird gemergt.
-3. **Cross-Tab Sync** — Tab 1: eingeloggt, Vokabel lernen → Tab 2: einloggen → Fortschritt ist da.
-4. **Sync Now** — Manuell "Sync Now" klicken → bestaetigt Sync.
-5. **Offline** — Ohne Login arbeiten → App funktioniert wie bisher (nur localStorage).
-6. **Logout** — "Logout" klicken → Account-Sektion zeigt Login-Formular.
+2. **Auto-Sync** — Nach Login wird automatisch synchronisiert. Kein "Sync Now" Button noetig.
+3. **Passwort-Sicherheit** — DevTools → Application → localStorage pruefen → kein Passwort sichtbar (nur Alias).
+4. **Session-Wiederherstellung** — App neu laden → Session wird automatisch via recall() wiederhergestellt.
+5. **Login-Guard** — Schnell 3x auf Login klicken → nur ein Request, Button zeigt "Logging in...".
+6. **Echtzeit-Updates** — Aenderungen auf einem Geraet/Tab erscheinen automatisch auf dem anderen.
+7. **Offline** — Ohne Login arbeiten → App funktioniert wie bisher (nur localStorage).
+8. **Logout** — "Logout" klicken → Account-Sektion zeigt Login-Formular.
 
 ---
 

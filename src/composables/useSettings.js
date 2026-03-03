@@ -89,6 +89,14 @@ function initializeWatchers() {
   watch(() => settings.value.showDebugOverlay, () => {
     saveSettings()
   })
+
+  // Listen for real-time Gun sync events from other devices/tabs
+  window.addEventListener('gun-sync', (e) => {
+    if (e.detail.key === 'settings' && e.detail.data) {
+      Object.assign(settings.value, e.detail.data)
+      applyDarkMode(settings.value.darkMode)
+    }
+  })
 }
 
 export function useSettings() {

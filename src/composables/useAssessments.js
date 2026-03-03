@@ -101,6 +101,13 @@ function initializeWatchers() {
   watch(assessments, () => {
     saveAssessments()
   }, { deep: true })
+
+  // Listen for real-time Gun sync events from other devices/tabs
+  window.addEventListener('gun-sync', (e) => {
+    if (e.detail.key === 'assessments' && e.detail.data) {
+      mergeAssessments(e.detail.data)
+    }
+  })
 }
 
 // --- Sent history tracking ---
