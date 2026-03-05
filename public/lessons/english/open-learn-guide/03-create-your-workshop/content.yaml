@@ -1,0 +1,180 @@
+version: 2
+number: 3
+title: "Create Your Own Workshop"
+description: "Learn how to write workshops with YAML files — from folder structure to publishing."
+
+sections:
+  - title: "Folder Structure"
+    explanation: |
+      A workshop is a set of YAML files organized in folders. Here's the structure:
+
+      ```
+      public/lessons/
+      ├── index.yaml                    # lists available languages
+      └── english/                      # interface language
+          ├── workshops.yaml            # lists workshops
+          └── my-workshop/              # your workshop folder
+              ├── lessons.yaml          # lists lessons
+              ├── 01-first-lesson/
+              │   └── content.yaml      # lesson content
+              └── 02-second-lesson/
+                  └── content.yaml
+      ```
+
+      Each file has a clear role:
+
+      - **index.yaml** — which languages are available
+      - **workshops.yaml** — which workshops exist in a language
+      - **lessons.yaml** — which lessons belong to a workshop
+      - **content.yaml** — the actual lesson content
+
+    examples:
+      - q: "What file lists all lessons in a workshop?"
+        a: "lessons.yaml — it contains an ordered list of lesson folder names."
+        labels: ["Structure"]
+
+      - q: "What file contains the actual learning content?"
+        a: "content.yaml inside each lesson folder — it defines sections, Q&A cards, and assessments."
+        labels: ["Structure"]
+
+      - q: "Can a workshop have audio and video?"
+        a: "Yes — put audio files in an audio/ subfolder and reference videos via YouTube URL or a local video/ subfolder."
+        labels: ["Structure"]
+
+  - title: "Writing a Lesson"
+    explanation: |
+      Each `content.yaml` follows this schema:
+
+      ```yaml
+      version: 2
+      number: 1
+      title: "My First Lesson"
+      description: "What this lesson covers"
+
+      sections:
+        - title: "Section Title"
+          video: "https://www.youtube.com/watch?v=..."
+          explanation: |
+            Markdown text — **bold**, *italic*, lists,
+            > blockquotes, and `code` all work.
+          examples:
+            - q: "Question"
+              a: "Answer"
+              labels: ["Tag1", "Tag2"]
+              rel:
+                - ["term", "definition", "context"]
+      ```
+
+      > **Tip:** The `explanation` field supports full Markdown. Use headings, lists, blockquotes, and code blocks to make your content clear and well-structured.
+
+    examples:
+      - q: "What does the 'number' field do?"
+        a: "It determines the lesson order. Lesson 1 appears first, lesson 2 second, and so on."
+        labels: ["Schema"]
+
+      - q: "What is the 'rel' field for?"
+        a: "It adds learning items (vocabulary, concepts) to a Q&A card. The first element of each entry is a unique ID used for progress tracking across lessons."
+        labels: ["Schema"]
+
+      - q: "What Markdown features work in explanations?"
+        a: "Bold, italic, headings, lists, blockquotes, code blocks, and inline code — everything rendered by the marked library."
+        labels: ["Schema"]
+
+  - title: "Assessment Types"
+    explanation: |
+      Open Learn supports three assessment types. Try each one below, then see the YAML syntax that creates it.
+
+      **Text input** (`type: input`):
+      ```yaml
+      - type: input
+        q: "Your question"
+        a:
+          - "accepted answer 1"
+          - "accepted answer 2"
+      ```
+
+      **Single choice** (`type: select`):
+      ```yaml
+      - type: select
+        q: "Your question"
+        options:
+          - text: "Wrong answer"
+          - text: "Correct answer"
+            correct: true
+      ```
+
+      **Multiple choice** (`type: multiple-choice`):
+      ```yaml
+      - type: multiple-choice
+        q: "Your question"
+        options:
+          - text: "Correct option"
+            correct: true
+          - text: "Wrong option"
+          - text: "Another correct option"
+            correct: true
+      ```
+
+    examples:
+      - type: input
+        q: "What YAML field sets the assessment type?"
+        a:
+          - "type"
+          - "type:"
+        labels: ["Assessment"]
+
+      - type: select
+        q: "Which assessment type uses radio buttons?"
+        options:
+          - text: "input"
+          - text: "select"
+            correct: true
+          - text: "multiple-choice"
+        labels: ["Assessment"]
+
+      - type: multiple-choice
+        q: "Which fields are required for a select or multiple-choice assessment? (Select all)"
+        options:
+          - text: "q (question)"
+            correct: true
+          - text: "options (list of choices)"
+            correct: true
+          - text: "a (answer text)"
+          - text: "labels"
+        labels: ["Assessment"]
+
+  - title: "Publishing"
+    explanation: |
+      There are several ways to share your workshop:
+
+      **GitHub Pages** (recommended):
+      1. Fork the Open Learn repository
+      2. Add your workshop files under `public/lessons/`
+      3. Push to GitHub — the included GitHub Action builds and deploys automatically
+
+      **External URL**:
+      Workshops can also be loaded from any URL. Users add your workshop via the "Add Source" page, and Open Learn fetches the YAML files remotely.
+
+      **IPFS**:
+      For decentralized hosting, you can upload your workshop to IPFS and share the content hash.
+
+      > **Tip:** Check the [Open Learn repository](https://github.com/FelixBoehme/open-learn) for the latest documentation, examples, and to report issues.
+
+    examples:
+      - q: "What's the easiest way to publish a workshop?"
+        a: "Fork the Open Learn repo on GitHub, add your content, and push — GitHub Actions deploys it automatically."
+        labels: ["Publishing"]
+
+      - q: "Can I host a workshop on my own server?"
+        a: "Yes — workshops can be loaded from any URL. Users add your workshop URL in the 'Add Source' page."
+        labels: ["Publishing"]
+
+      - type: select
+        q: "What happens when you push to the main branch of a forked Open Learn repo?"
+        options:
+          - text: "Nothing — you need to deploy manually"
+          - text: "GitHub Actions builds and deploys to GitHub Pages"
+            correct: true
+          - text: "It automatically merges into the original repo"
+          - text: "It sends a notification to the Open Learn team"
+        labels: ["Publishing"]

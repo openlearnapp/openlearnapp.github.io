@@ -1,159 +1,136 @@
 <template>
   <div>
     <!-- Loading state -->
-    <Card v-if="isLoading" class="p-6 text-center">
-      <CardContent class="p-0">
-        <div class="text-2xl font-bold text-primary mb-4">
-          Loading available content...
-        </div>
-        <div class="text-muted-foreground">
-          Please wait while we load the lesson catalog.
-        </div>
-      </CardContent>
-    </Card>
+    <div v-if="isLoading" class="text-center py-12">
+      <div class="inline-block w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
+      <p class="text-muted-foreground">Loading...</p>
+    </div>
 
-    <!-- Intro + Language selection -->
-    <Card v-else class="p-6">
-      <CardContent class="p-0">
-
-        <!-- Intro section for new users -->
-        <div v-if="!selectedLearning" class="mb-8">
-          <h2 class="text-3xl font-bold mb-3 text-primary">
-            Open Learn
-          </h2>
-          <p class="text-muted-foreground mb-4 leading-relaxed">
-            A free, open-source learning platform. No ads, no tracking, no account required.
-            Your progress is saved in your browser.
-          </p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            <div class="flex items-start gap-2">
-              <span class="text-primary font-bold text-lg leading-none mt-0.5">+</span>
-              <span class="text-sm text-foreground">Videos, quizzes, Q&amp;A cards and audio</span>
-            </div>
-            <div class="flex items-start gap-2">
-              <span class="text-primary font-bold text-lg leading-none mt-0.5">+</span>
-              <span class="text-sm text-foreground">Create and share your own workshops</span>
-            </div>
-            <div class="flex items-start gap-2">
-              <span class="text-primary font-bold text-lg leading-none mt-0.5">+</span>
-              <span class="text-sm text-foreground">Works offline — no backend needed</span>
-            </div>
-            <div class="flex items-start gap-2">
-              <span class="text-primary font-bold text-lg leading-none mt-0.5">+</span>
-              <span class="text-sm text-foreground">Load external content from any URL</span>
-            </div>
-          </div>
-          <p class="text-sm text-muted-foreground">
-            Select your language below to get started.
-          </p>
-        </div>
-
-        <!-- Intro section (German) -->
-        <div v-if="selectedLearning === 'deutsch'" class="mb-6 p-4 rounded-lg bg-accent/50">
-          <h3 class="font-semibold text-foreground mb-2">Willkommen bei Open Learn</h3>
-          <p class="text-sm text-muted-foreground mb-2">
-            Eine kostenlose, offene Lernplattform. Keine Werbung, kein Tracking, kein Konto nötig.
-            Dein Fortschritt wird im Browser gespeichert.
-          </p>
-          <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <span>+ Videos, Quizze &amp; Audio</span>
-            <span>+ Eigene Workshops erstellen</span>
-            <span>+ Offline-fähig</span>
-            <span>+ Externe Inhalte laden</span>
-          </div>
-        </div>
-
-        <!-- Intro section (English) -->
-        <div v-if="selectedLearning === 'english'" class="mb-6 p-4 rounded-lg bg-accent/50">
-          <h3 class="font-semibold text-foreground mb-2">Welcome to Open Learn</h3>
-          <p class="text-sm text-muted-foreground mb-2">
-            A free, open-source learning platform. No ads, no tracking, no account required.
-            Your progress is saved in your browser.
-          </p>
-          <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <span>+ Videos, quizzes &amp; audio</span>
-            <span>+ Create your own workshops</span>
-            <span>+ Works offline</span>
-            <span>+ Load external content</span>
-          </div>
-        </div>
-
-        <h2 class="text-3xl font-bold mb-4 text-primary">
-          {{ selectedLearning === 'deutsch' ? 'Lernoptionen auswählen' : 'Select Learning Options' }}
+    <div v-else>
+      <!-- Hero section (always visible, adapts to language) -->
+      <div class="mb-8">
+        <h2 class="text-3xl font-bold mb-3 text-primary">
+          {{ t('title') }}
         </h2>
+        <p class="text-muted-foreground mb-5 leading-relaxed">
+          {{ t('subtitle') }}
+        </p>
 
-        <!-- Learning language selection -->
-        <div class="mb-4">
-          <Label class="block font-semibold mb-3">
-            {{ selectedLearning === 'deutsch' ? 'Ich möchte lernen auf:' : 'I want to learn in:' }}
-          </Label>
-          <div class="flex flex-wrap gap-2">
-            <Button
-              v-for="lang in learningLanguages"
-              :key="lang"
-              :variant="selectedLearning === lang ? 'default' : 'outline'"
-              @click="selectLearning(lang)">
-              {{ formatLangName(lang) }}
-            </Button>
+        <!-- Feature highlights -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <div v-for="feature in features" :key="feature.key"
+            class="flex items-start gap-3 p-3 rounded-lg bg-accent/30">
+            <span class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-base flex-shrink-0">
+              {{ feature.icon }}
+            </span>
+            <div>
+              <div class="text-sm font-medium text-foreground">{{ feature.title }}</div>
+              <div class="text-xs text-muted-foreground">{{ feature.desc }}</div>
+            </div>
           </div>
         </div>
 
-        <!-- Workshop selection -->
-        <div class="mb-4">
-          <Label class="block font-semibold mb-3">
-            {{ selectedLearning === 'deutsch' ? 'Was ich lernen möchte:' : 'What I want to learn:' }}
-          </Label>
-          <div v-if="workshops.length > 0" class="flex flex-col gap-3">
-            <Card
-              v-for="ws in workshops"
-              :key="ws"
-              @click="selectWorkshop(ws)"
-              :class="[
-                'p-4 cursor-pointer transition',
-                selectedWorkshop === ws
-                  ? 'ring-2 ring-primary bg-accent'
-                  : 'hover:border-primary/50'
-              ]">
-              <div class="flex items-start justify-between gap-2">
-                <div class="flex-grow min-w-0">
-                  <div class="font-semibold text-foreground">
-                    {{ getWorkshopTitle(ws) }}
-                  </div>
-                  <div v-if="getWorkshopDescription(ws)" class="text-sm text-muted-foreground mt-1">
-                    {{ getWorkshopDescription(ws) }}
-                  </div>
-                  <div v-if="isRemoteWorkshop(ws)" class="text-xs text-muted-foreground/60 mt-1">
-                    {{ getWorkshopSourceLabel(ws) }}
-                  </div>
-                </div>
-                <div class="flex items-center gap-1 flex-shrink-0">
-                  <button
-                    @click.stop="copyWorkshopLink(ws)"
-                    class="p-1.5 rounded text-muted-foreground hover:text-primary hover:bg-accent transition"
-                    title="Copy link to workshop">
-                    <span class="text-sm">{{ copiedWorkshop === ws ? '✓' : '🔗' }}</span>
-                  </button>
+        <!-- Getting started hint (when no language selected) -->
+        <div v-if="!selectedLanguage" class="p-4 rounded-lg border border-primary/20 bg-primary/5">
+          <p class="text-sm text-foreground font-medium mb-1">
+            {{ t('getStartedTitle') }}
+          </p>
+          <p class="text-sm text-muted-foreground">
+            {{ t('getStartedDesc') }}
+          </p>
+        </div>
+      </div>
+
+      <!-- How it works section (always visible) -->
+      <div v-if="!selectedLanguage || workshops.length === 0" class="mb-8">
+        <h3 class="text-lg font-semibold text-foreground mb-4">{{ t('howItWorks') }}</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div v-for="(step, i) in steps" :key="i" class="text-center p-4">
+            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-lg font-bold mx-auto mb-3">
+              {{ i + 1 }}
+            </div>
+            <div class="text-sm font-medium text-foreground mb-1">{{ step.title }}</div>
+            <div class="text-xs text-muted-foreground">{{ step.desc }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workshops as tiles -->
+      <div v-if="selectedLanguage && workshops.length > 0">
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-sm font-medium text-muted-foreground">
+            {{ t('workshops') }}
+          </label>
+          <span class="text-xs text-muted-foreground">
+            {{ workshops.length }} {{ workshops.length === 1 ? 'Workshop' : 'Workshops' }}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Card
+            v-for="ws in visibleWorkshops"
+            :key="ws"
+            @click="openWorkshop(ws)"
+            class="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/50 overflow-hidden">
+
+            <!-- Color accent bar at top -->
+            <div class="h-1.5 bg-gradient-to-r from-primary to-secondary"></div>
+
+            <div class="p-5">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <h3 class="font-semibold text-foreground text-lg group-hover:text-primary transition-colors leading-tight">
+                  {{ getWorkshopTitle(ws) }}
+                </h3>
+                <button
+                  @click.stop="copyWorkshopLink(ws)"
+                  class="p-1.5 rounded-md text-muted-foreground/40 hover:text-primary hover:bg-accent transition opacity-0 group-hover:opacity-100 flex-shrink-0"
+                  title="Copy link">
+                  <svg v-if="copiedWorkshop !== ws" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              </div>
+
+              <p v-if="getWorkshopDescription(ws)" class="text-sm text-muted-foreground leading-relaxed mb-3">
+                {{ getWorkshopDescription(ws) }}
+              </p>
+
+              <div class="flex items-center justify-between">
+                <span v-if="isRemoteWorkshop(ws)" class="text-xs text-muted-foreground/50 truncate max-w-[60%]">
+                  {{ getWorkshopSourceLabel(ws) }}
+                </span>
+                <span v-else></span>
+
+                <div class="flex items-center gap-1">
                   <button
                     v-if="isRemoteWorkshop(ws)"
                     @click.stop="removeSource(ws)"
-                    class="p-1.5 rounded text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900 transition"
-                    title="Remove external source">
-                    <span class="text-sm">✕</span>
+                    class="p-1 rounded text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition text-xs"
+                    title="Remove">
+                    Remove
                   </button>
+                  <span class="text-primary text-sm font-medium group-hover:translate-x-0.5 transition-transform">
+                    →
+                  </span>
                 </div>
               </div>
-            </Card>
-          </div>
-          <p v-else class="text-muted-foreground">
-            Select a learning language first
-          </p>
+            </div>
+          </Card>
+        </div>
+
+        <!-- Show more button -->
+        <div v-if="workshops.length > maxVisible && !showAll" class="mt-4 text-center">
+          <button
+            @click="showAll = true"
+            class="px-6 py-2 text-sm font-medium text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition">
+            {{ t('showAll') }} ({{ workshops.length - maxVisible }} {{ t('more') }})
+          </button>
         </div>
 
         <!-- Workshop discovery -->
-        <div v-if="availableWorkshops.length > 0" class="mb-4">
-          <Label class="block font-semibold mb-3">
-            Discover Workshops
-          </Label>
+        <div v-if="availableWorkshops.length > 0" class="mt-6">
+          <label class="block text-sm font-medium text-muted-foreground mb-3">
+            {{ t('discover') }}
+          </label>
           <div class="flex flex-col gap-2">
             <Card
               v-for="workshop in availableWorkshops"
@@ -171,92 +148,126 @@
             </Card>
           </div>
         </div>
+      </div>
 
-        <!-- Load lessons button -->
-        <Button
-          @click="loadLessons"
-          :disabled="!canLoadLessons"
-          :class="[
-            'mt-2 text-lg px-8 py-4 h-auto',
-            canLoadLessons
-              ? 'bg-green-500 hover:bg-green-600 text-white hover:-translate-y-0.5'
-              : ''
-          ]">
-          {{ selectedLearning === 'deutsch' ? 'Lektionen laden' : 'Load Lessons' }}
-        </Button>
-
-        <!-- Info links -->
-        <div v-if="selectedLearning" class="mt-6 pt-4 border-t border-border">
-          <div class="flex flex-wrap gap-4 text-sm">
-            <a
-              :href="'#/' + selectedLearning + '/open-learn-guide/lessons'"
-              class="text-primary hover:underline">
-              {{ selectedLearning === 'deutsch' ? 'Anleitung &amp; Erste Schritte' : 'Guide &amp; First Steps' }}
-            </a>
-            <a
-              :href="'#/' + selectedLearning + '/open-learn-feedback/lessons'"
-              class="text-primary hover:underline">
-              {{ selectedLearning === 'deutsch' ? 'Feedback geben' : 'Give Feedback' }}
-            </a>
-            <a
-              href="https://github.com/felixboehm/open-learn/issues"
-              target="_blank"
-              rel="noopener"
-              class="text-primary hover:underline">
-              {{ selectedLearning === 'deutsch' ? 'Fehler melden' : 'Report a Bug' }}
-            </a>
-          </div>
+      <!-- Info links -->
+      <div v-if="selectedLanguage" class="mt-8 pt-4 border-t border-border">
+        <div class="flex flex-wrap gap-4 text-sm">
+          <a
+            :href="'#/' + selectedLanguage + '/open-learn-guide/lessons'"
+            class="text-primary hover:underline">
+            {{ t('guide') }}
+          </a>
+          <a
+            :href="'#/' + selectedLanguage + '/open-learn-feedback/lessons'"
+            class="text-primary hover:underline">
+            {{ t('feedback') }}
+          </a>
+          <a
+            href="https://github.com/felixboehm/open-learn/issues"
+            target="_blank"
+            rel="noopener"
+            class="text-primary hover:underline">
+            {{ t('bugReport') }}
+          </a>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLessons } from '../composables/useLessons'
+import { useLanguage } from '../composables/useLanguage'
 import { formatLangName } from '../utils/formatters'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+import { Card } from '@/components/ui/card'
 
 const router = useRouter()
 const { availableContent, isLoading, loadAvailableContent, loadWorkshopsForLanguage, removeContentSource, isRemoteWorkshop, getSourceForSlug, getWorkshopMeta, getContentSources } = useLessons()
+const { selectedLanguage } = useLanguage()
 
-const selectedLearning = ref(null)
-const selectedWorkshop = ref(null)
 const copiedWorkshop = ref(null)
+const showAll = ref(false)
+const maxVisible = 4
 
-// Known workshops that can be discovered
 const knownWorkshops = []
 
-const learningLanguages = computed(() => {
-  return Object.keys(availableContent.value)
-})
+const isDE = computed(() => selectedLanguage.value === 'deutsch')
+
+// Simple i18n helper
+function t(key) {
+  const strings = {
+    title: isDE.value ? 'Willkommen bei Open Learn' : 'Welcome to Open Learn',
+    subtitle: isDE.value
+      ? 'Eine kostenlose, quelloffene Lernplattform. Keine Werbung, kein Tracking, kein Konto nötig. Dein Fortschritt wird im Browser gespeichert.'
+      : 'A free, open-source learning platform. No ads, no tracking, no account required. Your progress is saved in your browser.',
+    getStartedTitle: isDE.value ? 'Erste Schritte' : 'Get Started',
+    getStartedDesc: isDE.value
+      ? 'Wähle oben links deine Sprache aus, um verfügbare Workshops zu sehen.'
+      : 'Select your language in the top-left dropdown to see available workshops.',
+    howItWorks: isDE.value ? 'So funktioniert es' : 'How It Works',
+    workshops: isDE.value ? 'Workshops' : 'Workshops',
+    showAll: isDE.value ? 'Alle anzeigen' : 'Show all',
+    more: isDE.value ? 'weitere' : 'more',
+    discover: isDE.value ? 'Workshops entdecken' : 'Discover Workshops',
+    guide: isDE.value ? 'Anleitung & Erste Schritte' : 'Guide & First Steps',
+    feedback: isDE.value ? 'Feedback geben' : 'Give Feedback',
+    bugReport: isDE.value ? 'Fehler melden' : 'Report a Bug',
+  }
+  return strings[key] || key
+}
+
+const features = computed(() => isDE.value ? [
+  { key: 'qa', icon: '💬', title: 'Fragen & Antworten', desc: 'Lerne mit Karteikarten, Quizzen und interaktiven Assessments' },
+  { key: 'video', icon: '🎬', title: 'Videos & Audio', desc: 'YouTube-Videos, lokale Dateien und Audioaussprache' },
+  { key: 'progress', icon: '📊', title: 'Fortschritt verfolgen', desc: 'Markiere Gelerntes und sieh deinen Fortschritt pro Lektion' },
+  { key: 'create', icon: '✏️', title: 'Workshops erstellen', desc: 'Erstelle eigene Workshops mit einfachen YAML-Dateien' },
+] : [
+  { key: 'qa', icon: '💬', title: 'Q&A Cards & Quizzes', desc: 'Learn with flashcards, quizzes, and interactive assessments' },
+  { key: 'video', icon: '🎬', title: 'Videos & Audio', desc: 'YouTube embeds, local files, and audio pronunciation' },
+  { key: 'progress', icon: '📊', title: 'Track Progress', desc: 'Mark items as learned and see your progress per lesson' },
+  { key: 'create', icon: '✏️', title: 'Create Workshops', desc: 'Build your own workshops with simple YAML files' },
+])
+
+const steps = computed(() => isDE.value ? [
+  { title: 'Sprache wählen', desc: 'Wähle oben links deine Sprache — die Oberfläche passt sich an.' },
+  { title: 'Workshop starten', desc: 'Klicke auf einen Workshop und starte mit der ersten Lektion.' },
+  { title: 'Lernen & Fortschritt', desc: 'Beantworte Fragen, markiere Gelerntes und verfolge deinen Fortschritt.' },
+] : [
+  { title: 'Pick a Language', desc: 'Choose your language in the top-left dropdown — the interface adapts.' },
+  { title: 'Start a Workshop', desc: 'Click on any workshop tile to jump into the first lesson.' },
+  { title: 'Learn & Track', desc: 'Answer questions, mark items as learned, and track your progress.' },
+])
 
 const workshops = computed(() => {
-  if (!selectedLearning.value) return []
-  return Object.keys(availableContent.value[selectedLearning.value] || {})
+  if (!selectedLanguage.value) return []
+  return Object.keys(availableContent.value[selectedLanguage.value] || {})
 })
 
-const canLoadLessons = computed(() => {
-  return selectedLearning.value && selectedWorkshop.value
+const visibleWorkshops = computed(() => {
+  if (showAll.value) return workshops.value
+  return workshops.value.slice(0, maxVisible)
 })
 
-// Workshops not yet added by the user
 const availableWorkshops = computed(() => {
   const sources = getContentSources()
   return knownWorkshops.filter(w => !sources.includes(w.url))
 })
 
+// Reset showAll when language changes
+watch(selectedLanguage, () => {
+  showAll.value = false
+})
+
 function getWorkshopTitle(workshop) {
-  const meta = getWorkshopMeta(selectedLearning.value, workshop)
+  const meta = getWorkshopMeta(selectedLanguage.value, workshop)
   return meta.title || formatLangName(workshop)
 }
 
 function getWorkshopDescription(workshop) {
-  const meta = getWorkshopMeta(selectedLearning.value, workshop)
+  const meta = getWorkshopMeta(selectedLanguage.value, workshop)
   return meta.description || null
 }
 
@@ -274,7 +285,7 @@ function getWorkshopSourceLabel(workshop) {
 
 async function copyWorkshopLink(workshop) {
   const base = window.location.href.replace(/#.*$/, '')
-  const url = `${base}#/${selectedLearning.value}/${workshop}/lessons`
+  const url = `${base}#/${selectedLanguage.value}/${workshop}/lessons`
   try {
     await navigator.clipboard.writeText(url)
     copiedWorkshop.value = workshop
@@ -284,19 +295,15 @@ async function copyWorkshopLink(workshop) {
   }
 }
 
-async function selectLearning(lang) {
-  selectedLearning.value = lang
-  selectedWorkshop.value = null
-  // Save to localStorage
-  localStorage.setItem('lastLearningLanguage', lang)
-  localStorage.removeItem('lastWorkshop')
-  await loadWorkshopsForLanguage(lang)
-}
-
-function selectWorkshop(workshop) {
-  selectedWorkshop.value = workshop
-  // Save to localStorage
+function openWorkshop(workshop) {
   localStorage.setItem('lastWorkshop', workshop)
+  router.push({
+    name: 'lessons-overview',
+    params: {
+      learning: selectedLanguage.value,
+      workshop: workshop
+    }
+  })
 }
 
 async function removeSource(workshopSlug) {
@@ -304,45 +311,12 @@ async function removeSource(workshopSlug) {
   if (sourceUrl) {
     removeContentSource(sourceUrl)
   }
-  // Clear selection if removed workshop was selected
-  if (selectedWorkshop.value === workshopSlug) {
-    selectedWorkshop.value = null
-    localStorage.removeItem('lastWorkshop')
-  }
-  // Reload content
   await loadAvailableContent()
-  if (selectedLearning.value) {
-    await loadWorkshopsForLanguage(selectedLearning.value)
+  if (selectedLanguage.value) {
+    await loadWorkshopsForLanguage(selectedLanguage.value)
   }
 }
 
-function loadLessons() {
-  if (canLoadLessons.value) {
-    router.push({
-      name: 'lessons-overview',
-      params: {
-        learning: selectedLearning.value,
-        workshop: selectedWorkshop.value
-      }
-    })
-  }
-}
-
-async function restorePreviousSelection() {
-  const lastLearning = localStorage.getItem('lastLearningLanguage')
-  const lastTeaching = localStorage.getItem('lastWorkshop')
-
-  if (lastLearning && learningLanguages.value.includes(lastLearning)) {
-    selectedLearning.value = lastLearning
-    await loadWorkshopsForLanguage(lastLearning)
-
-    if (lastTeaching && workshops.value.includes(lastTeaching)) {
-      selectedWorkshop.value = lastTeaching
-    }
-  }
-}
-
-// Remove legacy external sources that are now replaced by local workshops
 function cleanupLegacySources() {
   const legacyUrls = [
     'https://felixboehm.github.io/workshop-open-learn/index.yaml',
@@ -357,7 +331,12 @@ function cleanupLegacySources() {
 
 onMounted(async () => {
   cleanupLegacySources()
-  await loadAvailableContent()
-  await restorePreviousSelection()
+  if (Object.keys(availableContent.value).length === 0) {
+    await loadAvailableContent()
+  }
+  // If language was already selected (by App.vue), ensure workshops are loaded
+  if (selectedLanguage.value) {
+    await loadWorkshopsForLanguage(selectedLanguage.value)
+  }
 })
 </script>

@@ -1,0 +1,98 @@
+version: 2
+number: 1
+title: "Willkommen bei Open Learn"
+description: "Erfahre, was Open Learn ist, wie es funktioniert und was du damit machen kannst."
+
+sections:
+  - title: "Was ist Open Learn?"
+    explanation: |
+      **Open Learn** ist eine kostenlose, quelloffene Lernplattform. Du kannst damit alles lernen — Sprachen, Berufliches, Prüfungsvorbereitung oder jedes Thema, für das jemand einen Workshop erstellt hat.
+
+      Das macht Open Learn besonders:
+
+      - **Kostenlos & offen** — kein Konto, keine Werbung, kein Tracking
+      - **Funktioniert offline** — läuft als statische Website, kein Server nötig
+      - **Deine Daten bleiben bei dir** — Fortschritt wird im Browser gespeichert
+      - **Jeder kann Inhalte erstellen** — Workshops sind einfache YAML-Dateien
+
+      > **Tipp:** Du liest gerade einen Workshop! Diese Anleitung *ist* die Plattform — alles, was du hier siehst, nutzt dieselben Features, die jedem Workshop zur Verfügung stehen.
+
+    examples:
+      - q: "Wo speichert Open Learn meinen Fortschritt?"
+        a: "Im Local Storage deines Browsers — es wird nichts an einen Server gesendet."
+        labels: ["Datenschutz"]
+
+      - q: "Brauche ich ein Konto, um Open Learn zu nutzen?"
+        a: "Nein. Open Learn funktioniert ohne Registrierung, Login oder persönliche Daten."
+        labels: ["Datenschutz"]
+
+      - q: "Kann ich Open Learn ohne Internetverbindung nutzen?"
+        a: "Ja — einmal geladen funktioniert Open Learn vollständig offline als statische Seite."
+        labels: ["Offline"]
+
+      - q: "Welche Inhalte kann ich mit Open Learn lernen?"
+        a: "Alles — Sprachen, Naturwissenschaften, Geschichte, berufliche Zertifizierungen oder jedes Thema mit einem Workshop."
+        labels: ["Inhalte"]
+
+  - title: "Features im Überblick"
+    explanation: |
+      Open Learn hat mehrere Features, die das Lernen effektiv machen. Jedes Q&A-Paar unten erklärt ein Feature — und du nutzt Q&A gerade selbst!
+
+      > **Tipp:** Klicke auf eine Frage, um die Antwort zu sehen. So funktionieren Q&A-Karten auf der gesamten Plattform.
+
+    examples:
+      - q: "Was sind Q&A-Karten?"
+        a: "Das Hauptformat für Inhalte — eine Frage vorne, eine Antwort hinten. Du schaust dir gerade eine an."
+        labels: ["Feature"]
+
+      - q: "Was sind Labels?"
+        a: "Tags an jeder Karte zur Kategorisierung und zum Filtern. Schau auf die farbigen Tags an diesen Karten — das sind Labels."
+        labels: ["Feature", "Labels"]
+
+      - q: "Was sind Lernelemente?"
+        a: "Vokabeln oder Konzepte, die an Q&A-Karten angehängt sind. Du kannst sie als gelernt markieren und deinen Fortschritt über Lektionen hinweg verfolgen."
+        labels: ["Feature"]
+        rel:
+          - ["Lernelement", "ein Vokabel- oder Konzepteintrag, der über Lektionen hinweg verfolgt wird"]
+          - ["Fortschrittsverfolgung", "Elemente als gelernt markieren, um den Lernstand zu messen"]
+
+      - q: "Was sind Assessments?"
+        a: "Interaktive Quizze — Texteingabe, Einzelauswahl oder Mehrfachauswahl. Du probierst alle drei im nächsten Abschnitt aus!"
+        labels: ["Feature"]
+
+  - title: "Hast du es verstanden?"
+    explanation: |
+      Zeit, die Assessment-Features auszuprobieren! Beantworte die Fragen unten — deine Antworten werden automatisch im Browser gespeichert.
+
+    examples:
+      - type: input
+        q: "Wo speichert Open Learn deinen Lernfortschritt?"
+        a:
+          - "Local Storage"
+          - "local storage"
+          - "localStorage"
+          - "Browser"
+          - "im Browser"
+        labels: ["Quiz"]
+
+      - type: select
+        q: "Was brauchst du, um Open Learn zu nutzen?"
+        options:
+          - text: "Eine E-Mail-Adresse und ein Passwort"
+          - text: "Ein kostenpflichtiges Abo"
+          - text: "Nichts — einfach die Website öffnen"
+            correct: true
+          - text: "Eine Einladung von einem Coach"
+        labels: ["Quiz"]
+
+      - type: multiple-choice
+        q: "Welche davon sind echte Open Learn Features? (Alle zutreffenden auswählen)"
+        options:
+          - text: "Q&A-Karten mit Labels"
+            correct: true
+          - text: "Eingebauter Video-Chat"
+          - text: "Interaktive Assessments"
+            correct: true
+          - text: "Offline-Unterstützung"
+            correct: true
+        labels: ["Quiz"]

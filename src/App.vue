@@ -2,9 +2,39 @@
   <div class="w-full md:max-w-6xl md:mx-auto bg-background md:rounded-xl md:shadow-2xl">
     <!-- Header with unified navigation - sticky on desktop -->
     <header class="bg-gradient-to-br from-primary to-secondary text-white py-4 px-4 md:rounded-t-xl relative sticky top-0 z-50">
-      <div class="flex items-center justify-between gap-4">
-        <!-- Left side buttons (fixed width container) -->
+      <div class="flex items-center justify-between gap-2">
+        <!-- Left side: language dropdown + nav buttons -->
         <div class="flex items-center gap-2 min-w-fit">
+          <!-- Language dropdown (always visible) -->
+          <div v-if="learningLanguages.length > 0" class="relative">
+            <button
+              @click="toggleLanguageMenu"
+              class="flex items-center gap-1.5 bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 rounded-lg px-2.5 py-1.5 text-sm font-medium transition flex-shrink-0"
+              title="Change language"
+              aria-label="Change language">
+              <span class="text-base leading-none">{{ getFlag(selectedLanguage) }}</span>
+              <span class="hidden sm:inline">{{ selectedLanguage ? formatLangName(selectedLanguage) : 'Language' }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-70"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+
+            <!-- Dropdown menu -->
+            <div
+              v-if="showLanguageMenu"
+              class="absolute top-full left-0 mt-1 bg-popover text-popover-foreground border rounded-lg shadow-lg overflow-hidden min-w-[160px] z-[100]">
+              <button
+                v-for="lang in learningLanguages"
+                :key="lang"
+                @click="switchLanguage(lang)"
+                :class="[
+                  'flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-accent transition',
+                  selectedLanguage === lang ? 'bg-accent font-medium' : ''
+                ]">
+                <span class="text-base leading-none">{{ getFlag(lang) }}</span>
+                <span>{{ formatLangName(lang) }}</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Home button (visible except on home page and lesson detail page) -->
           <Button
             v-if="canGoBack && route.name !== 'lesson-detail'"
@@ -30,7 +60,7 @@
         </div>
 
         <!-- Title (grows to fill available space) -->
-        <h1 class="text-2xl md:text-3xl font-bold text-center flex-grow">
+        <h1 class="text-xl md:text-3xl font-bold text-center flex-grow truncate">
           {{ pageTitle }}
         </h1>
 
@@ -123,21 +153,30 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAudio } from './composables/useAudio'
 import { useSettings } from './composables/useSettings'
 import { useLessons } from './composables/useLessons'
+import { useLanguage } from './composables/useLanguage'
+import { formatLangName } from './utils/formatters'
 import { Button } from '@/components/ui/button'
 
 const router = useRouter()
 const route = useRoute()
 
 const pageTitle = ref('🎓 Open Learn')
+const showLanguageMenu = ref(false)
 
 const { isPlaying, play, pause, resume } = useAudio()
 const { settings } = useSettings()
-const { getWorkshopMeta } = useLessons()
+const { availableContent, getWorkshopMeta, loadAvailableContent, loadWorkshopsForLanguage } = useLessons()
+const { selectedLanguage, getFlag, setLanguage } = useLanguage()
+
+// Deduplicated list of available languages
+const learningLanguages = computed(() => {
+  return [...new Set(Object.keys(availableContent.value))]
+})
 
 const canGoBack = computed(() => {
   return route.name !== 'home'
@@ -165,6 +204,42 @@ const canShowItemsButton = computed(() => {
   return route.name === 'lesson-detail' ||
          route.name === 'lessons-overview' ||
          route.name === 'learning-items'
+})
+
+function toggleLanguageMenu() {
+  showLanguageMenu.value = !showLanguageMenu.value
+}
+
+async function switchLanguage(lang) {
+  showLanguageMenu.value = false
+  setLanguage(lang)
+  await loadWorkshopsForLanguage(lang)
+  // If on home page, stay there. If elsewhere, navigate home to show workshops for new language.
+  if (route.name !== 'home') {
+    router.push({ name: 'home' })
+  }
+}
+
+// Close dropdown when clicking outside
+function handleClickOutside(e) {
+  if (showLanguageMenu.value && !e.target.closest('[aria-label="Change language"]') && !e.target.closest('.absolute')) {
+    showLanguageMenu.value = false
+  }
+}
+
+onMounted(async () => {
+  document.addEventListener('click', handleClickOutside)
+  await loadAvailableContent()
+  // Restore language selection if stored
+  const stored = localStorage.getItem('lastLearningLanguage')
+  if (stored && learningLanguages.value.includes(stored)) {
+    setLanguage(stored)
+    await loadWorkshopsForLanguage(stored)
+  }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 
 function goHome() {

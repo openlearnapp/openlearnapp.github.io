@@ -1,0 +1,107 @@
+version: 2
+number: 2
+title: "Die Plattform nutzen"
+description: "Lerne, wie du in Open Learn navigierst, deinen Fortschritt verfolgst und die Einstellungen anpasst."
+
+sections:
+  - title: "Navigation"
+    explanation: |
+      Open Learn ist in drei Ebenen aufgebaut:
+
+      1. **Startseite** — Sprache und Workshop wählen
+      2. **Lektionsübersicht** — alle Lektionen eines Workshops als Karten
+      3. **Lektionsansicht** — Abschnitte lesen, Fragen beantworten, lernen
+
+      Nutze den **Zurück-Button** (oben links), um eine Ebene nach oben zu gehen. Die **Titelleiste** zeigt immer, wo du bist.
+
+      > **Tipp:** Open Learn nutzt Hash-basierte URLs (mit `#`). Du kannst jede Seite als Lesezeichen speichern oder den Link teilen — er öffnet genau die richtige Stelle.
+
+    examples:
+      - q: "Wie komme ich von einer Lektion zurück zur Lektionsliste?"
+        a: "Nutze den Zurück-Button oben links in der Navigationsleiste."
+        labels: ["Navigation"]
+
+      - q: "Kann ich einen Link zu einer bestimmten Lektion teilen?"
+        a: "Ja — jede Seite hat eine eigene URL, die du als Lesezeichen speichern oder teilen kannst."
+        labels: ["Navigation"]
+
+      - q: "Was zeigt die Startseite?"
+        a: "Alle verfügbaren Workshops, gruppiert nach Sprache. Wähle eine Sprache, dann einen Workshop, um loszulegen."
+        labels: ["Navigation"]
+
+  - title: "Lernfortschritt & Labels"
+    explanation: |
+      Jede Q&A-Karte kann **Lernelemente** haben — Vokabeln oder Konzepte, die daran angehängt sind. Du kannst diese als *gelernt* markieren, um deinen Fortschritt zu verfolgen.
+
+      **Labels** ermöglichen das Filtern von Karten nach Kategorie. Zum Beispiel könnte ein Sprach-Workshop Labels wie "Präsens" oder "Vokabeln" verwenden, während diese Anleitung Labels wie "Feature" oder "Navigation" nutzt.
+
+      > **Tipp:** In den Einstellungen kannst du Labels und Lernelemente ein- oder ausblenden und bereits gelernte Karten ausblenden.
+
+    examples:
+      - q: "Wie markiere ich etwas als gelernt?"
+        a: "Tippe auf die Lernelemente unter einer Q&A-Karte und markiere sie als gelernt. Dein Fortschritt wird automatisch gespeichert."
+        labels: ["Fortschritt"]
+        rel:
+          - ["als gelernt markieren", "tippe auf ein Lernelement, um den Lernstatus umzuschalten"]
+          - ["Fortschrittsbalken", "zeigt an, wie viele Elemente du in einer Lektion gelernt hast"]
+
+      - q: "Kann ich Karten nach Label filtern?"
+        a: "Ja — tippe auf ein Label, um nur Karten mit diesem Label in der aktuellen Lektion anzuzeigen."
+        labels: ["Labels"]
+
+      - q: "Was passiert, wenn ich meine Browserdaten lösche?"
+        a: "Dein Fortschritt ist im Local Storage gespeichert. Das Löschen der Browserdaten setzt deinen Fortschritt zurück."
+        labels: ["Fortschritt"]
+
+  - title: "Einstellungen"
+    explanation: |
+      Öffne die **Einstellungen** über das Zahnrad-Symbol oben rechts. Hier kannst du anpassen, wie Open Learn für dich funktioniert.
+
+    examples:
+      - type: multiple-choice
+        q: "Was kannst du in den Einstellungen anpassen? (Alle zutreffenden auswählen)"
+        options:
+          - text: "Dark Mode"
+            correct: true
+          - text: "Antworten anzeigen/verbergen"
+            correct: true
+          - text: "Audio-Wiedergabegeschwindigkeit"
+            correct: true
+          - text: "Die Server-Sprache ändern"
+        labels: ["Einstellungen"]
+
+      - q: "Was macht 'Antworten anzeigen'?"
+        a: "Es zeigt alle Antworten standardmäßig an, sodass du nicht jede Karte einzeln antippen musst."
+        labels: ["Einstellungen"]
+
+      - q: "Was macht 'Gelernte Beispiele ausblenden'?"
+        a: "Es blendet Q&A-Karten aus, bei denen du bereits alle Lernelemente als gelernt markiert hast — nützlich für Wiederholungen."
+        labels: ["Einstellungen"]
+
+  - title: "Videos & Audio"
+    video: "https://www.youtube.com/watch?v=E1oZhEIrer4"
+    explanation: |
+      Workshops können **Videos** enthalten, eingebettet von YouTube oder als lokale Dateien. Das Video oben ist ein Beispiel — es ist eine Einführung in Open Learn.
+
+      Manche Workshops enthalten auch **Audiodateien** für die Aussprache. Wenn Audio verfügbar ist, siehst du einen Wiedergabe-Button. Die Wiedergabegeschwindigkeit kannst du in den Einstellungen anpassen.
+
+      > **Tipp:** Audio nutzt die Media Session API — du kannst die Wiedergabe vom Sperrbildschirm oder über Kopfhörer-Tasten steuern.
+
+    examples:
+      - q: "Welche Videoformate unterstützt Open Learn?"
+        a: "YouTube-Links (automatisch eingebettet), Vimeo-Links und lokale MP4-Dateien."
+        labels: ["Video"]
+
+      - q: "Wie funktioniert das Audiosystem?"
+        a: "Audiodateien werden pro Lektion geladen. Jede Q&A-Karte kann separate Audiodateien für Frage und Antwort haben."
+        labels: ["Audio"]
+
+      - type: select
+        q: "Wo kannst du die Audio-Wiedergabegeschwindigkeit ändern?"
+        options:
+          - text: "In der Lektionsansicht"
+          - text: "In den Einstellungen"
+            correct: true
+          - text: "In den Browser-Einstellungen"
+          - text: "Das geht nicht"
+        labels: ["Audio"]

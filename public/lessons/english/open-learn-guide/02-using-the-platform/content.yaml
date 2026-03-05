@@ -1,0 +1,107 @@
+version: 2
+number: 2
+title: "Using the Platform"
+description: "Learn how to navigate Open Learn, track your progress, and customize your settings."
+
+sections:
+  - title: "Navigation"
+    explanation: |
+      Open Learn is organized in three levels:
+
+      1. **Home** — choose your language and workshop
+      2. **Lessons overview** — see all lessons in a workshop as cards
+      3. **Lesson detail** — read sections, answer questions, learn
+
+      Use the **back button** (top left) to go up one level. The **title bar** always shows where you are.
+
+      > **Tip:** Open Learn uses hash-based URLs (with `#`). You can bookmark any page or share the link — it will open exactly where you left off.
+
+    examples:
+      - q: "How do I get back to the lesson list from a lesson?"
+        a: "Use the back button in the top-left corner of the navigation bar."
+        labels: ["Navigation"]
+
+      - q: "Can I share a link to a specific lesson?"
+        a: "Yes — every page has a unique URL you can bookmark or share."
+        labels: ["Navigation"]
+
+      - q: "What does the home page show?"
+        a: "All available workshops grouped by interface language. Pick a language, then a workshop to start learning."
+        labels: ["Navigation"]
+
+  - title: "Progress & Labels"
+    explanation: |
+      Each Q&A card can have **learning items** — vocabulary or concepts attached to it. You can mark these as *learned* to track your progress.
+
+      **Labels** let you filter cards by category. For example, a language workshop might use labels like "Present Tense" or "Vocabulary", while this guide uses labels like "Feature" or "Navigation".
+
+      > **Tip:** In Settings, you can toggle labels and learning items on or off, and hide cards you've already learned.
+
+    examples:
+      - q: "How do I mark something as learned?"
+        a: "Tap the learning items below a Q&A card and mark them as learned. Your progress is saved automatically."
+        labels: ["Progress"]
+        rel:
+          - ["mark as learned", "tap a learning item to toggle its learned status"]
+          - ["progress bar", "shows how many items you've learned in a lesson"]
+
+      - q: "Can I filter cards by label?"
+        a: "Yes — tap a label to filter and show only cards with that label in the current lesson."
+        labels: ["Labels"]
+
+      - q: "What happens if I clear my browser data?"
+        a: "Your progress is stored in local storage. Clearing browser data will reset your progress."
+        labels: ["Progress"]
+
+  - title: "Settings"
+    explanation: |
+      Open the **Settings** page using the gear icon in the top-right corner. Here you can customize how Open Learn works for you.
+
+    examples:
+      - type: multiple-choice
+        q: "Which of these can you customize in Settings? (Select all that apply)"
+        options:
+          - text: "Dark mode"
+            correct: true
+          - text: "Show or hide answers"
+            correct: true
+          - text: "Audio playback speed"
+            correct: true
+          - text: "Change the server language"
+        labels: ["Settings"]
+
+      - q: "What does 'Show answers' do?"
+        a: "It reveals all answers by default, so you don't have to tap each card individually."
+        labels: ["Settings"]
+
+      - q: "What does 'Hide learned examples' do?"
+        a: "It hides Q&A cards where you've already marked all learning items as learned — useful for review sessions."
+        labels: ["Settings"]
+
+  - title: "Videos & Audio"
+    video: "https://www.youtube.com/watch?v=E1oZhEIrer4"
+    explanation: |
+      Workshops can include **videos** embedded from YouTube or as local files. The video above is an example — it's an introduction to Open Learn.
+
+      Some workshops also include **audio files** for pronunciation. When audio is available, you'll see a play button. You can control playback speed in Settings.
+
+      > **Tip:** Audio uses the Media Session API — you can control playback from your lock screen or headphone buttons.
+
+    examples:
+      - q: "What video formats does Open Learn support?"
+        a: "YouTube links (automatically embedded), Vimeo links, and local MP4 files."
+        labels: ["Video"]
+
+      - q: "How does the audio system work?"
+        a: "Audio files are loaded per lesson. Each Q&A card can have separate audio for the question and answer."
+        labels: ["Audio"]
+
+      - type: select
+        q: "Where can you change the audio playback speed?"
+        options:
+          - text: "In the lesson view"
+          - text: "In Settings"
+            correct: true
+          - text: "In the browser settings"
+          - text: "You can't change it"
+        labels: ["Audio"]

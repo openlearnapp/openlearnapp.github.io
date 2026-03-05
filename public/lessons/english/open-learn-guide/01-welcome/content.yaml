@@ -1,0 +1,99 @@
+version: 2
+number: 1
+title: "Welcome to Open Learn"
+description: "Find out what Open Learn is, how it works, and what you can do with it."
+
+sections:
+  - title: "What is Open Learn?"
+    explanation: |
+      **Open Learn** is a free, open-source learning platform. You can use it to learn anything — languages, professional skills, exam prep, or any topic someone has created a workshop for.
+
+      Here's what makes it special:
+
+      - **Free & open** — no accounts, no ads, no tracking
+      - **Works offline** — runs as a static website, no server needed
+      - **Your data stays with you** — progress is saved in your browser's local storage
+      - **Anyone can create content** — workshops are simple YAML files
+
+      > **Tip:** You're reading a workshop right now! This guide *is* the platform — everything you see here uses the same features available to any workshop.
+
+    examples:
+      - q: "Where does Open Learn store my progress?"
+        a: "In your browser's local storage — nothing is sent to a server."
+        labels: ["Privacy"]
+
+      - q: "Do I need an account to use Open Learn?"
+        a: "No. Open Learn works without registration, login, or any personal data."
+        labels: ["Privacy"]
+
+      - q: "Can I use Open Learn without an internet connection?"
+        a: "Yes — once loaded, Open Learn works fully offline as a static site."
+        labels: ["Offline"]
+
+      - q: "What kind of content can I learn with Open Learn?"
+        a: "Anything — languages, science, history, professional certifications, or any topic with a workshop."
+        labels: ["Content"]
+
+  - title: "Features at a Glance"
+    explanation: |
+      Open Learn has several features that make learning effective. Each Q&A pair below explains one feature — and you're already using Q&A right now!
+
+      > **Tip:** Click on a question to reveal the answer. This is how Q&A cards work throughout the platform.
+
+    examples:
+      - q: "What are Q&A cards?"
+        a: "The main content format — a question on the front, an answer on the back. You're looking at one right now."
+        labels: ["Feature"]
+
+      - q: "What are labels?"
+        a: "Tags on each card for categorization and filtering. Look at the colored tags on these cards — those are labels."
+        labels: ["Feature", "Labels"]
+
+      - q: "What are learning items?"
+        a: "Vocabulary or concepts attached to Q&A cards. You can mark them as learned and track your progress across lessons."
+        labels: ["Feature"]
+        rel:
+          - ["learning item", "a vocabulary entry or concept tracked across lessons"]
+          - ["progress tracking", "marking items as learned to measure your advancement"]
+
+      - q: "What are assessments?"
+        a: "Interactive quizzes — text input, single choice, or multiple choice. You'll try all three in the next section!"
+        labels: ["Feature"]
+
+  - title: "Check Your Understanding"
+    explanation: |
+      Time to try the assessment features! Answer the questions below — your answers are saved automatically in your browser.
+
+    examples:
+      - type: input
+        q: "Where does Open Learn save your learning progress?"
+        a:
+          - "local storage"
+          - "Local storage"
+          - "Local Storage"
+          - "localStorage"
+          - "browser"
+          - "in the browser"
+        labels: ["Quiz"]
+
+      - type: select
+        q: "What do you need to start using Open Learn?"
+        options:
+          - text: "An email address and password"
+          - text: "A paid subscription"
+          - text: "Nothing — just open the website"
+            correct: true
+          - text: "An invitation from a coach"
+        labels: ["Quiz"]
+
+      - type: multiple-choice
+        q: "Which of these are actual Open Learn features? (Select all that apply)"
+        options:
+          - text: "Q&A cards with labels"
+            correct: true
+          - text: "Built-in video chat"
+          - text: "Interactive assessments"
+            correct: true
+          - text: "Offline support"
+            correct: true
+        labels: ["Quiz"]

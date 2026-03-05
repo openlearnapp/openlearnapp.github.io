@@ -1,0 +1,180 @@
+version: 2
+number: 3
+title: "Eigene Workshops erstellen"
+description: "Lerne, wie du Workshops mit YAML-Dateien schreibst — von der Ordnerstruktur bis zur Veröffentlichung."
+
+sections:
+  - title: "Ordnerstruktur"
+    explanation: |
+      Ein Workshop besteht aus YAML-Dateien in einer Ordnerstruktur. So sieht sie aus:
+
+      ```
+      public/lessons/
+      ├── index.yaml                    # listet verfügbare Sprachen
+      └── deutsch/                      # Oberflächensprache
+          ├── workshops.yaml            # listet Workshops
+          └── mein-workshop/            # dein Workshop-Ordner
+              ├── lessons.yaml          # listet Lektionen
+              ├── 01-erste-lektion/
+              │   └── content.yaml      # Lektionsinhalt
+              └── 02-zweite-lektion/
+                  └── content.yaml
+      ```
+
+      Jede Datei hat eine klare Aufgabe:
+
+      - **index.yaml** — welche Sprachen verfügbar sind
+      - **workshops.yaml** — welche Workshops es in einer Sprache gibt
+      - **lessons.yaml** — welche Lektionen zu einem Workshop gehören
+      - **content.yaml** — der eigentliche Lektionsinhalt
+
+    examples:
+      - q: "Welche Datei listet alle Lektionen eines Workshops?"
+        a: "lessons.yaml — sie enthält eine geordnete Liste der Lektions-Ordnernamen."
+        labels: ["Struktur"]
+
+      - q: "Welche Datei enthält den eigentlichen Lerninhalt?"
+        a: "content.yaml in jedem Lektionsordner — sie definiert Abschnitte, Q&A-Karten und Assessments."
+        labels: ["Struktur"]
+
+      - q: "Kann ein Workshop Audio und Video enthalten?"
+        a: "Ja — lege Audiodateien in einen audio/-Unterordner und referenziere Videos über YouTube-URLs oder einen lokalen video/-Unterordner."
+        labels: ["Struktur"]
+
+  - title: "Eine Lektion schreiben"
+    explanation: |
+      Jede `content.yaml` folgt diesem Schema:
+
+      ```yaml
+      version: 2
+      number: 1
+      title: "Meine erste Lektion"
+      description: "Worum es in dieser Lektion geht"
+
+      sections:
+        - title: "Abschnittstitel"
+          video: "https://www.youtube.com/watch?v=..."
+          explanation: |
+            Markdown-Text — **fett**, *kursiv*, Listen,
+            > Blockzitate und `Code` funktionieren.
+          examples:
+            - q: "Frage"
+              a: "Antwort"
+              labels: ["Tag1", "Tag2"]
+              rel:
+                - ["Begriff", "Definition", "Kontext"]
+      ```
+
+      > **Tipp:** Das `explanation`-Feld unterstützt volles Markdown. Nutze Überschriften, Listen, Blockzitate und Code-Blöcke, um deine Inhalte klar und gut strukturiert zu gestalten.
+
+    examples:
+      - q: "Was macht das 'number'-Feld?"
+        a: "Es bestimmt die Reihenfolge der Lektionen. Lektion 1 erscheint zuerst, Lektion 2 als zweite, und so weiter."
+        labels: ["Schema"]
+
+      - q: "Wofür ist das 'rel'-Feld?"
+        a: "Es fügt Lernelemente (Vokabeln, Konzepte) zu einer Q&A-Karte hinzu. Das erste Element jedes Eintrags ist eine eindeutige ID für die Fortschrittsverfolgung über Lektionen hinweg."
+        labels: ["Schema"]
+
+      - q: "Welche Markdown-Features funktionieren in Erklärungen?"
+        a: "Fett, kursiv, Überschriften, Listen, Blockzitate, Code-Blöcke und Inline-Code — alles, was die marked-Bibliothek rendert."
+        labels: ["Schema"]
+
+  - title: "Assessment-Typen"
+    explanation: |
+      Open Learn unterstützt drei Assessment-Typen. Probiere jeden unten aus und sieh dir dann die YAML-Syntax an.
+
+      **Texteingabe** (`type: input`):
+      ```yaml
+      - type: input
+        q: "Deine Frage"
+        a:
+          - "akzeptierte Antwort 1"
+          - "akzeptierte Antwort 2"
+      ```
+
+      **Einzelauswahl** (`type: select`):
+      ```yaml
+      - type: select
+        q: "Deine Frage"
+        options:
+          - text: "Falsche Antwort"
+          - text: "Richtige Antwort"
+            correct: true
+      ```
+
+      **Mehrfachauswahl** (`type: multiple-choice`):
+      ```yaml
+      - type: multiple-choice
+        q: "Deine Frage"
+        options:
+          - text: "Richtige Option"
+            correct: true
+          - text: "Falsche Option"
+          - text: "Weitere richtige Option"
+            correct: true
+      ```
+
+    examples:
+      - type: input
+        q: "Welches YAML-Feld legt den Assessment-Typ fest?"
+        a:
+          - "type"
+          - "type:"
+        labels: ["Assessment"]
+
+      - type: select
+        q: "Welcher Assessment-Typ nutzt Radio-Buttons?"
+        options:
+          - text: "input"
+          - text: "select"
+            correct: true
+          - text: "multiple-choice"
+        labels: ["Assessment"]
+
+      - type: multiple-choice
+        q: "Welche Felder sind für ein select- oder multiple-choice-Assessment erforderlich? (Alle auswählen)"
+        options:
+          - text: "q (Frage)"
+            correct: true
+          - text: "options (Liste der Auswahlmöglichkeiten)"
+            correct: true
+          - text: "a (Antworttext)"
+          - text: "labels"
+        labels: ["Assessment"]
+
+  - title: "Veröffentlichen"
+    explanation: |
+      Es gibt mehrere Wege, deinen Workshop zu teilen:
+
+      **GitHub Pages** (empfohlen):
+      1. Forke das Open Learn Repository
+      2. Füge deine Workshop-Dateien unter `public/lessons/` hinzu
+      3. Pushe zu GitHub — die enthaltene GitHub Action baut und deployt automatisch
+
+      **Externe URL**:
+      Workshops können auch von jeder URL geladen werden. Nutzer fügen deinen Workshop über die "Quelle hinzufügen"-Seite hinzu, und Open Learn lädt die YAML-Dateien.
+
+      **IPFS**:
+      Für dezentrales Hosting kannst du deinen Workshop auf IPFS hochladen und den Content-Hash teilen.
+
+      > **Tipp:** Schau im [Open Learn Repository](https://github.com/FelixBoehme/open-learn) nach der neuesten Dokumentation, Beispielen und um Issues zu melden.
+
+    examples:
+      - q: "Was ist der einfachste Weg, einen Workshop zu veröffentlichen?"
+        a: "Forke das Open Learn Repo auf GitHub, füge deine Inhalte hinzu und pushe — GitHub Actions deployt automatisch."
+        labels: ["Veröffentlichen"]
+
+      - q: "Kann ich einen Workshop auf meinem eigenen Server hosten?"
+        a: "Ja — Workshops können von jeder URL geladen werden. Nutzer fügen deine Workshop-URL auf der 'Quelle hinzufügen'-Seite hinzu."
+        labels: ["Veröffentlichen"]
+
+      - type: select
+        q: "Was passiert, wenn du zum main-Branch eines geforkten Open Learn Repos pushst?"
+        options:
+          - text: "Nichts — du musst manuell deployen"
+          - text: "GitHub Actions baut und deployt zu GitHub Pages"
+            correct: true
+          - text: "Es wird automatisch ins Original-Repo gemergt"
+          - text: "Es sendet eine Benachrichtigung an das Open Learn Team"
+        labels: ["Veröffentlichen"]
