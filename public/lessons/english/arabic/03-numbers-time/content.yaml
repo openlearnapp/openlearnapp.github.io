@@ -1,0 +1,97 @@
+version: 1
+number: 3
+title: "Numbers and Time"
+description: "Arabic numbers from 1 to 20, days of the week, and telling time"
+sections:
+  - title: "Numbers 1-10"
+    explanation: |
+      **Arabic numerals** (the digits 0-9 we use in English) actually originated from the Arab world. However, Arabic-speaking countries use a different set of written numerals called Eastern Arabic numerals. Here we focus on the spoken words for numbers.
+    examples:
+      - q: "واحد / اثنان / ثلاثة"
+        a: "One / Two / Three"
+        rel:
+          - ["واحد", "One (1)", "the first number"]
+          - ["اثنان", "Two (2)", "the second number"]
+          - ["ثلاثة", "Three (3)", "the third number"]
+      - q: "أربعة / خمسة"
+        a: "Four / Five"
+        rel:
+          - ["أربعة", "Four (4)", "the fourth number"]
+          - ["خمسة", "Five (5)", "the fifth number"]
+      - q: "ستة / سبعة"
+        a: "Six / Seven"
+        rel:
+          - ["ستة", "Six (6)", "the sixth number"]
+          - ["سبعة", "Seven (7)", "the seventh number"]
+      - q: "ثمانية / تسعة"
+        a: "Eight / Nine"
+        rel:
+          - ["ثمانية", "Eight (8)", "the eighth number"]
+          - ["تسعة", "Nine (9)", "the ninth number"]
+      - q: "عشرة"
+        a: "Ten"
+        rel:
+          - ["عشرة", "Ten (10)", "the tenth number"]
+          - ["صفر", "Zero (0)", "the word for zero"]
+
+  - title: "Numbers 11-20"
+    explanation: |
+      **Numbers 11 through 20** in Arabic follow a pattern. Numbers 11 and 12 have unique forms, while 13-19 combine the unit with "عشر" (ten). Twenty has its own word.
+    examples:
+      - q: "أحد عشر / اثنا عشر"
+        a: "Eleven / Twelve"
+        rel:
+          - ["أحد عشر", "Eleven (11)", "literally one-ten"]
+          - ["اثنا عشر", "Twelve (12)", "literally two-ten"]
+      - q: "ثلاثة عشر / أربعة عشر"
+        a: "Thirteen / Fourteen"
+        rel:
+          - ["ثلاثة عشر", "Thirteen (13)", "literally three-ten"]
+          - ["أربعة عشر", "Fourteen (14)", "literally four-ten"]
+      - q: "خمسة عشر / ستة عشر"
+        a: "Fifteen / Sixteen"
+        rel:
+          - ["خمسة عشر", "Fifteen (15)", "literally five-ten"]
+          - ["ستة عشر", "Sixteen (16)", "literally six-ten"]
+      - q: "سبعة عشر / ثمانية عشر"
+        a: "Seventeen / Eighteen"
+        rel:
+          - ["سبعة عشر", "Seventeen (17)", "literally seven-ten"]
+          - ["ثمانية عشر", "Eighteen (18)", "literally eight-ten"]
+      - q: "تسعة عشر / عشرون"
+        a: "Nineteen / Twenty"
+        rel:
+          - ["تسعة عشر", "Nineteen (19)", "literally nine-ten"]
+          - ["عشرون", "Twenty (20)", "a distinct word, not a compound"]
+
+  - title: "Days and Time"
+    explanation: |
+      **Days of the week** in Arabic are partly based on numbers. Sunday is "the first," Monday is "the second," and so on. Friday and Saturday have unique names tied to Islamic and cultural traditions.
+    examples:
+      - q: "يوم الأحد / يوم الإثنين"
+        a: "Sunday / Monday"
+        rel:
+          - ["يوم الأحد", "Sunday", "literally the first day"]
+          - ["يوم الإثنين", "Monday", "literally the second day"]
+          - ["يوم الثلاثاء", "Tuesday", "literally the third day"]
+      - q: "يوم الأربعاء / يوم الخميس"
+        a: "Wednesday / Thursday"
+        rel:
+          - ["يوم الأربعاء", "Wednesday", "literally the fourth day"]
+          - ["يوم الخميس", "Thursday", "literally the fifth day"]
+      - q: "يوم الجمعة / يوم السبت"
+        a: "Friday / Saturday"
+        rel:
+          - ["يوم الجمعة", "Friday", "from الجمعة meaning gathering, the day of congregational prayer"]
+          - ["يوم السبت", "Saturday", "from the root meaning rest"]
+      - q: "كم الساعة؟"
+        a: "What time is it?"
+        rel:
+          - ["كم الساعة؟", "What time is it?", "the standard way to ask the time"]
+          - ["الساعة", "The hour / The clock", "used when telling time"]
+      - q: "اليوم / غداً / أمس"
+        a: "Today / Tomorrow / Yesterday"
+        rel:
+          - ["اليوم", "Today", "the current day"]
+          - ["غداً", "Tomorrow", "the next day"]
+          - ["أمس", "Yesterday", "the previous day"]

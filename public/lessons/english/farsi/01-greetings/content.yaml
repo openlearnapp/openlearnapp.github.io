@@ -1,0 +1,84 @@
+version: 1
+number: 1
+title: "Greetings and Politeness"
+description: "Essential greetings and polite expressions in Farsi"
+sections:
+  - title: "Basic Greetings"
+    explanation: |
+      **Farsi greetings** are an important part of Persian culture. Iranians place great value on politeness and warm greetings. The most common greeting is "سلام" (salaam), which can be used in almost any situation. More formal greetings often invoke well-being and health.
+    examples:
+      - q: "سلام"
+        a: "Hello"
+        rel:
+          - ["سلام", "Hello", "informal greeting, used anytime"]
+      - q: "سلام علیکم"
+        a: "Peace be upon you"
+        rel:
+          - ["سلام علیکم", "Peace be upon you", "formal greeting"]
+      - q: "حالتان چطور است؟"
+        a: "How are you? (formal)"
+        rel:
+          - ["حال", "condition/state", "noun"]
+          - ["چطور", "how", "question word"]
+      - q: "حالت چطوره؟"
+        a: "How are you? (informal)"
+        rel:
+          - ["حالت", "your condition", "informal"]
+          - ["چطوره", "how is", "informal contraction"]
+      - q: "خوبم، ممنون"
+        a: "I'm fine, thank you"
+        rel:
+          - ["خوب", "good/fine", "adjective"]
+          - ["ممنون", "thank you", "common thanks"]
+
+  - title: "Polite Expressions"
+    explanation: |
+      **Politeness in Farsi** goes beyond simple greetings. Persian culture is known for "تعارف" (ta'arof), a system of polite expressions and offers. Learning these phrases will help you navigate social interactions smoothly.
+    examples:
+      - q: "لطفاً"
+        a: "Please"
+        rel:
+          - ["لطفاً", "Please", "polite request"]
+      - q: "متشکرم"
+        a: "Thank you"
+        rel:
+          - ["متشکرم", "Thank you", "formal thanks"]
+      - q: "خواهش می‌کنم"
+        a: "You're welcome"
+        rel:
+          - ["خواهش", "request/plea", "noun"]
+          - ["می‌کنم", "I do", "verb"]
+      - q: "ببخشید"
+        a: "Excuse me / Sorry"
+        rel:
+          - ["ببخشید", "Excuse me", "used for apology or getting attention"]
+      - q: "از آشنایی با شما خوشبختم"
+        a: "Nice to meet you"
+        rel:
+          - ["آشنایی", "acquaintance", "noun"]
+          - ["خوشبخت", "fortunate/happy", "adjective"]
+
+  - title: "Goodbyes"
+    explanation: |
+      **Saying goodbye in Farsi** can range from casual to very formal. Iranians often use expressions that wish the other person well or invoke God's protection.
+    examples:
+      - q: "خداحافظ"
+        a: "Goodbye"
+        rel:
+          - ["خدا", "God", "noun"]
+          - ["حافظ", "protector", "noun"]
+      - q: "به امید دیدار"
+        a: "Hope to see you again"
+        rel:
+          - ["امید", "hope", "noun"]
+          - ["دیدار", "meeting/visit", "noun"]
+      - q: "شب بخیر"
+        a: "Good night"
+        rel:
+          - ["شب", "night", "noun"]
+          - ["بخیر", "well/good", "adjective"]
+      - q: "روز بخیر"
+        a: "Good day"
+        rel:
+          - ["روز", "day", "noun"]
+          - ["بخیر", "well/good", "adjective"]

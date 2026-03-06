@@ -2,6 +2,7 @@ import './style.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import i18n from './i18n'
 import { useSettings } from './composables/useSettings'
 import { useProgress } from './composables/useProgress'
 import { useAssessments } from './composables/useAssessments'
@@ -17,6 +18,7 @@ loadSentHistory()
 
 const app = createApp(App)
 app.use(router)
+app.use(i18n)
 app.mount('#app')
 
 // Gun auto-login (async, after mount so UI is ready).

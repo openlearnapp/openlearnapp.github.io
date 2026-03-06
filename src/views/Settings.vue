@@ -3,28 +3,28 @@
     <!-- Gun Account Section -->
     <Card>
       <CardHeader>
-        <CardTitle class="text-2xl">Account &amp; Sync</CardTitle>
+        <CardTitle class="text-2xl">{{ $t('settings.accountSync') }}</CardTitle>
       </CardHeader>
       <CardContent>
         <template v-if="!isLoggedIn">
           <p class="text-sm text-muted-foreground mb-4">
-            Sign in to sync your progress across devices in the same network. No server required.
+            {{ $t('settings.accountSyncDesc') }}
           </p>
           <div class="space-y-3">
             <div>
-              <Label class="text-sm font-medium mb-1 block">Username</Label>
-              <Input v-model="gunUsername" placeholder="Username" />
+              <Label class="text-sm font-medium mb-1 block">{{ $t('settings.username') }}</Label>
+              <Input v-model="gunUsername" :placeholder="$t('settings.username')" />
             </div>
             <div>
-              <Label class="text-sm font-medium mb-1 block">Password</Label>
-              <Input v-model="gunPassword" type="password" placeholder="Password" />
+              <Label class="text-sm font-medium mb-1 block">{{ $t('settings.password') }}</Label>
+              <Input v-model="gunPassword" type="password" :placeholder="$t('settings.password')" />
             </div>
             <div class="flex gap-3">
               <Button @click="handleLogin" :disabled="!gunUsername || !gunPassword || isAuthLoading">
-                {{ isAuthLoading ? 'Logging in...' : 'Login' }}
+                {{ isAuthLoading ? $t('settings.loggingIn') : $t('settings.login') }}
               </Button>
               <Button variant="secondary" @click="handleRegister" :disabled="!gunUsername || !gunPassword || isAuthLoading">
-                {{ isAuthLoading ? 'Registering...' : 'Register' }}
+                {{ isAuthLoading ? $t('settings.registering') : $t('settings.register') }}
               </Button>
             </div>
           </div>
@@ -32,11 +32,11 @@
 
         <template v-else>
           <p class="text-sm text-muted-foreground mb-4">
-            Signed in as <span class="font-semibold text-foreground">{{ gunUser }}</span>
-            <span v-if="isSyncing" class="ml-2 text-xs text-muted-foreground">(syncing...)</span>
+            {{ $t('settings.signedInAs') }} <span class="font-semibold text-foreground">{{ gunUser }}</span>
+            <span v-if="isSyncing" class="ml-2 text-xs text-muted-foreground">({{ $t('settings.syncing') }})</span>
           </p>
           <div class="flex gap-3">
-            <Button variant="secondary" @click="handleLogout">Logout</Button>
+            <Button variant="secondary" @click="handleLogout">{{ $t('settings.logout') }}</Button>
           </div>
         </template>
 
@@ -52,14 +52,13 @@
     <!-- Appearance Section -->
     <Card>
       <CardHeader>
-        <CardTitle class="text-2xl">🎨 Appearance</CardTitle>
+        <CardTitle class="text-2xl">🎨 {{ $t('settings.appearance') }}</CardTitle>
       </CardHeader>
       <CardContent>
-        <!-- Dark Mode Toggle -->
         <div class="flex items-center justify-between">
           <div>
-            <Label class="text-lg font-semibold">Dark Mode</Label>
-            <p class="text-sm text-muted-foreground">Dark color scheme for comfortable reading at night</p>
+            <Label class="text-lg font-semibold">{{ $t('settings.darkMode') }}</Label>
+            <p class="text-sm text-muted-foreground">{{ $t('settings.darkModeDesc') }}</p>
           </div>
           <Switch :checked="settings.darkMode" @update:checked="settings.darkMode = $event" />
         </div>
@@ -69,41 +68,37 @@
     <!-- Display Settings Section -->
     <Card>
       <CardHeader>
-        <CardTitle class="text-2xl">📖 Lesson Display</CardTitle>
+        <CardTitle class="text-2xl">📖 {{ $t('settings.lessonDisplay') }}</CardTitle>
       </CardHeader>
       <CardContent class="space-y-6">
-        <!-- Show Answers Toggle -->
         <div class="flex items-center justify-between">
           <div>
-            <Label class="text-lg font-semibold">Show Answers</Label>
-            <p class="text-sm text-muted-foreground">Show or hide answer translations in lessons</p>
+            <Label class="text-lg font-semibold">{{ $t('settings.showAnswers') }}</Label>
+            <p class="text-sm text-muted-foreground">{{ $t('settings.showAnswersDesc') }}</p>
           </div>
           <Switch :checked="settings.showAnswers" @update:checked="settings.showAnswers = $event" />
         </div>
 
-        <!-- Show Learning Items Toggle -->
         <div class="flex items-center justify-between">
           <div>
-            <Label class="text-lg font-semibold">Show Learning Items</Label>
-            <p class="text-sm text-muted-foreground">Show or hide vocabulary and related items</p>
+            <Label class="text-lg font-semibold">{{ $t('settings.showLearningItems') }}</Label>
+            <p class="text-sm text-muted-foreground">{{ $t('settings.showLearningItemsDesc') }}</p>
           </div>
           <Switch :checked="settings.showLearningItems" @update:checked="settings.showLearningItems = $event" />
         </div>
 
-        <!-- Show Labels Toggle -->
         <div class="flex items-center justify-between">
           <div>
-            <Label class="text-lg font-semibold">Show Labels</Label>
-            <p class="text-sm text-muted-foreground">Show or hide grammar labels (Futur, Gerundium, etc.)</p>
+            <Label class="text-lg font-semibold">{{ $t('settings.showLabels') }}</Label>
+            <p class="text-sm text-muted-foreground">{{ $t('settings.showLabelsDesc') }}</p>
           </div>
           <Switch :checked="settings.showLabels" @update:checked="settings.showLabels = $event" />
         </div>
 
-        <!-- Hide Learned Examples Toggle -->
         <div class="flex items-center justify-between">
           <div>
-            <Label class="text-lg font-semibold">Hide Learned Examples</Label>
-            <p class="text-sm text-muted-foreground">Automatically hide examples where all vocabulary items are learned</p>
+            <Label class="text-lg font-semibold">{{ $t('settings.hideLearnedExamples') }}</Label>
+            <p class="text-sm text-muted-foreground">{{ $t('settings.hideLearnedExamplesDesc') }}</p>
           </div>
           <Switch :checked="settings.hideLearnedExamples" @update:checked="settings.hideLearnedExamples = $event" />
         </div>
@@ -113,13 +108,12 @@
     <!-- Audio Settings Section -->
     <Card>
       <CardHeader>
-        <CardTitle class="text-2xl">🔊 Audio Settings</CardTitle>
+        <CardTitle class="text-2xl">🔊 {{ $t('settings.audioSettings') }}</CardTitle>
       </CardHeader>
       <CardContent class="space-y-6">
-        <!-- Audio Speed Selection -->
         <div>
-          <Label class="text-lg font-semibold">Audio Speed</Label>
-          <p class="text-sm text-muted-foreground mb-3">Playback speed for auto-reading audio</p>
+          <Label class="text-lg font-semibold">{{ $t('settings.audioSpeed') }}</Label>
+          <p class="text-sm text-muted-foreground mb-3">{{ $t('settings.audioSpeedDesc') }}</p>
           <div class="flex gap-3">
             <Button
               v-for="speed in [0.6, 0.8, 1.0]"
@@ -131,20 +125,18 @@
           </div>
         </div>
 
-        <!-- Read Answers Toggle -->
         <div class="flex items-center justify-between">
           <div>
-            <Label class="text-lg font-semibold">Read Answers</Label>
-            <p class="text-sm text-muted-foreground">Include answer translations when auto-reading lessons</p>
+            <Label class="text-lg font-semibold">{{ $t('settings.readAnswers') }}</Label>
+            <p class="text-sm text-muted-foreground">{{ $t('settings.readAnswersDesc') }}</p>
           </div>
           <Switch :checked="settings.readAnswers" @update:checked="settings.readAnswers = $event" />
         </div>
 
-        <!-- Debug Overlay Toggle -->
         <div class="flex items-center justify-between">
           <div>
-            <Label class="text-lg font-semibold">Show Debug Overlay</Label>
-            <p class="text-sm text-muted-foreground">Display playback information overlay (for troubleshooting)</p>
+            <Label class="text-lg font-semibold">{{ $t('settings.debugOverlay') }}</Label>
+            <p class="text-sm text-muted-foreground">{{ $t('settings.debugOverlayDesc') }}</p>
           </div>
           <Switch :checked="settings.showDebugOverlay" @update:checked="settings.showDebugOverlay = $event" />
         </div>
@@ -154,17 +146,16 @@
     <!-- Data Section -->
     <Card>
       <CardHeader>
-        <CardTitle class="text-2xl">Data</CardTitle>
+        <CardTitle class="text-2xl">{{ $t('settings.data') }}</CardTitle>
       </CardHeader>
       <CardContent>
         <div v-if="availableWorkshops.length === 0" class="text-sm text-muted-foreground mb-4">
-          No data yet. Start learning to track your progress.
+          {{ $t('settings.noDataYet') }}
         </div>
 
         <template v-else>
-          <!-- Workshop selector -->
           <div class="mb-4">
-            <Label class="text-lg font-semibold mb-2 block">Workshop</Label>
+            <Label class="text-lg font-semibold mb-2 block">{{ $t('settings.workshopLabel') }}</Label>
             <div class="flex gap-2 flex-wrap">
               <Button
                 v-for="ws in availableWorkshops"
@@ -183,11 +174,11 @@
 
           <div class="flex gap-3 flex-wrap">
             <Button @click="exportData">
-              Export
+              {{ $t('settings.export') }}
             </Button>
 
             <Button variant="secondary" @click="$refs.fileInput.click()">
-              Import
+              {{ $t('settings.import') }}
             </Button>
             <input
               ref="fileInput"
@@ -208,6 +199,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSettings } from '../composables/useSettings'
 import { useProgress } from '../composables/useProgress'
 import { useAssessments } from '../composables/useAssessments'
@@ -219,6 +211,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 
+const { t } = useI18n()
 const { settings } = useSettings()
 const { progress, getProgress, mergeProgress } = useProgress()
 const { assessments, getAssessments, mergeAssessments } = useAssessments()
@@ -228,7 +221,6 @@ const importMessage = ref('')
 const importMessageError = ref(false)
 const selectedWorkshop = ref('')
 
-// Gun auth state
 const gunUsername = ref('')
 const gunPassword = ref('')
 const syncMessage = ref('')
@@ -251,7 +243,7 @@ async function handleLogin() {
           Object.assign(settings, remote.settings)
         }
       }
-      syncMessage.value = 'Logged in and synced.'
+      syncMessage.value = t('settings.loginSuccess')
     }
   } finally {
     isAuthLoading.value = false
@@ -267,7 +259,7 @@ async function handleRegister() {
     if (ok) {
       gunUsername.value = ''
       gunPassword.value = ''
-      syncMessage.value = 'Registered and synced.'
+      syncMessage.value = t('settings.registerSuccess')
     }
   } finally {
     isAuthLoading.value = false
@@ -279,19 +271,16 @@ function handleLogout() {
   syncMessage.value = ''
 }
 
-// Collect all unique workshop keys (learning:workshop) from progress + assessments
 const availableWorkshops = computed(() => {
   const keys = new Set()
   for (const key of Object.keys(progress.value)) {
-    keys.add(key) // progress keys are "learning:workshop"
+    keys.add(key)
   }
   for (const key of Object.keys(assessments.value)) {
-    // assessment keys are "learning:workshop:lessonNumber"
     const parts = key.split(':')
     if (parts.length >= 2) keys.add(`${parts[0]}:${parts[1]}`)
   }
   const sorted = [...keys].sort()
-  // Auto-select first workshop if none selected
   if (sorted.length > 0 && !sorted.includes(selectedWorkshop.value)) {
     selectedWorkshop.value = sorted[0]
   }
@@ -301,7 +290,6 @@ const availableWorkshops = computed(() => {
   })
 })
 
-// Filter progress/assessments for the selected workshop
 function getWorkshopProgress() {
   const all = getProgress()
   return all[selectedWorkshop.value] ? { [selectedWorkshop.value]: all[selectedWorkshop.value] } : {}
@@ -357,16 +345,16 @@ function importData(event) {
     try {
       const data = JSON.parse(e.target.result)
       if (!data.version || (!data.progress && !data.assessments)) {
-        importMessage.value = 'Invalid file format.'
+        importMessage.value = t('settings.invalidFile')
         importMessageError.value = true
         return
       }
       if (data.progress) mergeProgress(data.progress)
       if (data.assessments) mergeAssessments(data.assessments)
-      importMessage.value = 'Data imported successfully.'
+      importMessage.value = t('settings.importSuccess')
       importMessageError.value = false
     } catch {
-      importMessage.value = 'Could not read file.'
+      importMessage.value = t('settings.readError')
       importMessageError.value = true
     }
   }

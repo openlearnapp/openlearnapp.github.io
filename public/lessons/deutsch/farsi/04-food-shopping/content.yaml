@@ -1,0 +1,85 @@
+version: 1
+number: 4
+title: "Essen und Einkaufen"
+description: "Lebensmittel, Restaurantbestellungen und Einkaufsphrasen auf Farsi"
+sections:
+  - title: "Lebensmittel"
+    explanation: |
+      **Persische Küche** ist weltberühmt. Hier lernen Sie die wichtigsten
+      Wörter für Lebensmittel und Getränke auf Farsi.
+    examples:
+      - q: "نان"
+        a: "Brot"
+        rel:
+          - ["نان", "Brot", "Substantiv"]
+      - q: "برنج"
+        a: "Reis"
+        rel:
+          - ["برنج", "Reis", "Substantiv"]
+      - q: "گوشت"
+        a: "Fleisch"
+        rel:
+          - ["گوشت", "Fleisch", "Substantiv"]
+      - q: "مرغ"
+        a: "Hähnchen"
+        rel:
+          - ["مرغ", "Hähnchen / Huhn", "Substantiv"]
+      - q: "آب"
+        a: "Wasser"
+        rel:
+          - ["آب", "Wasser", "Substantiv"]
+      - q: "چای"
+        a: "Tee"
+        rel:
+          - ["چای", "Tee", "Substantiv"]
+  - title: "Im Restaurant"
+    explanation: |
+      **Im Restaurant bestellen** – Diese Sätze helfen Ihnen, in einem
+      persischen Restaurant zu bestellen und sich zurechtzufinden.
+    examples:
+      - q: "منو را لطفاً"
+        a: "Die Speisekarte, bitte"
+        rel:
+          - ["منو", "Speisekarte", "Substantiv"]
+          - ["لطفاً", "bitte", "Höflichkeitsform"]
+      - q: "من این را می‌خواهم"
+        a: "Ich möchte das"
+        rel:
+          - ["من", "ich", "Pronomen"]
+          - ["می‌خواهم", "ich möchte / will", "Verb"]
+      - q: "صورتحساب لطفاً"
+        a: "Die Rechnung, bitte"
+        rel:
+          - ["صورتحساب", "Rechnung", "Substantiv"]
+          - ["لطفاً", "bitte", "Höflichkeitsform"]
+      - q: "خیلی خوشمزه بود"
+        a: "Es war sehr lecker"
+        rel:
+          - ["خیلی", "sehr", "Adverb"]
+          - ["خوشمزه", "lecker", "Adjektiv"]
+          - ["بود", "war", "Verb sein, Vergangenheit"]
+  - title: "Einkaufen"
+    explanation: |
+      **Einkaufen auf dem Basar** gehört zum persischen Alltag.
+      Handeln ist üblich und wird erwartet. Diese Ausdrücke helfen Ihnen beim Einkaufen.
+    examples:
+      - q: "این چند است؟"
+        a: "Wie viel kostet das?"
+        rel:
+          - ["این", "das / dies", "Demonstrativpronomen"]
+          - ["چند", "wie viel", "Fragewort"]
+      - q: "خیلی گران است"
+        a: "Das ist sehr teuer"
+        rel:
+          - ["خیلی", "sehr", "Adverb"]
+          - ["گران", "teuer", "Adjektiv"]
+      - q: "ارزان‌تر نمی‌شود؟"
+        a: "Geht es nicht billiger?"
+        rel:
+          - ["ارزان‌تر", "billiger", "Komparativ"]
+          - ["نمی‌شود", "es geht nicht / wird nicht", "Verb"]
+      - q: "این را می‌خرم"
+        a: "Ich kaufe das"
+        rel:
+          - ["می‌خرم", "ich kaufe", "Verb"]
+          - ["این", "das / dies", "Demonstrativpronomen"]

@@ -1,0 +1,10 @@
+# Available workshops for Farsi interface
+workshops:
+  - folder: deutsch
+    code: de-DE
+    title: "آموزش آلمانی"
+    description: "۵ درس برای یادگیری مهم‌ترین کلمات و عبارات آلمانی."
+  - folder: english
+    code: en-US
+    title: "آموزش انگلیسی"
+    description: "۵ درس برای یادگیری مهم‌ترین کلمات و عبارات انگلیسی."

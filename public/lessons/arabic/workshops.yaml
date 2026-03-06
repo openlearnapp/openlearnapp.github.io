@@ -1,0 +1,10 @@
+# Available workshops for Arabic interface
+workshops:
+  - folder: deutsch
+    code: de-DE
+    title: "تعلم الألمانية"
+    description: "5 دروس لتعلم أهم الكلمات والعبارات الألمانية."
+  - folder: english
+    code: en-US
+    title: "تعلم الإنجليزية"
+    description: "5 دروس لتعلم أهم الكلمات والعبارات الإنجليزية."

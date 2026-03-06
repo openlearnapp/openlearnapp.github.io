@@ -1,7 +1,6 @@
 <template>
   <div>
     <div v-if="lesson">
-      <!-- Lesson title and description -->
       <h2 class="text-3xl font-bold text-foreground mb-3">
         {{ lesson.title }}
       </h2>
@@ -20,9 +19,7 @@
           </CardTitle>
         </CardHeader>
         <CardContent class="p-0">
-          <!-- Video -->
           <div v-if="section.video" class="mb-4">
-            <!-- YouTube embed -->
             <iframe
               v-if="isYouTubeUrl(section.video)"
               :src="normalizeVideoUrl(section.video)"
@@ -31,7 +28,6 @@
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen>
             </iframe>
-            <!-- Local video file -->
             <video
               v-else
               :src="resolveVideoPath(section.video)"
@@ -41,14 +37,12 @@
             </video>
           </div>
 
-          <!-- Explanation -->
           <div
             v-if="section.explanation"
             class="bg-muted p-4 rounded mb-4 prose prose-sm dark:prose-invert max-w-none"
             v-html="DOMPurify.sanitize(marked(section.explanation))">
           </div>
 
-          <!-- Examples -->
           <div
             v-for="(example, exIdx) in section.examples"
             :key="exIdx"
@@ -69,12 +63,10 @@
                   ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
                   : 'bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500'
             ]">
-            <!-- Question -->
             <div class="text-lg font-semibold text-foreground mb-2">
               <span v-if="isAssessmentCorrect(example)" class="text-green-600 dark:text-green-400 mr-1">✓</span>{{ example.q }}
             </div>
 
-            <!-- Type: qa (default) -->
             <template v-if="!example.type || example.type === 'qa'">
               <div
                 v-show="settings.showAnswers"
@@ -83,7 +75,6 @@
               </div>
             </template>
 
-            <!-- Type: input -->
             <template v-else-if="example.type === 'input'">
               <div class="mt-2" @click.stop>
                 <Input
@@ -93,14 +84,13 @@
                   @keyup.enter="submitAnswer(example)"
                   @blur="onInputBlur(example)"
                   class="w-full"
-                  placeholder="Type your answer..." />
+                  :placeholder="$t('lesson.typeAnswer')" />
               </div>
               <div v-if="getSubmission(example) && getSubmission(example).correct === false" class="mt-2 text-sm font-semibold text-red-600 dark:text-red-400">
                 {{ displayAnswer(example.a) }}
               </div>
             </template>
 
-            <!-- Type: multiple-choice -->
             <template v-else-if="example.type === 'multiple-choice'">
               <div class="mt-2 space-y-2" @click.stop>
                 <label
@@ -122,7 +112,6 @@
               </div>
             </template>
 
-            <!-- Type: select -->
             <template v-else-if="example.type === 'select'">
               <div class="mt-2 space-y-2" @click.stop>
                 <RadioGroup
@@ -146,7 +135,6 @@
               </div>
             </template>
 
-            <!-- Related items -->
             <div v-if="settings.showLearningItems && example.rel && example.rel.length > 0" class="flex flex-wrap gap-2 mb-3">
               <Badge
                 v-for="(item, relIdx) in example.rel"
@@ -169,7 +157,6 @@
               </Badge>
             </div>
 
-            <!-- Labels -->
             <div v-if="settings.showLabels && example.labels" class="flex gap-1">
               <Badge
                 v-for="label in example.labels"
@@ -186,11 +173,11 @@
     <!-- Loading state -->
     <div v-else class="text-center py-8">
       <div class="text-2xl font-bold text-primary mb-4">
-        Loading lesson...
+        {{ $t('lesson.loadingLesson') }}
       </div>
     </div>
 
-    <!-- Debug overlay (for iOS debugging) -->
+    <!-- Debug overlay -->
     <div v-if="lesson && settings.showDebugOverlay" class="fixed top-24 left-2 bg-black bg-opacity-75 text-white text-xs p-2 rounded z-40 font-mono max-w-xs">
       <div>Playing: {{ isPlaying ? 'YES' : 'NO' }}</div>
       <div>Paused: {{ isPaused ? 'YES' : 'NO' }}</div>
@@ -204,8 +191,8 @@
       size="icon"
       @click="togglePlayPause"
       class="md:hidden fixed bottom-6 right-6 w-16 h-16 rounded-full shadow-lg text-3xl z-50"
-      :title="isPlaying ? 'Pause' : 'Play'"
-      :aria-label="isPlaying ? 'Pause audio' : 'Play audio'">
+      :title="isPlaying ? $t('nav.pause') : $t('nav.play')"
+      :aria-label="isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio')">
       {{ isPlaying ? '⏸' : '▶️' }}
     </Button>
   </div>
@@ -214,6 +201,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useLessons } from '../composables/useLessons'
 import { useSettings } from '../composables/useSettings'
 import { useProgress } from '../composables/useProgress'
@@ -232,6 +220,7 @@ import { Label } from '@/components/ui/label'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const emit = defineEmits(['update-title'])
 
 const { loadAllLessonsForWorkshop } = useLessons()
@@ -243,34 +232,24 @@ const { setLessonFooter, clearLessonFooter } = useFooter()
 
 const lesson = ref(null)
 const allLessons = ref([])
-
-// Draft state for in-progress assessment answers (not persisted until submit)
 const drafts = reactive({})
-
-// Live validation state for multiple-choice (reactive per-example)
 const mcLive = reactive({})
 
-// Check if a URL is a YouTube link
 function isYouTubeUrl(url) {
   return /(?:youtube\.com|youtu\.be)/.test(url)
 }
 
-// Convert YouTube watch/short URLs to embed URLs
 function normalizeVideoUrl(url) {
   const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/)
   if (match) return `https://www.youtube.com/embed/${match[1]}`
-  // Already an embed URL
   if (url.includes('youtube.com/embed/')) return url
   return url
 }
 
-// Resolve local video path relative to the lesson's content folder
 function resolveVideoPath(videoPath) {
-  // Already absolute or full URL
   if (videoPath.startsWith('http://') || videoPath.startsWith('https://') || videoPath.startsWith('/')) {
     return videoPath
   }
-  // Relative path — resolve based on lesson source
   const baseUrl = import.meta.env.BASE_URL
   if (lesson.value?._source?.type === 'url') {
     return `${lesson.value._source.path}/${videoPath}`
@@ -279,12 +258,10 @@ function resolveVideoPath(videoPath) {
   return `${baseUrl}lessons/${learning.value}/${workshop.value}/${filename}/${videoPath}`
 }
 
-// Check if example is an assessment type (not plain qa)
 function isAssessmentType(example) {
   return example.type && example.type !== 'qa'
 }
 
-// Check if an assessment example is answered correctly
 function isAssessmentCorrect(example) {
   if (!isAssessmentType(example)) return false
   const sub = getSubmission(example)
@@ -294,13 +271,10 @@ function isAssessmentCorrect(example) {
   return sub?.correct === true
 }
 
-// Display answer - handles both string and array formats
 function displayAnswer(a) {
   if (Array.isArray(a)) return a[0]
   return a
 }
-
-// --- Draft management ---
 
 function draftKey(example) {
   return `${example._originalSectionIdx}-${example._originalExampleIdx}`
@@ -367,13 +341,6 @@ function onInputBlur(example) {
   submitAnswer(example)
 }
 
-function hasDraftOptions(example) {
-  const selected = drafts[draftKey(example)]
-  return Array.isArray(selected) && selected.length > 0
-}
-
-// --- Submission ---
-
 function getSubmission(example) {
   return getAnswer(
     learning.value, workshop.value, lessonNumber.value,
@@ -407,8 +374,6 @@ function submitAnswer(example) {
   )
 }
 
-// --- Restore drafts from saved answers on mount ---
-
 function restoreDraftsFromSaved() {
   if (!lesson.value) return
   lesson.value.sections.forEach((section, sIdx) => {
@@ -425,7 +390,6 @@ const learning = computed(() => route.params.learning)
 const workshop = computed(() => route.params.workshop)
 const lessonNumber = computed(() => parseInt(route.params.number))
 
-// Find the next lesson number (if exists)
 const nextLessonNumber = computed(() => {
   if (!lesson.value || allLessons.value.length === 0) return null
   const sorted = [...allLessons.value].sort((a, b) => a.number - b.number)
@@ -436,7 +400,6 @@ const nextLessonNumber = computed(() => {
   return null
 })
 
-// Filter sections to show only examples that have unlearned items (if setting is enabled)
 const filteredSections = computed(() => {
   if (!lesson.value || !lesson.value.sections) {
     return []
@@ -467,12 +430,10 @@ const filteredSections = computed(() => {
   }).filter(section => section.examples.length > 0)
 })
 
-// Handle item click to toggle learned status
 function handleItemClick(itemId) {
   toggleItemLearned(learning.value, workshop.value, itemId)
 }
 
-// Handle example click for audio playback (only for non-assessment types)
 function handleExampleClick(example) {
   if (isAssessmentType(example)) return
 
@@ -486,14 +447,12 @@ function handleExampleClick(example) {
   }
 }
 
-// Check if an example is currently being read
 function isCurrentlyReading(example) {
   if (!currentItem.value) return false
   return currentItem.value.sectionIdx === example._originalSectionIdx &&
          currentItem.value.exampleIdx === example._originalExampleIdx
 }
 
-// Toggle play/pause
 function togglePlayPause() {
   if (isPlaying.value) {
     pause()
@@ -502,15 +461,11 @@ function togglePlayPause() {
   }
 }
 
-// Auto-scroll to currently reading item
 watch(currentItem, async (newItem) => {
   if (!newItem) return
-
   await nextTick()
-
   const elementId = `example-${newItem.sectionIdx}-${newItem.exampleIdx}`
   const element = document.getElementById(elementId)
-
   if (element) {
     element.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
@@ -523,24 +478,20 @@ watch(nextLessonNumber, (val) => {
   }
 })
 
-// Rebuild audio queue when hideLearnedExamples or readAnswers setting changes
 watch(
   () => [settings.value.hideLearnedExamples, settings.value.readAnswers],
   async () => {
     if (lesson.value) {
-      console.log('🔄 Settings changed, rebuilding audio queue')
       await initializeAudio(lesson.value, learning.value, workshop.value, settings.value)
     }
   },
   { deep: true }
 )
 
-// Rebuild audio queue when progress changes (items marked as learned/unlearned)
 watch(
   progress,
   async () => {
     if (lesson.value && settings.value.hideLearnedExamples) {
-      console.log('🔄 Progress changed, rebuilding audio queue')
       await initializeAudio(lesson.value, learning.value, workshop.value, settings.value)
     }
   },
@@ -552,23 +503,18 @@ onMounted(async () => {
   const currentWorkshop = route.params.workshop
   const currentLessonNumber = parseInt(route.params.number)
 
-  // Load all lessons to find the correct file and determine next lesson
   const lessons = await loadAllLessonsForWorkshop(currentLearning, currentWorkshop)
   allLessons.value = lessons
 
-  // Find the lesson with the matching number
   lesson.value = lessons.find(l => l.number === currentLessonNumber)
 
   if (lesson.value) {
-    emit('update-title', `Lesson ${lesson.value.number}`)
+    emit('update-title', `${t('results.lessonLabel')} ${lesson.value.number}`)
 
     // Set footer navigation data
     setLessonFooter(currentLearning, currentWorkshop, nextLessonNumber.value)
 
-    // Initialize audio for this lesson (load voices once)
     await initializeAudio(lesson.value, currentLearning, currentWorkshop, settings.value)
-
-    // Restore drafts from previously saved assessment answers
     restoreDraftsFromSaved()
   }
 })

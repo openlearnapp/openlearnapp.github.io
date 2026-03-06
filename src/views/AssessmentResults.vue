@@ -7,7 +7,7 @@
           :variant="selectedLesson === null ? 'default' : 'outline'"
           size="sm"
           @click="selectedLesson = null">
-          All Lessons
+          {{ $t('results.allLessons') }}
         </Button>
         <Button
           v-for="lesson in lessons"
@@ -22,13 +22,13 @@
       <!-- Summary header -->
       <Card class="p-5 mb-6">
         <div class="text-lg font-semibold text-foreground mb-2">
-          {{ totalAnswered }} of {{ totalAssessments }} assessments answered
+          {{ totalAnswered }} {{ $t('results.of') }} {{ totalAssessments }} {{ $t('results.assessmentsAnswered') }}
         </div>
         <div class="text-sm text-muted-foreground">
-          {{ totalCorrect }} correct, {{ totalWrong }} incorrect, {{ totalUnanswered }} missing
+          {{ totalCorrect }} {{ $t('results.correct') }}, {{ totalWrong }} {{ $t('results.incorrect') }}, {{ totalUnanswered }} {{ $t('results.missing') }}
         </div>
         <div class="text-sm text-muted-foreground mt-1">
-          {{ totalLearnedItems }} learning items marked as learned
+          {{ totalLearnedItems }} {{ $t('results.learningItemsLearned') }}
         </div>
       </Card>
 
@@ -39,7 +39,7 @@
             <router-link
               :to="{ name: 'lesson-detail', params: { learning, workshop, number: entry.lesson.number } }"
               class="text-xl font-semibold text-primary hover:underline">
-              Lesson {{ entry.lesson.number }}: {{ entry.lesson.title }}
+              {{ $t('results.lessonLabel') }} {{ entry.lesson.number }}: {{ entry.lesson.title }}
             </router-link>
 
             <!-- Sent status badge -->
@@ -51,17 +51,17 @@
         <CardContent class="p-0">
           <!-- Last sent info -->
           <div v-if="entry.lastSent" class="text-xs text-muted-foreground mb-2">
-            Last sent: {{ formatDate(entry.lastSent.timestamp) }} via {{ entry.lastSent.channel }}
+            {{ $t('results.lastSent') }}: {{ formatDate(entry.lastSent.timestamp) }} {{ $t('results.via') }} {{ entry.lastSent.channel }}
           </div>
 
           <!-- Learning items stats -->
           <div v-if="entry.totalItems > 0" class="text-sm text-muted-foreground mb-3">
-            {{ entry.learnedItems }}/{{ entry.totalItems }} learning items learned
+            {{ entry.learnedItems }}/{{ entry.totalItems }} {{ $t('results.itemsLearned') }}
           </div>
 
           <!-- Unlearned learning items (max 10) -->
           <div v-if="entry.unlearnedItems.length > 0" class="mb-3">
-            <div class="text-sm font-medium text-muted-foreground mb-1">Unlearned items:</div>
+            <div class="text-sm font-medium text-muted-foreground mb-1">{{ $t('results.unlearnedItems') }}:</div>
             <div class="flex flex-wrap gap-1.5">
               <Badge
                 v-for="item in entry.unlearnedItems.slice(0, 10)"
@@ -72,7 +72,7 @@
                 {{ item.term }}
               </Badge>
               <span v-if="entry.unlearnedItems.length > 10" class="text-xs text-muted-foreground self-center">
-                +{{ entry.unlearnedItems.length - 10 }} more
+                +{{ entry.unlearnedItems.length - 10 }} {{ $t('results.moreItems') }}
               </span>
             </div>
           </div>
@@ -89,19 +89,19 @@
                 <span class="text-foreground ml-1">{{ ex.question }}</span>
                 <span class="text-muted-foreground mx-1">&rarr;</span>
                 <span class="text-foreground/80 italic">{{ ex.displayAnswer }}</span>
-                <span v-if="ex.correct === false && ex.expected" class="text-red-500 dark:text-red-400 ml-1">(expected: {{ ex.expected }})</span>
+                <span v-if="ex.correct === false && ex.expected" class="text-red-500 dark:text-red-400 ml-1">({{ $t('results.expected') }}: {{ ex.expected }})</span>
               </template>
               <template v-else>
                 <span class="text-muted-foreground font-mono">[  ]</span>
                 <span class="text-muted-foreground ml-1">{{ ex.question }}</span>
-                <span class="text-muted-foreground ml-1">(not answered)</span>
+                <span class="text-muted-foreground ml-1">({{ $t('results.notAnswered') }})</span>
               </template>
             </div>
           </div>
 
           <!-- No assessments in this lesson -->
           <div v-if="entry.assessmentCount === 0" class="text-sm text-muted-foreground italic">
-            No assessments in this lesson
+            {{ $t('results.noAssessments') }}
           </div>
         </CardContent>
       </Card>
@@ -109,11 +109,11 @@
       <!-- Send to coach button -->
       <Card v-if="coachEmail" class="p-5 mb-5">
         <div class="text-sm text-muted-foreground mb-3">
-          Send your results to <strong class="text-foreground">{{ coachName || coachEmail }}</strong> via email.
+          {{ $t('results.sendResultsTo') }} <strong class="text-foreground">{{ coachName || coachEmail }}</strong> {{ $t('results.viaEmail') }}
         </div>
         <a :href="mailtoLink" @click="onSendEmail">
           <Button class="bg-green-600 hover:bg-green-700 text-white">
-            Send Results via Email
+            {{ $t('results.sendViaEmail') }}
           </Button>
         </a>
       </Card>
@@ -122,14 +122,14 @@
     <!-- Loading state -->
     <div v-else-if="isLoading" class="text-center py-8">
       <div class="text-2xl font-bold text-primary mb-4">
-        Loading results...
+        {{ $t('results.loadingResults') }}
       </div>
     </div>
 
     <!-- Empty state -->
     <div v-else class="text-center py-8">
       <div class="text-xl text-muted-foreground">
-        No lessons found
+        {{ $t('results.noLessonsFound') }}
       </div>
     </div>
   </div>
@@ -138,6 +138,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useLessons } from '../composables/useLessons'
 import { useAssessments } from '../composables/useAssessments'
 import { useProgress } from '../composables/useProgress'
@@ -147,6 +148,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 const route = useRoute()
+const { t } = useI18n()
 const emit = defineEmits(['update-title'])
 
 const { loadAllLessonsForWorkshop, getWorkshopMeta } = useLessons()
@@ -248,14 +250,14 @@ const allEntries = computed(() => {
     const currentHash = getLessonHash(lessonKey, workshopProgress)
     const lastSent = getLastSent(lessonKey)
     let sentStatus = 'never-sent'
-    let sentStatusLabel = 'Never sent'
+    let sentStatusLabel = t('results.neverSent')
     if (lastSent) {
       if (lastSent.hash === currentHash) {
         sentStatus = 'up-to-date'
-        sentStatusLabel = 'Up to date'
+        sentStatusLabel = t('results.upToDate')
       } else {
         sentStatus = 'changed'
-        sentStatusLabel = 'Changed'
+        sentStatusLabel = t('results.changed')
       }
     }
 
@@ -305,23 +307,23 @@ function generateReport() {
   const workshopName = formatLangName(workshop.value)
   const date = new Date().toISOString().slice(0, 10)
 
-  lines.push(`Open Learn - Assessment Results`)
+  lines.push(`Open Learn - ${t('results.title')}`)
   lines.push(`Workshop: ${workshopName}`)
   lines.push(`Date: ${date}`)
   lines.push('')
 
   for (const entry of filteredEntries.value) {
-    lines.push(`Lesson ${entry.lesson.number}: ${entry.lesson.title}`)
+    lines.push(`${t('results.lessonLabel')} ${entry.lesson.number}: ${entry.lesson.title}`)
     if (entry.totalItems > 0) {
-      lines.push(`  Learned items: ${entry.learnedItems}/${entry.totalItems}`)
+      lines.push(`  ${t('results.itemsLearned')}: ${entry.learnedItems}/${entry.totalItems}`)
     }
 
     if (entry.assessmentCount === 0) {
-      lines.push('  No assessments')
+      lines.push(`  ${t('results.noAssessments')}`)
     } else {
       const answered = entry.sections.reduce((s, sec) => s + sec.examples.filter(ex => ex.answered).length, 0)
       const correct = entry.sections.reduce((s, sec) => s + sec.examples.filter(ex => ex.correct === true).length, 0)
-      lines.push(`  Assessments: ${answered}/${entry.assessmentCount} answered, ${correct} correct`)
+      lines.push(`  ${t('results.assessmentsAnswered')}: ${answered}/${entry.assessmentCount}, ${correct} ${t('results.correct')}`)
     }
 
     for (const section of entry.sections) {
@@ -331,10 +333,10 @@ function generateReport() {
         if (ex.answered) {
           const mark = ex.correct === true ? 'ok' : ex.correct === false ? '!!' : '--'
           let line = `    [${mark}] ${ex.question} -> ${ex.displayAnswer}`
-          if (ex.expected) line += ` (expected: ${ex.expected})`
+          if (ex.expected) line += ` (${t('results.expected')}: ${ex.expected})`
           lines.push(line)
         } else {
-          lines.push(`    [  ] ${ex.question} -> (not answered)`)
+          lines.push(`    [  ] ${ex.question} -> (${t('results.notAnswered')})`)
         }
         lines.push('')
       }
@@ -349,7 +351,7 @@ function generateReport() {
 const mailtoLink = computed(() => {
   if (!coachEmail.value) return '#'
   const workshopName = formatLangName(workshop.value)
-  const subject = `Assessment Results - ${workshopName}`
+  const subject = `${t('results.title')} - ${workshopName}`
   const body = generateReport()
   return `mailto:${encodeURIComponent(coachEmail.value)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 })
@@ -392,7 +394,7 @@ async function loadData() {
   isLoading.value = true
   lessons.value = await loadAllLessonsForWorkshop(learning.value, workshop.value)
   isLoading.value = false
-  emit('update-title', 'Results')
+  emit('update-title', t('results.title'))
 }
 
 watch([learning, workshop], () => {
