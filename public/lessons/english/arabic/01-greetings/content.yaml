@@ -1,0 +1,79 @@
+version: 1
+number: 1
+title: "Greetings and Politeness"
+description: "Essential Arabic greetings and polite expressions"
+sections:
+  - title: "Greetings"
+    explanation: |
+      **Arabic greetings** are an important part of Arab culture. The most universal greeting is "السلام عليكم" (as-salamu alaykum), meaning "peace be upon you." It is used in both formal and informal settings across the Arab world.
+    examples:
+      - q: "السلام عليكم"
+        a: "Peace be upon you (Hello)"
+        rel:
+          - ["السلام عليكم", "Peace be upon you", "the most common Arabic greeting"]
+      - q: "وعليكم السلام"
+        a: "And upon you peace (reply to hello)"
+        rel:
+          - ["وعليكم السلام", "And upon you peace", "the standard reply to السلام عليكم"]
+      - q: "صباح الخير"
+        a: "Good morning"
+        rel:
+          - ["صباح الخير", "Good morning", "used in the morning hours"]
+          - ["صباح النور", "Morning of light", "the common reply to صباح الخير"]
+      - q: "مساء الخير"
+        a: "Good evening"
+        rel:
+          - ["مساء الخير", "Good evening", "used from afternoon onward"]
+          - ["مساء النور", "Evening of light", "the common reply to مساء الخير"]
+      - q: "مع السلامة"
+        a: "Goodbye (go with safety)"
+        rel:
+          - ["مع السلامة", "Goodbye", "literally means with safety"]
+
+  - title: "Polite Expressions"
+    explanation: |
+      **Polite expressions** in Arabic reflect the culture's emphasis on courtesy and respect. Many common phrases invoke God (Allah), which is a natural part of everyday Arabic speech regardless of religious context.
+    examples:
+      - q: "شكراً"
+        a: "Thank you"
+        rel:
+          - ["شكراً", "Thank you", "the most common way to say thanks"]
+          - ["عفواً", "You're welcome", "the standard reply to شكراً"]
+      - q: "من فضلك"
+        a: "Please"
+        rel:
+          - ["من فضلك", "Please", "literally means from your grace"]
+      - q: "عفواً"
+        a: "You're welcome / Excuse me"
+        rel:
+          - ["عفواً", "You're welcome / Excuse me", "used both as a reply to thanks and to get attention"]
+      - q: "كيف حالك؟"
+        a: "How are you?"
+        rel:
+          - ["كيف حالك؟", "How are you?", "a common greeting question"]
+          - ["بخير، شكراً", "Fine, thank you", "a standard reply"]
+      - q: "إن شاء الله"
+        a: "God willing (hopefully)"
+        rel:
+          - ["إن شاء الله", "God willing", "used when talking about future plans or hopes"]
+
+  - title: "Introductions"
+    explanation: |
+      **Introducing yourself** in Arabic follows a simple pattern. Learning these phrases will help you start conversations and make connections with Arabic speakers.
+    examples:
+      - q: "ما اسمك؟"
+        a: "What is your name?"
+        rel:
+          - ["ما اسمك؟", "What is your name?", "a direct way to ask someone's name"]
+      - q: "اسمي ..."
+        a: "My name is ..."
+        rel:
+          - ["اسمي", "My name is", "used to introduce yourself"]
+      - q: "تشرفنا"
+        a: "Pleased to meet you"
+        rel:
+          - ["تشرفنا", "Pleased to meet you", "literally means we are honored"]
+      - q: "أنا من ..."
+        a: "I am from ..."
+        rel:
+          - ["أنا من", "I am from", "used to say where you are from"]

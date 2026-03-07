@@ -1,39 +1,34 @@
 <template>
   <div v-if="allItems.length > 0">
-    <!-- Controls -->
     <Card class="p-4 mb-5">
       <div class="flex flex-wrap gap-4 items-center">
-        <!-- Lesson Filter -->
         <Select :model-value="String(selectedLesson)" @update:model-value="selectedLesson = $event === 'all' ? 'all' : parseInt($event)">
           <SelectTrigger class="w-auto min-w-[200px]">
-            <SelectValue placeholder="All Lessons" />
+            <SelectValue :placeholder="$t('items.allLessons')" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Lessons</SelectItem>
+            <SelectItem value="all">{{ $t('items.allLessons') }}</SelectItem>
             <SelectItem v-for="lesson in availableLessons" :key="lesson.number" :value="String(lesson.number)">
-              Lesson {{ lesson.number }}: {{ lesson.title }}
+              {{ $t('items.lessonLabel') }} {{ lesson.number }}: {{ lesson.title }}
             </SelectItem>
           </SelectContent>
         </Select>
 
-        <!-- Group by toggles -->
         <div class="flex items-center gap-4">
           <label class="flex items-center gap-2 cursor-pointer">
             <Checkbox :checked="groupByLearnStatus" @update:checked="groupByLearnStatus = $event" />
-            <Label>Group by Status</Label>
+            <Label>{{ $t('items.groupByStatus') }}</Label>
           </label>
 
           <label v-if="showGroupByLessonOption" class="flex items-center gap-2 cursor-pointer">
             <Checkbox :checked="groupByLesson" @update:checked="groupByLesson = $event" />
-            <Label>Group by Lesson</Label>
+            <Label>{{ $t('items.groupByLesson') }}</Label>
           </label>
         </div>
       </div>
     </Card>
 
-    <!-- Items Display -->
     <div v-if="!groupByLesson && !groupByLearnStatus">
-      <!-- Flat list -->
       <div class="grid grid-cols-2 md:flex md:flex-wrap gap-2">
         <Badge
           v-for="item in filteredItems"
@@ -55,10 +50,9 @@
     </div>
 
     <div v-else-if="groupByLearnStatus && !groupByLesson">
-      <!-- Group by learned/unlearned -->
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-foreground mb-3">
-          Unlearned ({{ unlearnedItems.length }})
+          {{ $t('items.unlearned') }} ({{ unlearnedItems.length }})
         </h2>
         <div class="grid grid-cols-2 md:flex md:flex-wrap gap-2">
           <Badge
@@ -76,7 +70,7 @@
 
       <div>
         <h2 class="text-2xl font-bold text-foreground mb-3">
-          Learned ({{ learnedItems.length }})
+          {{ $t('items.learned') }} ({{ learnedItems.length }})
         </h2>
         <div class="grid grid-cols-2 md:flex md:flex-wrap gap-2">
           <Badge
@@ -95,17 +89,15 @@
     </div>
 
     <div v-else-if="groupByLesson">
-      <!-- Group by lesson (and optionally by learn status) -->
       <div v-for="lesson in lessonsWithItems" :key="lesson.number" class="mb-6">
         <h2 class="text-2xl font-bold text-primary mb-3">
-          Lesson {{ lesson.number }}: {{ lesson.title }}
+          {{ $t('items.lessonLabel') }} {{ lesson.number }}: {{ lesson.title }}
         </h2>
 
         <div v-if="groupByLearnStatus">
-          <!-- Group by both lesson and status -->
           <div class="mb-4">
             <h3 class="text-lg font-semibold text-foreground mb-2">
-              Unlearned ({{ lesson.unlearnedItems.length }})
+              {{ $t('items.unlearned') }} ({{ lesson.unlearnedItems.length }})
             </h3>
             <div class="grid grid-cols-2 md:flex md:flex-wrap gap-2">
               <Badge
@@ -123,7 +115,7 @@
 
           <div>
             <h3 class="text-lg font-semibold text-foreground mb-2">
-              Learned ({{ lesson.learnedItems.length }})
+              {{ $t('items.learned') }} ({{ lesson.learnedItems.length }})
             </h3>
             <div class="grid grid-cols-2 md:flex md:flex-wrap gap-2">
               <Badge
@@ -142,7 +134,6 @@
         </div>
 
         <div v-else>
-          <!-- Group by lesson only -->
           <div class="grid grid-cols-2 md:flex md:flex-wrap gap-2">
             <Badge
               v-for="item in lesson.items"
@@ -166,17 +157,17 @@
     </div>
   </div>
 
-  <!-- Loading or empty state -->
   <div v-else class="text-center py-8">
     <div class="text-2xl font-bold text-primary mb-4">
-      {{ allItems.length === 0 && !loading ? 'No learning items found' : 'Loading items...' }}
+      {{ allItems.length === 0 && !loading ? $t('items.noItems') : $t('items.loadingItems') }}
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useLessons } from '../composables/useLessons'
 import { useProgress } from '../composables/useProgress'
 import { Card } from '@/components/ui/card'
@@ -187,6 +178,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const emit = defineEmits(['update-title'])
 
 const { loadAllLessonsForWorkshop } = useLessons()
@@ -200,16 +192,13 @@ const allItems = ref([])
 const availableLessons = ref([])
 const selectedLesson = ref(lessonNumber.value || 'all')
 const groupByLearnStatus = ref(true)
-// Default for groupByLesson: true when showing all lessons, false when showing one lesson
 const groupByLesson = ref(lessonNumber.value ? false : true)
 const loading = ref(true)
 
-// Show/hide the "Group by Lesson" checkbox based on selected lesson
 const showGroupByLessonOption = computed(() => {
   return selectedLesson.value === 'all'
 })
 
-// Filtered items based on selected lesson
 const filteredItems = computed(() => {
   if (selectedLesson.value === 'all') {
     return allItems.value
@@ -217,20 +206,16 @@ const filteredItems = computed(() => {
   return allItems.value.filter(item => item.lessonNumber === selectedLesson.value)
 })
 
-// Unlearned items
 const unlearnedItems = computed(() => {
   return filteredItems.value.filter(item => !isItemLearned(learning.value, workshop.value, item.term))
 })
 
-// Learned items
 const learnedItems = computed(() => {
   return filteredItems.value.filter(item => isItemLearned(learning.value, workshop.value, item.term))
 })
 
-// Group items by lesson
 const lessonsWithItems = computed(() => {
   if (selectedLesson.value !== 'all') {
-    // If a specific lesson is selected, only show that lesson
     const lesson = availableLessons.value.find(l => l.number === selectedLesson.value)
     if (!lesson) return []
 
@@ -243,7 +228,6 @@ const lessonsWithItems = computed(() => {
     }]
   }
 
-  // Show all lessons with their items
   return availableLessons.value.map(lesson => {
     const lessonItems = allItems.value.filter(item => item.lessonNumber === lesson.number)
     return {
@@ -255,20 +239,16 @@ const lessonsWithItems = computed(() => {
   }).filter(lesson => lesson.items.length > 0)
 })
 
-// Load items data
 async function loadItems() {
   loading.value = true
 
-  // Get current params values
   const currentLearning = learning.value
   const currentTeaching = workshop.value
   const currentLessonNumber = lessonNumber.value
 
-  // Load all lessons
   const lessons = await loadAllLessonsForWorkshop(currentLearning, currentTeaching)
   availableLessons.value = lessons
 
-  // Extract all items from all lessons
   const items = []
   lessons.forEach(lesson => {
     if (lesson.sections) {
@@ -293,7 +273,6 @@ async function loadItems() {
     }
   })
 
-  // Remove duplicates based on term
   const uniqueItems = []
   const seenTerms = new Set()
   items.forEach(item => {
@@ -306,23 +285,17 @@ async function loadItems() {
   allItems.value = uniqueItems
   loading.value = false
 
-  // Update selectedLesson when route changes
   selectedLesson.value = currentLessonNumber || 'all'
   groupByLesson.value = currentLessonNumber ? false : true
 
-  // Set page title
-  emit('update-title', 'Learning Items')
+  emit('update-title', t('nav.learningItems'))
 }
 
-// Watch for route param changes to reload data when navigating
 watch([learning, workshop, lessonNumber], async () => {
   await loadItems()
 }, { immediate: true })
 
-// Watch for selectedLesson changes and update route (when changing dropdown)
-// Skip this if the change came from route update (to avoid infinite loop)
 watch(selectedLesson, (newValue) => {
-  // Don't update route if selectedLesson matches current route param
   const currentNumber = lessonNumber.value
   if ((newValue === 'all' && !currentNumber) || (newValue === currentNumber)) {
     return

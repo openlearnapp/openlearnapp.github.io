@@ -3,7 +3,7 @@
     <!-- No coach configured -->
     <div v-if="!coachApi" class="text-center py-8">
       <div class="text-xl text-muted-foreground">
-        No coach configured for this workshop.
+        {{ $t('coachView.noCoach') }}
       </div>
     </div>
 
@@ -13,10 +13,10 @@
         <!-- Welcome message -->
         <div v-if="messages.length === 0" class="text-center py-8">
           <div class="text-lg text-muted-foreground mb-2">
-            {{ coachName || 'Workshop Coach' }}
+            {{ coachName || $t('coachView.defaultName') }}
           </div>
           <p class="text-sm text-muted-foreground">
-            Ask questions about the workshop, get feedback on your answers, or request help.
+            {{ $t('coachView.description') }}
           </p>
           <div class="flex flex-wrap gap-2 justify-center mt-4">
             <Button
@@ -50,7 +50,7 @@
 
         <!-- Loading indicator -->
         <div v-if="isLoading" class="bg-muted text-foreground p-3 rounded-lg max-w-[85%]">
-          <div class="text-sm text-muted-foreground animate-pulse">Thinking...</div>
+          <div class="text-sm text-muted-foreground animate-pulse">{{ $t('coachView.thinking') }}</div>
         </div>
       </div>
 
@@ -58,19 +58,19 @@
       <div class="flex gap-2">
         <Input
           v-model="inputMessage"
-          placeholder="Ask your coach..."
+          :placeholder="$t('coachView.placeholder')"
           @keyup.enter="send"
           :disabled="isLoading"
           class="flex-1" />
         <Button @click="send" :disabled="isLoading || !inputMessage.trim()">
-          Send
+          {{ $t('coachView.send') }}
         </Button>
       </div>
 
       <!-- Clear chat -->
       <div v-if="messages.length > 0" class="mt-2 text-right">
         <Button variant="ghost" size="sm" class="text-muted-foreground" @click="handleClear">
-          Clear chat
+          {{ $t('coachView.clearChat') }}
         </Button>
       </div>
     </template>
@@ -80,12 +80,14 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useLessons } from '../composables/useLessons'
 import { useCoach } from '../composables/useCoach'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 const route = useRoute()
+const { t } = useI18n()
 const emit = defineEmits(['update-title'])
 
 const { loadAllLessonsForWorkshop, getWorkshopMeta } = useLessons()
@@ -110,11 +112,11 @@ const coachName = computed(() => {
 
 const messages = computed(() => getMessages(learning.value, workshop.value))
 
-const suggestions = [
-  'How am I doing?',
-  'What should I focus on?',
-  'Explain my mistakes'
-]
+const suggestions = computed(() => [
+  t('coachView.suggestion1'),
+  t('coachView.suggestion2'),
+  t('coachView.suggestion3')
+])
 
 function formatTime(iso) {
   try {
@@ -161,6 +163,6 @@ loadChatHistory()
 watch([learning, workshop], async () => {
   if (!learning.value || !workshop.value) return
   lessons.value = await loadAllLessonsForWorkshop(learning.value, workshop.value)
-  emit('update-title', coachName.value || 'Coach')
+  emit('update-title', coachName.value || t('nav.coach'))
 }, { immediate: true })
 </script>

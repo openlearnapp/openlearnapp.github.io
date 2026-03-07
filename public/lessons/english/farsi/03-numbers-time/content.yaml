@@ -1,0 +1,92 @@
+version: 1
+number: 3
+title: "Numbers and Time"
+description: "Learn to count in Farsi and talk about time, days, and months"
+sections:
+  - title: "Numbers 1-20"
+    explanation: |
+      **Farsi numbers** have their own unique words. While Iranians use both Western Arabic numerals (1, 2, 3) and Eastern Arabic numerals (۱، ۲، ۳), learning the spoken words is essential for daily life.
+    examples:
+      - q: "یک، دو، سه"
+        a: "One, two, three"
+        rel:
+          - ["یک", "one (1)", "number"]
+          - ["دو", "two (2)", "number"]
+          - ["سه", "three (3)", "number"]
+      - q: "چهار، پنج، شش"
+        a: "Four, five, six"
+        rel:
+          - ["چهار", "four (4)", "number"]
+          - ["پنج", "five (5)", "number"]
+          - ["شش", "six (6)", "number"]
+      - q: "هفت، هشت، نه، ده"
+        a: "Seven, eight, nine, ten"
+        rel:
+          - ["هفت", "seven (7)", "number"]
+          - ["هشت", "eight (8)", "number"]
+          - ["نه", "nine (9)", "number"]
+          - ["ده", "ten (10)", "number"]
+      - q: "یازده، دوازده، سیزده"
+        a: "Eleven, twelve, thirteen"
+        rel:
+          - ["یازده", "eleven (11)", "number"]
+          - ["دوازده", "twelve (12)", "number"]
+          - ["سیزده", "thirteen (13)", "number"]
+      - q: "چهارده، پانزده، شانزده"
+        a: "Fourteen, fifteen, sixteen"
+        rel:
+          - ["چهارده", "fourteen (14)", "number"]
+          - ["پانزده", "fifteen (15)", "number"]
+          - ["شانزده", "sixteen (16)", "number"]
+
+  - title: "Days of the Week"
+    explanation: |
+      **The Iranian week** starts on Saturday (شنبه). Friday is the weekend holiday in Iran, similar to Sunday in Western countries. The days are named systematically, with شنبه (Saturday) as the base.
+    examples:
+      - q: "شنبه"
+        a: "Saturday"
+        rel:
+          - ["شنبه", "Saturday", "first day of the week in Iran"]
+      - q: "یکشنبه"
+        a: "Sunday"
+        rel:
+          - ["یکشنبه", "Sunday", "literally 'one-shanbe'"]
+      - q: "دوشنبه"
+        a: "Monday"
+        rel:
+          - ["دوشنبه", "Monday", "literally 'two-shanbe'"]
+      - q: "سه‌شنبه، چهارشنبه"
+        a: "Tuesday, Wednesday"
+        rel:
+          - ["سه‌شنبه", "Tuesday", "literally 'three-shanbe'"]
+          - ["چهارشنبه", "Wednesday", "literally 'four-shanbe'"]
+      - q: "پنجشنبه، جمعه"
+        a: "Thursday, Friday"
+        rel:
+          - ["پنجشنبه", "Thursday", "literally 'five-shanbe'"]
+          - ["جمعه", "Friday", "weekend/holiday"]
+
+  - title: "Telling Time"
+    explanation: |
+      **Telling time in Farsi** uses "ساعت" (saa'at) meaning "hour" or "clock." To say the time, you say "ساعت" followed by the number. Half past is "نیم" and a quarter is "ربع."
+    examples:
+      - q: "ساعت چنده؟"
+        a: "What time is it?"
+        rel:
+          - ["ساعت", "hour/clock/time", "noun"]
+          - ["چند", "how many/what", "question word"]
+      - q: "ساعت سه است"
+        a: "It is three o'clock"
+        rel:
+          - ["ساعت", "clock/hour", "noun"]
+          - ["سه", "three", "number"]
+          - ["است", "is", "verb to be"]
+      - q: "ساعت پنج و نیم"
+        a: "Five thirty (half past five)"
+        rel:
+          - ["و", "and", "conjunction"]
+          - ["نیم", "half", "noun"]
+      - q: "ساعت هشت و ربع"
+        a: "A quarter past eight"
+        rel:
+          - ["ربع", "quarter", "noun"]

@@ -10,23 +10,25 @@
             <button
               @click="toggleLanguageMenu"
               class="flex items-center gap-1.5 bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 rounded-full px-3 py-1.5 text-sm font-medium transition flex-shrink-0"
-              title="Change language"
-              aria-label="Change language">
+              :title="$t('nav.changeLanguage')"
+              :aria-label="$t('nav.changeLanguage')">
               <span class="text-base leading-none">{{ getFlag(selectedLanguage) }}</span>
-              <span class="hidden sm:inline">{{ selectedLanguage ? formatLangName(selectedLanguage) : 'Language' }}</span>
+              <span class="hidden sm:inline">{{ selectedLanguage ? formatLangName(selectedLanguage) : $t('nav.changeLanguage') }}</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-70"><path d="m6 9 6 6 6-6"/></svg>
             </button>
 
             <!-- Dropdown menu -->
             <div
               v-if="showLanguageMenu"
-              class="absolute top-full left-0 mt-1 bg-popover text-popover-foreground border rounded-lg shadow-lg overflow-hidden min-w-[160px] z-[100]">
+              class="absolute top-full mt-1 bg-popover text-popover-foreground border rounded-lg shadow-lg overflow-hidden min-w-[160px] z-[100]"
+              :class="isRtl ? 'right-0' : 'left-0'">
               <button
                 v-for="lang in learningLanguages"
                 :key="lang"
                 @click="switchLanguage(lang)"
                 :class="[
-                  'flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-accent transition',
+                  'flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-accent transition',
+                  isRtl ? 'text-right' : 'text-left',
                   selectedLanguage === lang ? 'bg-accent font-medium' : ''
                 ]">
                 <span class="text-base leading-none">{{ getFlag(lang) }}</span>
@@ -42,8 +44,8 @@
             size="icon"
             @click="goToWorkshopOverview"
             class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
-            title="Workshops"
-            aria-label="Workshops">
+            :title="$t('home.workshops')"
+            :aria-label="$t('home.workshops')">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
           </Button>
 
@@ -54,8 +56,8 @@
             size="icon"
             @click="goBackToLessons"
             class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
-            title="Lessons"
-            aria-label="Lessons">
+            :title="$t('nav.backToLessons')"
+            :aria-label="$t('nav.backToLessons')">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
           </Button>
         </div>
@@ -74,8 +76,8 @@
             size="icon"
             @click="togglePlayPause"
             class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
-            :title="isPlaying ? 'Pause' : 'Play'"
-            :aria-label="isPlaying ? 'Pause audio' : 'Play audio'">
+            :title="isPlaying ? $t('nav.pause') : $t('nav.play')"
+            :aria-label="isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio')">
             {{ isPlaying ? '⏸' : '▶️' }}
           </Button>
 
@@ -86,8 +88,8 @@
             size="icon"
             @click="goToResults"
             class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
-            title="Assessment Results"
-            aria-label="Assessment Results">
+            :title="$t('nav.assessmentResults')"
+            :aria-label="$t('nav.assessmentResults')">
             📋
           </Button>
 
@@ -98,8 +100,8 @@
             size="icon"
             @click="goToCoach"
             class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
-            title="Coach"
-            aria-label="Coach">
+            :title="$t('nav.coach')"
+            :aria-label="$t('nav.coach')">
             🤖
           </Button>
 
@@ -110,8 +112,8 @@
             size="icon"
             @click="goToItems"
             class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
-            title="Learning Items"
-            aria-label="Learning items">
+            :title="$t('nav.learningItems')"
+            :aria-label="$t('nav.learningItems')">
             📚
           </Button>
 
@@ -122,8 +124,8 @@
             size="icon"
             @click="goToSettings"
             class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl hover:rotate-90 flex-shrink-0"
-            title="Settings"
-            aria-label="Settings">
+            :title="$t('nav.settings')"
+            :aria-label="$t('nav.settings')">
             ⚙️
           </Button>
 
@@ -134,8 +136,8 @@
             size="icon"
             @click="goBack"
             class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
-            title="Done"
-            aria-label="Done">
+            :title="$t('nav.done')"
+            :aria-label="$t('nav.done')">
             ✓
           </Button>
         </div>
@@ -158,19 +160,19 @@
         <a
           :href="'#/' + footerLearning + '/open-learn-guide/lessons'"
           class="text-primary hover:underline whitespace-nowrap">
-          {{ footerLearning === 'deutsch' ? 'Anleitung' : 'Guide' }}
+          {{ $t('home.guide') }}
         </a>
         <a
           :href="'#/' + footerLearning + '/open-learn-feedback/lessons'"
           class="text-primary hover:underline whitespace-nowrap">
-          {{ footerLearning === 'deutsch' ? 'Feedback' : 'Feedback' }}
+          {{ $t('home.feedback') }}
         </a>
         <a
           href="https://github.com/felixboehm/open-learn/issues"
           target="_blank"
           rel="noopener"
           class="text-primary hover:underline whitespace-nowrap">
-          {{ footerLearning === 'deutsch' ? 'Fehler melden' : 'Report a Bug' }}
+          {{ $t('home.bugReport') }}
         </a>
 
         <!-- Next Lesson button (right-aligned) -->
@@ -179,7 +181,7 @@
           :to="`/${lessonLearning}/${lessonWorkshop}/lesson/${footerNextLesson}`"
           class="ml-auto">
           <Button size="sm">
-            Next Lesson →
+            {{ $t('lesson.nextLesson') }} {{ isRtl ? '←' : '→' }}
           </Button>
         </router-link>
       </div>
@@ -190,16 +192,19 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAudio } from './composables/useAudio'
 import { useSettings } from './composables/useSettings'
 import { useLessons } from './composables/useLessons'
 import { useLanguage } from './composables/useLanguage'
 import { useFooter } from './composables/useFooter'
+import { isRtlLocale } from './i18n'
 import { formatLangName } from './utils/formatters'
 import { Button } from '@/components/ui/button'
 
 const router = useRouter()
 const route = useRoute()
+const { locale } = useI18n()
 
 const pageTitle = ref('🎓 Open Learn')
 const showLanguageMenu = ref(false)
@@ -209,6 +214,8 @@ const { settings } = useSettings()
 const { availableContent, getWorkshopMeta, workshopMeta, loadAvailableContent, loadWorkshopsForLanguage } = useLessons()
 const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 const { nextLessonNumber: footerNextLesson, lessonLearning, lessonWorkshop } = useFooter()
+
+const isRtl = computed(() => isRtlLocale(locale.value))
 
 // Deduplicated list of available languages
 const learningLanguages = computed(() => {
@@ -319,7 +326,7 @@ async function switchLanguage(lang) {
 
 // Close dropdown when clicking outside
 function handleClickOutside(e) {
-  if (showLanguageMenu.value && !e.target.closest('[aria-label="Change language"]') && !e.target.closest('.absolute')) {
+  if (showLanguageMenu.value && !e.target.closest('[aria-label]') && !e.target.closest('.absolute')) {
     showLanguageMenu.value = false
   }
 }
@@ -403,13 +410,11 @@ function goToItems() {
   if (route.name === 'learning-items') {
     // If on items page, go back to lessons
     if (number) {
-      // Go to specific lesson
       router.push({
         name: 'lesson-detail',
         params: { learning, workshop, number }
       })
     } else {
-      // Go to lessons overview
       router.push({
         name: 'lessons-overview',
         params: { learning, workshop }
@@ -419,14 +424,12 @@ function goToItems() {
   }
 
   if (learning && workshop) {
-    // If coming from a lesson, include the lesson number to filter
     if (number && route.name === 'lesson-detail') {
       router.push({
         name: 'learning-items',
         params: { learning, workshop, number }
       })
     } else {
-      // If coming from overview, show all items
       router.push({
         name: 'learning-items',
         params: { learning, workshop }

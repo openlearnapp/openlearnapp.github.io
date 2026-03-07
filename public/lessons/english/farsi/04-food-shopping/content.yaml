@@ -1,0 +1,87 @@
+version: 1
+number: 4
+title: "Food and Shopping"
+description: "Learn food vocabulary, ordering at restaurants, and shopping phrases in Farsi"
+sections:
+  - title: "Common Foods"
+    explanation: |
+      **Persian cuisine** is rich and diverse. Rice (برنج) is a staple, and kebab is the most well-known dish internationally. Knowing food vocabulary will help you enjoy the full culinary experience in Iran.
+    examples:
+      - q: "نان"
+        a: "Bread"
+        rel:
+          - ["نان", "bread", "staple food in Iran"]
+      - q: "برنج"
+        a: "Rice"
+        rel:
+          - ["برنج", "rice", "central to Persian cuisine"]
+      - q: "گوشت"
+        a: "Meat"
+        rel:
+          - ["گوشت", "meat", "noun"]
+          - ["مرغ", "chicken", "noun"]
+      - q: "میوه"
+        a: "Fruit"
+        rel:
+          - ["میوه", "fruit", "noun"]
+          - ["سبزی", "vegetables/herbs", "noun"]
+      - q: "آب"
+        a: "Water"
+        rel:
+          - ["آب", "water", "noun"]
+          - ["چای", "tea", "the most popular drink in Iran"]
+
+  - title: "Ordering Food"
+    explanation: |
+      **Ordering food in Farsi** is straightforward. You can use "لطفاً" (please) to make your requests polite. In restaurants, the waiter may be addressed as "آقا" (sir) or "خانم" (ma'am).
+    examples:
+      - q: "منو را لطفاً"
+        a: "The menu, please"
+        rel:
+          - ["منو", "menu", "noun"]
+          - ["لطفاً", "please", "polite word"]
+      - q: "یک کباب کوبیده لطفاً"
+        a: "One koobideh kebab, please"
+        rel:
+          - ["کباب کوبیده", "koobideh kebab", "popular ground meat kebab"]
+          - ["یک", "one", "number"]
+      - q: "صورتحساب لطفاً"
+        a: "The bill, please"
+        rel:
+          - ["صورتحساب", "bill/check", "noun"]
+      - q: "غذا خیلی خوشمزه بود"
+        a: "The food was very delicious"
+        rel:
+          - ["غذا", "food", "noun"]
+          - ["خیلی", "very", "adverb"]
+          - ["خوشمزه", "delicious", "adjective"]
+
+  - title: "Shopping Phrases"
+    explanation: |
+      **Shopping in Iran** often involves bargaining, especially in bazaars. Knowing how to ask about prices and negotiate politely is a valuable skill. The currency of Iran is the rial, though people commonly speak in tomans.
+    examples:
+      - q: "این چند است؟"
+        a: "How much is this?"
+        rel:
+          - ["این", "this", "pronoun"]
+          - ["چند", "how much", "question word"]
+      - q: "خیلی گران است"
+        a: "It is very expensive"
+        rel:
+          - ["گران", "expensive", "adjective"]
+          - ["ارزان", "cheap", "opposite"]
+      - q: "تخفیف می‌دهید؟"
+        a: "Can you give a discount?"
+        rel:
+          - ["تخفیف", "discount", "noun"]
+          - ["می‌دهید", "do you give", "verb"]
+      - q: "این را می‌خواهم"
+        a: "I want this one"
+        rel:
+          - ["می‌خواهم", "I want", "verb"]
+          - ["این", "this", "pronoun"]
+      - q: "ممنون، فقط نگاه می‌کنم"
+        a: "Thanks, I'm just looking"
+        rel:
+          - ["فقط", "just/only", "adverb"]
+          - ["نگاه می‌کنم", "I am looking", "verb phrase"]

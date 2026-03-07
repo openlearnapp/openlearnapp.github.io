@@ -1,0 +1,86 @@
+version: 1
+number: 5
+title: "Reisen und Wegbeschreibung"
+description: "Richtungsangaben, Verkehrsmittel und wichtige Reiseausdrücke auf Farsi"
+sections:
+  - title: "Richtungen und Orte"
+    explanation: |
+      **Richtungsangaben** sind beim Reisen unverzichtbar. Hier lernen Sie,
+      wie Sie auf Farsi nach dem Weg fragen und Richtungen verstehen können.
+    examples:
+      - q: "راست"
+        a: "Rechts"
+        rel:
+          - ["راست", "rechts", "Richtung"]
+      - q: "چپ"
+        a: "Links"
+        rel:
+          - ["چپ", "links", "Richtung"]
+      - q: "مستقیم"
+        a: "Geradeaus"
+        rel:
+          - ["مستقیم", "geradeaus / direkt", "Richtung"]
+      - q: "کجاست؟ ... "
+        a: "Wo ist ...?"
+        rel:
+          - ["کجا", "wo", "Fragewort"]
+          - ["است", "ist", "Verb sein"]
+      - q: "نزدیک"
+        a: "Nah / In der Nähe"
+        rel:
+          - ["نزدیک", "nah / in der Nähe", "Adjektiv"]
+      - q: "دور"
+        a: "Weit / Fern"
+        rel:
+          - ["دور", "weit / fern", "Adjektiv"]
+  - title: "Verkehrsmittel"
+    explanation: |
+      **Verkehrsmittel im Iran** – Taxis, Busse und die Metro sind die
+      häufigsten Verkehrsmittel in iranischen Städten.
+    examples:
+      - q: "تاکسی"
+        a: "Taxi"
+        rel:
+          - ["تاکسی", "Taxi", "Substantiv"]
+      - q: "اتوبوس"
+        a: "Bus"
+        rel:
+          - ["اتوبوس", "Bus", "Substantiv"]
+      - q: "مترو"
+        a: "U-Bahn / Metro"
+        rel:
+          - ["مترو", "U-Bahn / Metro", "Substantiv"]
+      - q: "فرودگاه"
+        a: "Flughafen"
+        rel:
+          - ["فرودگاه", "Flughafen", "Substantiv"]
+      - q: "ایستگاه"
+        a: "Haltestelle / Bahnhof"
+        rel:
+          - ["ایستگاه", "Haltestelle / Bahnhof", "Substantiv"]
+  - title: "Wichtige Reisesätze"
+    explanation: |
+      **Nützliche Sätze für Reisende** – Diese Ausdrücke helfen Ihnen,
+      sich im Iran zurechtzufinden und um Hilfe zu bitten.
+    examples:
+      - q: "من گم شده‌ام"
+        a: "Ich habe mich verlaufen"
+        rel:
+          - ["من", "ich", "Pronomen"]
+          - ["گم شده‌ام", "ich habe mich verlaufen", "Verb"]
+      - q: "می‌توانید کمکم کنید؟"
+        a: "Können Sie mir helfen?"
+        rel:
+          - ["می‌توانید", "können Sie", "Verb"]
+          - ["کمک", "Hilfe", "Substantiv"]
+      - q: "هتل کجاست؟"
+        a: "Wo ist das Hotel?"
+        rel:
+          - ["هتل", "Hotel", "Substantiv"]
+          - ["کجاست", "wo ist", "Fragewort + Verb"]
+      - q: "لطفاً آهسته‌تر صحبت کنید"
+        a: "Sprechen Sie bitte langsamer"
+        rel:
+          - ["آهسته‌تر", "langsamer", "Komparativ"]
+          - ["صحبت کنید", "sprechen Sie", "Verb"]
+          - ["لطفاً", "bitte", "Höflichkeitsform"]

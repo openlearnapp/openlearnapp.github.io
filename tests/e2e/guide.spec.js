@@ -73,6 +73,6 @@ test.describe('Open Learn Guide Workshop', () => {
     await expect(codeBlock).toBeVisible();
 
     // Should contain YAML-related content
-    await expect(page.getByText('content.yaml')).toBeVisible();
+    await expect(page.getByText('content.yaml').first()).toBeVisible();
   });
 });

@@ -1,0 +1,83 @@
+version: 1
+number: 2
+title: "Alltägliche Wörter"
+description: "Grundlegende Wörter für den Alltag – Gegensätze, Farben und Familienmitglieder"
+sections:
+  - title: "Ja, Nein und Gegensätze"
+    explanation: |
+      **Grundlegende Gegensätze** sind essenziell, um sich auf Arabisch verständlich zu machen.
+      „نعم" (naʿam) bedeutet „Ja" und „لا" (lā) bedeutet „Nein".
+      Diese einfachen Wörter helfen Ihnen, sofort auf Fragen zu antworten.
+    examples:
+      - q: "نعم"
+        a: "Ja"
+        rel:
+          - ["نعم", "Ja", "Zustimmung"]
+      - q: "لا"
+        a: "Nein"
+        rel:
+          - ["لا", "Nein", "Verneinung"]
+      - q: "كبير"
+        a: "groß"
+        rel:
+          - ["كبير", "groß", "Adjektiv, Gegenteil von صغير"]
+      - q: "صغير"
+        a: "klein"
+        rel:
+          - ["صغير", "klein", "Adjektiv, Gegenteil von كبير"]
+      - q: "جديد"
+        a: "neu"
+        rel:
+          - ["جديد", "neu", "Adjektiv, Gegenteil von قديم"]
+  - title: "Farben"
+    explanation: |
+      **Farben** auf Arabisch haben je nach Geschlecht unterschiedliche Formen.
+      Hier lernen Sie die männliche Grundform der wichtigsten Farben.
+      Die weibliche Form wird in späteren Lektionen behandelt.
+    examples:
+      - q: "أبيض"
+        a: "weiß"
+        rel:
+          - ["أبيض", "weiß", "Farbe, männliche Form"]
+      - q: "أسود"
+        a: "schwarz"
+        rel:
+          - ["أسود", "schwarz", "Farbe, männliche Form"]
+      - q: "أحمر"
+        a: "rot"
+        rel:
+          - ["أحمر", "rot", "Farbe, männliche Form"]
+      - q: "أزرق"
+        a: "blau"
+        rel:
+          - ["أزرق", "blau", "Farbe, männliche Form"]
+      - q: "أخضر"
+        a: "grün"
+        rel:
+          - ["أخضر", "grün", "Farbe, männliche Form"]
+  - title: "Familienmitglieder"
+    explanation: |
+      **Die Familie** (الأسرة) hat in der arabischen Kultur einen sehr hohen Stellenwert.
+      Es ist daher besonders nützlich, die Bezeichnungen für Familienmitglieder zu kennen.
+      Beachten Sie, dass es im Arabischen für viele Verwandtschaftsverhältnisse eigene Wörter gibt.
+    examples:
+      - q: "أب"
+        a: "Vater"
+        rel:
+          - ["أب", "Vater", "Familienmitglied"]
+      - q: "أم"
+        a: "Mutter"
+        rel:
+          - ["أم", "Mutter", "Familienmitglied"]
+      - q: "ابن"
+        a: "Sohn"
+        rel:
+          - ["ابن", "Sohn", "Familienmitglied"]
+      - q: "ابنة"
+        a: "Tochter"
+        rel:
+          - ["ابنة", "Tochter", "Familienmitglied"]
+      - q: "أخ"
+        a: "Bruder"
+        rel:
+          - ["أخ", "Bruder", "Familienmitglied"]

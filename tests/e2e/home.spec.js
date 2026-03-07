@@ -67,9 +67,11 @@ test.describe('Workshop Overview', () => {
     await page.goto('/#/english/workshops');
     await page.waitForTimeout(1000);
 
-    // Switch to Deutsch
+    // Switch to Deutsch using precise dropdown selector
     await page.locator('[aria-label="Change language"]').click();
-    await page.getByText('Deutsch', { exact: false }).click();
+    await page.waitForTimeout(300);
+    const dropdown = page.locator('.absolute.top-full');
+    await dropdown.getByText('Deutsch').click();
     await page.waitForTimeout(500);
 
     // Should navigate to deutsch workshops

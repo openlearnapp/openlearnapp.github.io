@@ -5,7 +5,7 @@
         <!-- Loading state -->
         <div v-if="isValidating" class="text-center">
           <div class="text-2xl font-bold text-primary mb-4">
-            Checking content source...
+            {{ $t('addSource.checking') }}
           </div>
           <div class="text-muted-foreground">
             {{ sourceUrl }}
@@ -15,50 +15,50 @@
         <!-- Already added -->
         <div v-else-if="alreadyAdded" class="text-center">
           <div class="text-2xl font-bold text-green-500 mb-4">
-            Already Added
+            {{ $t('addSource.alreadyAdded') }}
           </div>
           <p class="text-muted-foreground mb-6">
-            This content source is already in your library.
+            {{ $t('addSource.alreadyAddedDesc') }}
           </p>
           <Button @click="goHome">
-            Go to Home
+            {{ $t('addSource.goHome') }}
           </Button>
         </div>
 
         <!-- Error state -->
         <div v-else-if="error" class="text-center">
           <div class="text-2xl font-bold text-red-500 mb-4">
-            Could not load content source
+            {{ $t('addSource.loadError') }}
           </div>
           <p class="text-muted-foreground mb-2">{{ sourceUrl }}</p>
           <p class="text-red-400 mb-6">{{ error }}</p>
           <Button variant="secondary" @click="goHome">
-            Back to Home
+            {{ $t('addSource.backHome') }}
           </Button>
         </div>
 
         <!-- No URL provided -->
         <div v-else-if="!sourceUrl" class="text-center">
           <div class="text-2xl font-bold text-foreground mb-4">
-            No content source URL provided
+            {{ $t('addSource.noUrl') }}
           </div>
           <p class="text-muted-foreground mb-6">
-            Use a share link with <code class="bg-muted px-2 py-1 rounded">?source=URL/index.yaml</code> to add external content.
+            {{ $t('addSource.useShareLink') }} <code class="bg-muted px-2 py-1 rounded">{{ $t('addSource.sourceParam') }}</code>
           </p>
           <Button variant="secondary" @click="goHome">
-            Back to Home
+            {{ $t('addSource.backHome') }}
           </Button>
         </div>
 
         <!-- Confirmation -->
         <div v-else>
           <h2 class="text-3xl font-bold mb-4 text-primary">
-            Add Content Source
+            {{ $t('addSource.addHeading') }}
           </h2>
 
           <Card class="mb-6">
             <CardContent class="p-4">
-              <div class="text-sm text-muted-foreground mb-1">Source URL</div>
+              <div class="text-sm text-muted-foreground mb-1">{{ $t('addSource.sourceUrl') }}</div>
               <div class="text-foreground font-mono text-sm break-all">
                 {{ sourceUrl }}
               </div>
@@ -68,7 +68,7 @@
           <!-- Discovered content -->
           <div class="mb-6">
             <h3 class="text-lg font-semibold text-foreground mb-3">
-              Available Content
+              {{ $t('addSource.availableContent') }}
             </h3>
             <div v-for="(workshops, lang) in discoveredContent" :key="lang" class="mb-3">
               <div class="font-semibold text-primary">
@@ -88,10 +88,10 @@
           <!-- Actions -->
           <div class="flex gap-3">
             <Button @click="addSource" class="bg-green-500 hover:bg-green-600 text-white">
-              Add
+              {{ $t('addSource.add') }}
             </Button>
             <Button variant="secondary" @click="goHome">
-              Cancel
+              {{ $t('addSource.cancel') }}
             </Button>
           </div>
         </div>

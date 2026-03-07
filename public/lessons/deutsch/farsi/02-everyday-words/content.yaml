@@ -1,0 +1,89 @@
+version: 1
+number: 2
+title: "Alltägliche Wörter"
+description: "Häufig verwendete Wörter und Ausdrücke im persischen Alltag"
+sections:
+  - title: "Grundlegende Wörter"
+    explanation: |
+      **Grundlegende Wörter** bilden das Fundament jeder Sprache.
+      Diese einfachen Wörter werden Sie im Farsi ständig brauchen.
+    examples:
+      - q: "بله"
+        a: "Ja"
+        rel:
+          - ["بله", "Ja", "formell"]
+      - q: "نه / نخیر"
+        a: "Nein"
+        rel:
+          - ["نه", "Nein", "informell"]
+          - ["نخیر", "Nein", "formell"]
+      - q: "خوب"
+        a: "Gut"
+        rel:
+          - ["خوب", "gut", "Adjektiv"]
+      - q: "بد"
+        a: "Schlecht"
+        rel:
+          - ["بد", "schlecht", "Adjektiv"]
+      - q: "بزرگ"
+        a: "Groß"
+        rel:
+          - ["بزرگ", "groß", "Adjektiv"]
+      - q: "کوچک"
+        a: "Klein"
+        rel:
+          - ["کوچک", "klein", "Adjektiv"]
+  - title: "Farben"
+    explanation: |
+      **Farben auf Farsi** – Farben sind nützliche Wörter für den Alltag,
+      beim Einkaufen und bei Beschreibungen.
+    examples:
+      - q: "قرمز"
+        a: "Rot"
+        rel:
+          - ["قرمز", "rot", "Farbe"]
+      - q: "آبی"
+        a: "Blau"
+        rel:
+          - ["آبی", "blau", "Farbe"]
+      - q: "سبز"
+        a: "Grün"
+        rel:
+          - ["سبز", "grün", "Farbe"]
+      - q: "سفید"
+        a: "Weiß"
+        rel:
+          - ["سفید", "weiß", "Farbe"]
+      - q: "سیاه"
+        a: "Schwarz"
+        rel:
+          - ["سیاه", "schwarz", "Farbe"]
+  - title: "Familienmitglieder"
+    explanation: |
+      **Familie** hat in der persischen Kultur einen sehr hohen Stellenwert.
+      Hier lernen Sie die wichtigsten Bezeichnungen für Familienmitglieder.
+    examples:
+      - q: "پدر"
+        a: "Vater"
+        rel:
+          - ["پدر", "Vater", "Substantiv"]
+      - q: "مادر"
+        a: "Mutter"
+        rel:
+          - ["مادر", "Mutter", "Substantiv"]
+      - q: "برادر"
+        a: "Bruder"
+        rel:
+          - ["برادر", "Bruder", "Substantiv"]
+      - q: "خواهر"
+        a: "Schwester"
+        rel:
+          - ["خواهر", "Schwester", "Substantiv"]
+      - q: "پسر"
+        a: "Sohn / Junge"
+        rel:
+          - ["پسر", "Sohn / Junge", "Substantiv"]
+      - q: "دختر"
+        a: "Tochter / Mädchen"
+        rel:
+          - ["دختر", "Tochter / Mädchen", "Substantiv"]

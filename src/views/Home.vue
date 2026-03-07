@@ -3,7 +3,7 @@
     <!-- Loading state -->
     <div v-if="isLoading" class="text-center py-12">
       <div class="inline-block w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
-      <p class="text-muted-foreground">Loading...</p>
+      <p class="text-muted-foreground">{{ $t('home.loading') }}</p>
     </div>
 
     <div v-else>
@@ -11,10 +11,10 @@
       <div class="mb-8">
         <p class="text-sm font-semibold text-primary mb-1 tracking-wide uppercase">Open Learn</p>
         <h2 class="text-3xl font-bold mb-2 text-foreground">
-          {{ t('title') }}
+          {{ $t('home.title') }}
         </h2>
         <p class="text-muted-foreground mb-5 leading-relaxed">
-          {{ t('subtitle') }}
+          {{ $t('home.subtitle') }}
         </p>
 
         <!-- Feature highlights -->
@@ -35,7 +35,7 @@
 
       <!-- How it works (with integrated language selector as step 1) -->
       <div class="mb-8">
-        <h3 class="text-lg font-semibold text-foreground mb-4">{{ t('howItWorks') }}</h3>
+        <h3 class="text-lg font-semibold text-foreground mb-4">{{ $t('home.howItWorks') }}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <!-- Step 1: Pick a language (interactive dropdown) -->
           <div class="text-center p-4">
@@ -79,7 +79,7 @@
             <a
               :href="'#/' + currentLanguage + '/workshops'"
               class="inline-flex items-center gap-1.5 bg-primary text-white font-medium text-sm rounded-full px-4 py-2 cursor-pointer hover:bg-primary/90 transition mb-3">
-              {{ isDE ? 'Workshops ansehen' : 'Browse workshops' }} →
+              {{ $t('home.browseWorkshops') }} →
             </a>
             <div class="text-xs text-muted-foreground">{{ steps[1].desc }}</div>
           </div>
@@ -97,8 +97,8 @@
 
       <!-- What you can learn -->
       <div class="mb-8">
-        <h3 class="text-lg font-semibold text-foreground mb-3">{{ t('whatYouCanLearn') }}</h3>
-        <p class="text-sm text-muted-foreground mb-4">{{ t('whatYouCanLearnDesc') }}</p>
+        <h3 class="text-lg font-semibold text-foreground mb-3">{{ $t('home.whatYouCanLearn') }}</h3>
+        <p class="text-sm text-muted-foreground mb-4">{{ $t('home.whatYouCanLearnDesc') }}</p>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <div v-for="example in useCaseExamples" :key="example.key"
             class="flex items-center gap-2 p-2 rounded-md bg-accent/20 text-sm">
@@ -110,7 +110,7 @@
 
       <!-- Built-in tools -->
       <div class="mb-8">
-        <h3 class="text-lg font-semibold text-foreground mb-3">{{ t('builtInTools') }}</h3>
+        <h3 class="text-lg font-semibold text-foreground mb-3">{{ $t('home.builtInTools') }}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div v-for="tool in tools" :key="tool.key" class="p-3 rounded-lg border border-border">
             <div class="flex items-center gap-2 mb-1">
@@ -127,10 +127,10 @@
         <div class="flex items-start gap-4">
           <span class="text-3xl flex-shrink-0">✏️</span>
           <div>
-            <h3 class="text-lg font-semibold text-foreground mb-1">{{ t('forCreators') }}</h3>
-            <p class="text-sm text-muted-foreground mb-3">{{ t('forCreatorsDesc') }}</p>
+            <h3 class="text-lg font-semibold text-foreground mb-1">{{ $t('home.forCreators') }}</h3>
+            <p class="text-sm text-muted-foreground mb-3">{{ $t('home.forCreatorsDesc') }}</p>
             <a href="#/creators" class="text-sm font-medium text-primary hover:underline">
-              {{ t('forCreatorsLink') }} →
+              {{ $t('home.forCreatorsLink') }} →
             </a>
           </div>
         </div>
@@ -138,7 +138,7 @@
 
       <!-- Privacy & ownership -->
       <div class="mb-8">
-        <h3 class="text-lg font-semibold text-foreground mb-3">{{ t('privacyTitle') }}</h3>
+        <h3 class="text-lg font-semibold text-foreground mb-3">{{ $t('home.privacyTitle') }}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div v-for="item in privacyPoints" :key="item.key" class="p-3 rounded-lg bg-accent/20">
             <div class="text-sm font-medium text-foreground mb-1">{{ item.title }}</div>
@@ -149,8 +149,8 @@
 
       <!-- Roadmap -->
       <div class="mb-8">
-        <h3 class="text-lg font-semibold text-foreground mb-3">{{ t('roadmapTitle') }}</h3>
-        <p class="text-sm text-muted-foreground mb-4">{{ t('roadmapDesc') }}</p>
+        <h3 class="text-lg font-semibold text-foreground mb-3">{{ $t('home.roadmapTitle') }}</h3>
+        <p class="text-sm text-muted-foreground mb-4">{{ $t('home.roadmapDesc') }}</p>
         <div class="space-y-2">
           <div v-for="item in roadmapItems" :key="item.key"
             class="flex items-start gap-3 p-3 rounded-lg border border-border">
@@ -172,12 +172,12 @@
 
       <!-- Open source CTA -->
       <div class="mb-8 p-5 rounded-lg border border-primary/20 bg-primary/5 text-center">
-        <h3 class="text-lg font-semibold text-foreground mb-2">{{ t('openSourceTitle') }}</h3>
-        <p class="text-sm text-muted-foreground mb-4">{{ t('openSourceDesc') }}</p>
+        <h3 class="text-lg font-semibold text-foreground mb-2">{{ $t('home.openSourceTitle') }}</h3>
+        <p class="text-sm text-muted-foreground mb-4">{{ $t('home.openSourceDesc') }}</p>
         <a href="https://github.com/felixboehm/open-learn"
           target="_blank" rel="noopener"
           class="inline-block px-5 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition">
-          {{ t('viewOnGitHub') }}
+          {{ $t('home.viewOnGitHub') }}
         </a>
       </div>
     </div>
@@ -187,11 +187,13 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useLessons } from '../composables/useLessons'
 import { useLanguage } from '../composables/useLanguage'
 import { formatLangName } from '../utils/formatters'
 
 const router = useRouter()
+const { t } = useI18n()
 const { availableContent, isLoading, loadAvailableContent } = useLessons()
 const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 
@@ -211,122 +213,52 @@ function handleClickOutside(e) {
   }
 }
 
-const isDE = computed(() => selectedLanguage.value === 'deutsch')
-
-function t(key) {
-  const strings = {
-    title: isDE.value ? 'Lerne alles. Kostenlos. In deinem Tempo.' : 'Learn anything. For free. On your terms.',
-    subtitle: isDE.value
-      ? 'Ohne Konto, ohne Werbung, ohne Tracking. Dein Fortschritt bleibt in deinem Browser — immer.'
-      : 'No account, no ads, no tracking. Your data stays in your browser — always.',
-    getStartedTitle: isDE.value ? 'Sprache wählen und loslegen' : 'Pick a language and get started',
-    howItWorks: isDE.value ? 'So funktioniert es' : 'How It Works',
-    whatYouCanLearn: isDE.value ? 'Was du lernen kannst' : 'What You Can Learn',
-    whatYouCanLearnDesc: isDE.value
-      ? 'Open Learn eignet sich für jedes Thema — von Fremdsprachen über Mathe bis zur Führerschein-Theorie. Alles, was sich in Lektionen mit Fragen und Antworten strukturieren lässt, funktioniert.'
-      : 'Open Learn works for any subject — from foreign languages to math to driving theory. Anything that can be structured into lessons with questions and answers works.',
-    builtInTools: isDE.value ? 'Was alles eingebaut ist' : 'Built-in Tools',
-    forCreators: isDE.value ? 'Eigene Workshops erstellen' : 'Create Your Own Workshops',
-    forCreatorsDesc: isDE.value
-      ? 'Erstelle dein eigenes Lernmaterial und teile es mit der Welt. Kein Programmieren nötig — hoste kostenlos auf GitHub Pages und teile mit einem Link.'
-      : 'Build your own learning content and share it with the world. No coding required — host for free on GitHub Pages and share with a link.',
-    forCreatorsLink: isDE.value ? 'So erstellst du einen Workshop' : 'Learn how to create a workshop',
-    privacyTitle: isDE.value ? 'Privatsphäre und Datenhoheit' : 'Privacy & Data Ownership',
-    roadmapTitle: isDE.value ? 'Was kommt als Nächstes' : 'What\'s Coming Next',
-    roadmapDesc: isDE.value
-      ? 'Open Learn wird aktiv weiterentwickelt. Hier sind einige der geplanten Funktionen:'
-      : 'Open Learn is actively developed. Here are some of the features we\'re working on:',
-    openSourceTitle: isDE.value ? 'Open Source — für immer' : 'Open Source — Forever',
-    openSourceDesc: isDE.value
-      ? 'Open Learn ist quelloffen und kostenlos. Schau dir den Code an, melde Fehler, oder trage bei.'
-      : 'Open Learn is open source and free. View the code, report issues, or contribute.',
-    viewOnGitHub: isDE.value ? 'Auf GitHub ansehen' : 'View on GitHub',
-  }
-  return strings[key] || key
-}
-
-const features = computed(() => isDE.value ? [
-  { key: 'any', icon: '🎯', title: 'Jedes Thema', desc: 'Sprachen, Mathe, Führerschein-Theorie, Musik — alles, was sich strukturieren lässt' },
-  { key: 'rich', icon: '🎬', title: 'Reichhaltiges Lernerlebnis', desc: 'Videos, Audio mit variabler Geschwindigkeit, Quizze, Multiple-Choice und Fortschrittsverfolgung' },
-  { key: 'create', icon: '✏️', title: 'Eigene Inhalte erstellen', desc: 'Workshops in einfachem YAML schreiben. Auf GitHub, IPFS oder beliebiger URL hosten und per Link teilen' },
-  { key: 'infra', icon: '🔒', title: 'Null Infrastruktur', desc: 'Läuft als statische Seite. Kein Server, keine Datenbank. Offline-fähig. Optionaler P2P-Sync zwischen Geräten' },
-] : [
-  { key: 'any', icon: '🎯', title: 'Any Subject', desc: 'Languages, math, driving theory, music — if it can be structured, it can be learned here' },
-  { key: 'rich', icon: '🎬', title: 'Rich Learning Experience', desc: 'Videos, audio with variable speed, interactive quizzes, multiple-choice, and progress tracking' },
-  { key: 'create', icon: '✏️', title: 'Your Content, Your Way', desc: 'Write workshops in simple YAML. Host on GitHub, IPFS, or any URL. Share with a link' },
-  { key: 'infra', icon: '🔒', title: 'Zero Infrastructure', desc: 'Runs as a static site. No server, no database. Works offline. Optional P2P sync across devices' },
+const features = computed(() => [
+  { key: 'any', icon: '🎯', title: t('home.features.anySubject'), desc: t('home.features.anySubjectDesc') },
+  { key: 'rich', icon: '🎬', title: t('home.features.richExperience'), desc: t('home.features.richExperienceDesc') },
+  { key: 'create', icon: '✏️', title: t('home.features.yourContent'), desc: t('home.features.yourContentDesc') },
+  { key: 'infra', icon: '🔒', title: t('home.features.zeroInfra'), desc: t('home.features.zeroInfraDesc') },
 ])
 
-const steps = computed(() => isDE.value ? [
-  { title: 'Sprache wählen', desc: 'Workshops sind in verschiedenen Sprachen verfügbar. Wähle deine Sprache — Oberfläche und Inhalte passen sich an.' },
-  { title: 'Workshop starten', desc: 'Klicke auf einen Workshop und starte sofort — kein Konto nötig.' },
-  { title: 'Lernen & Fortschritt', desc: 'Starte eine Lektion, beantworte Fragen, höre Audio, markiere Gelerntes und gestalte deinen eigenen Lernpfad.' },
-] : [
-  { title: 'Pick a Language', desc: 'Workshops are available in different languages. Choose yours — the interface and content adapt.' },
-  { title: 'Start a Workshop', desc: 'Click any workshop and start immediately — no sign-up required.' },
-  { title: 'Learn & Track', desc: 'Start a lesson, answer questions, listen to audio, mark items learned, and customize your learning path.' },
+const steps = computed(() => [
+  { title: t('home.steps.pickLang'), desc: t('home.steps.pickLangDesc') },
+  { title: t('home.steps.startWorkshop'), desc: t('home.steps.startWorkshopDesc') },
+  { title: t('home.steps.learnTrack'), desc: t('home.steps.learnTrackDesc') },
 ])
 
-const useCaseExamples = computed(() => isDE.value ? [
-  { key: 'lang', icon: '🌍', label: 'Fremdsprachen' },
-  { key: 'math', icon: '🧮', label: 'Mathematik' },
-  { key: 'drive', icon: '🚗', label: 'Führerschein-Theorie' },
-  { key: 'music', icon: '🎵', label: 'Musiktheorie' },
-  { key: 'code', icon: '💻', label: 'Programmieren' },
-  { key: 'science', icon: '🔬', label: 'Naturwissenschaften' },
-  { key: 'history', icon: '📜', label: 'Geschichte' },
-  { key: 'med', icon: '🏥', label: 'Medizin & Pflege' },
-  { key: 'law', icon: '⚖️', label: 'Rechtswissen' },
-] : [
-  { key: 'lang', icon: '🌍', label: 'Foreign Languages' },
-  { key: 'math', icon: '🧮', label: 'Mathematics' },
-  { key: 'drive', icon: '🚗', label: 'Driving Theory' },
-  { key: 'music', icon: '🎵', label: 'Music Theory' },
-  { key: 'code', icon: '💻', label: 'Programming' },
-  { key: 'science', icon: '🔬', label: 'Science' },
-  { key: 'history', icon: '📜', label: 'History' },
-  { key: 'med', icon: '🏥', label: 'Medicine & Nursing' },
-  { key: 'law', icon: '⚖️', label: 'Legal Studies' },
+const useCaseExamples = computed(() => [
+  { key: 'lang', icon: '🌍', label: t('home.useCases.languages') },
+  { key: 'math', icon: '🧮', label: t('home.useCases.math') },
+  { key: 'drive', icon: '🚗', label: t('home.useCases.driving') },
+  { key: 'music', icon: '🎵', label: t('home.useCases.music') },
+  { key: 'code', icon: '💻', label: t('home.useCases.coding') },
+  { key: 'science', icon: '🔬', label: t('home.useCases.science') },
+  { key: 'history', icon: '📜', label: t('home.useCases.history') },
+  { key: 'med', icon: '🏥', label: t('home.useCases.medicine') },
+  { key: 'law', icon: '⚖️', label: t('home.useCases.law') },
 ])
 
-const tools = computed(() => isDE.value ? [
-  { key: 'quiz', icon: '✅', title: '4 Assessment-Typen', desc: 'Freitext-Eingabe, Multiple-Choice, Single-Select und klassische Frage-Antwort-Karten' },
-  { key: 'audio', icon: '🔊', title: 'Audio-System', desc: 'MP3-Aussprache mit variabler Geschwindigkeit (0.6×–1.0×), Sperrbildschirm-Steuerung und Auto-Play' },
-  { key: 'video', icon: '🎬', title: 'Video-Einbettung', desc: 'YouTube-Videos und lokale Videodateien direkt in Lektionen einbinden' },
-  { key: 'progress', icon: '📊', title: 'Fortschritt & Lernelemente', desc: 'Markiere Vokabeln und Konzepte als gelernt. Fortschritt pro Lektion und Workshop sichtbar' },
-  { key: 'coach', icon: '🎓', title: 'Coach-Integration', desc: 'Antworten optional an einen externen Coach-Service weiterleiten — für Feedback und Auswertung' },
-  { key: 'sync', icon: '🔄', title: 'P2P-Sync (GunDB)', desc: 'Fortschritt dezentral zwischen Geräten synchronisieren — kein zentraler Server nötig' },
-] : [
-  { key: 'quiz', icon: '✅', title: '4 Assessment Types', desc: 'Free-text input, multiple-choice, single-select, and classic Q&A flashcards' },
-  { key: 'audio', icon: '🔊', title: 'Audio System', desc: 'MP3 pronunciation with variable speed (0.6×–1.0×), lock screen controls, and auto-play' },
-  { key: 'video', icon: '🎬', title: 'Video Embeds', desc: 'YouTube videos and local video files embedded directly into lessons' },
-  { key: 'progress', icon: '📊', title: 'Progress & Learning Items', desc: 'Mark vocabulary and concepts as learned. Progress visible per lesson and workshop' },
-  { key: 'coach', icon: '🎓', title: 'Coach Integration', desc: 'Optionally forward answers to an external coach service — for feedback and evaluation' },
-  { key: 'sync', icon: '🔄', title: 'P2P Sync (GunDB)', desc: 'Sync progress across devices peer-to-peer — no central server needed' },
+const tools = computed(() => [
+  { key: 'quiz', icon: '✅', title: t('home.tools.assessments'), desc: t('home.tools.assessmentsDesc') },
+  { key: 'audio', icon: '🔊', title: t('home.tools.audio'), desc: t('home.tools.audioDesc') },
+  { key: 'video', icon: '🎬', title: t('home.tools.video'), desc: t('home.tools.videoDesc') },
+  { key: 'progress', icon: '📊', title: t('home.tools.progress'), desc: t('home.tools.progressDesc') },
+  { key: 'coach', icon: '🎓', title: t('home.tools.coach'), desc: t('home.tools.coachDesc') },
+  { key: 'sync', icon: '🔄', title: t('home.tools.sync'), desc: t('home.tools.syncDesc') },
 ])
 
-const privacyPoints = computed(() => isDE.value ? [
-  { key: 'local', title: 'Alles lokal', desc: 'Fortschritt, Einstellungen und Antworten bleiben in deinem Browser. Nichts wird an einen Server gesendet.' },
-  { key: 'notrack', title: 'Kein Tracking', desc: 'Keine Cookies, kein Analytics, keine Werbung. Wir wissen nicht, wer du bist.' },
-  { key: 'export', title: 'Deine Daten gehören dir', desc: 'Exportiere und importiere deine Daten jederzeit als JSON. Du hast die volle Kontrolle.' },
-] : [
-  { key: 'local', title: 'Everything Local', desc: 'Progress, settings, and answers stay in your browser. Nothing is sent to a server.' },
-  { key: 'notrack', title: 'Zero Tracking', desc: 'No cookies, no analytics, no ads. We don\'t know who you are.' },
-  { key: 'export', title: 'Your Data Is Yours', desc: 'Export and import your data anytime as JSON. You\'re in full control.' },
+const privacyPoints = computed(() => [
+  { key: 'local', title: t('home.privacy.local'), desc: t('home.privacy.localDesc') },
+  { key: 'notrack', title: t('home.privacy.noTracking'), desc: t('home.privacy.noTrackingDesc') },
+  { key: 'export', title: t('home.privacy.yourData'), desc: t('home.privacy.yourDataDesc') },
 ])
 
-const roadmapItems = computed(() => isDE.value ? [
-  { key: 'coach', icon: '🤖', title: 'KI-Lerncoach', desc: 'Ein autonomer Coach-Agent, der Feedback gibt, Fortschritte bewertet und personalisierte Lernpfade vorschlägt.', issue: 45 },
-  { key: 'kids', icon: '🧒', title: 'Lernmodus für Kinder', desc: 'Vereinfachte Oberfläche für Kinder — weniger Buttons, größere Elemente, geführtes Lernen.', issue: 46 },
-  { key: 'images', icon: '🖼️', title: 'Bilder in Lektionen', desc: 'Screenshots und Bilder als Sektions-Header — für Schritt-für-Schritt-Anleitungen und visuelle Erklärungen.', issue: 47 },
-  { key: 'i18n', icon: '🌐', title: 'Vollständige Mehrsprachigkeit & RTL', desc: 'Die gesamte Plattform in jeder Sprache — inklusive Rechts-nach-Links-Unterstützung für Arabisch und Farsi.', issue: 44 },
-  { key: 'upload', icon: '📄', title: 'Datei-Upload', desc: 'PDFs, Skripte und andere Dokumente als Lernmaterial hochladen und bereitstellen.', issue: 51 },
-] : [
-  { key: 'coach', icon: '🤖', title: 'AI Learning Coach', desc: 'An autonomous coach agent that gives feedback, evaluates progress, and suggests personalized learning paths.', issue: 45 },
-  { key: 'kids', icon: '🧒', title: 'Kids Mode', desc: 'Simplified interface for children — fewer buttons, larger elements, guided learning.', issue: 46 },
-  { key: 'images', icon: '🖼️', title: 'Images in Lessons', desc: 'Screenshots and images as section headers — for step-by-step guides and visual explanations.', issue: 47 },
-  { key: 'i18n', icon: '🌐', title: 'Full i18n & RTL Support', desc: 'The entire platform in any language — including right-to-left support for Arabic and Farsi.', issue: 44 },
-  { key: 'upload', icon: '📄', title: 'File Uploads', desc: 'Upload PDFs, scripts, and other documents as learning material.', issue: 51 },
+const roadmapItems = computed(() => [
+  { key: 'coach', icon: '🤖', title: t('home.roadmap.aiCoach'), desc: t('home.roadmap.aiCoachDesc'), issue: 45 },
+  { key: 'kids', icon: '🧒', title: t('home.roadmap.kidsMode'), desc: t('home.roadmap.kidsModeDesc'), issue: 46 },
+  { key: 'images', icon: '🖼️', title: t('home.roadmap.images'), desc: t('home.roadmap.imagesDesc'), issue: 47 },
+  { key: 'i18n', icon: '🌐', title: t('home.roadmap.i18n'), desc: t('home.roadmap.i18nDesc'), issue: 44 },
+  { key: 'upload', icon: '📄', title: t('home.roadmap.uploads'), desc: t('home.roadmap.uploadsDesc'), issue: 51 },
 ])
 
 function selectLanguage(lang) {
