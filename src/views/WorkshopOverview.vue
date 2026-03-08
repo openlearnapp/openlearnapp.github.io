@@ -31,7 +31,7 @@
       <!-- Workshop cards grid -->
       <div v-if="workshops.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card
-          v-for="ws in visibleWorkshops"
+          v-for="ws in workshops"
           :key="ws"
           @click="openWorkshop(ws)"
           class="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/50 overflow-hidden"
@@ -84,15 +84,6 @@
         {{ t('noWorkshops') }}
       </p>
 
-      <!-- Show more button -->
-      <div v-if="workshops.length > maxVisible && !showAll" class="mt-4 text-center">
-        <button
-          @click="showAll = true"
-          class="px-6 py-2 text-sm font-medium text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition">
-          {{ t('showAll') }} ({{ workshops.length - maxVisible }} {{ t('more') }})
-        </button>
-      </div>
-
       <!-- Workshop discovery -->
       <div v-if="availableWorkshops.length > 0" class="mt-6">
         <label class="block text-sm font-medium text-muted-foreground mb-3">
@@ -121,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useLessons } from '../composables/useLessons'
 import { useLanguage } from '../composables/useLanguage'
@@ -136,8 +127,6 @@ const { availableContent, isLoading, loadAvailableContent, loadWorkshopsForLangu
 const { selectedLanguage, setLanguage } = useLanguage()
 
 const copiedWorkshop = ref(null)
-const showAll = ref(false)
-const maxVisible = 6
 const addedNotice = ref(null)
 
 const knownWorkshops = []
@@ -149,8 +138,6 @@ function t(key) {
   const strings = {
     workshops: isDE.value ? 'Workshops' : 'Workshops',
     noWorkshops: isDE.value ? 'Keine Workshops verfügbar.' : 'No workshops available.',
-    showAll: isDE.value ? 'Alle anzeigen' : 'Show all',
-    more: isDE.value ? 'weitere' : 'more',
     discover: isDE.value ? 'Workshops entdecken' : 'Discover Workshops',
     addedNotice: isDE.value ? 'wurde hinzugefügt. Verfügbar in: ' : 'was added. Available in: ',
     dismiss: isDE.value ? 'Ausblenden' : 'Dismiss',
@@ -169,18 +156,9 @@ const workshops = computed(() => {
   return Object.keys(availableContent.value[learning.value] || {})
 })
 
-const visibleWorkshops = computed(() => {
-  if (showAll.value) return workshops.value
-  return workshops.value.slice(0, maxVisible)
-})
-
 const availableWorkshops = computed(() => {
   const sources = getContentSources()
   return knownWorkshops.filter(w => !sources.includes(w.url))
-})
-
-watch(learning, () => {
-  showAll.value = false
 })
 
 function getWorkshopCardStyle(workshop) {
