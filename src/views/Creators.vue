@@ -72,7 +72,7 @@
       <h3 class="text-lg font-semibold text-foreground mb-3">{{ t('shareTitle') }}</h3>
       <p class="text-sm text-muted-foreground mb-3">{{ t('shareDesc') }}</p>
       <div class="p-3 rounded-lg bg-accent/30 font-mono text-xs text-muted-foreground break-all">
-        https://felixboehm.github.io/open-learn/#/add?source=https://YOUR-USER.github.io/YOUR-REPO/index.yaml
+        https://open-learn.app/#/add?source=https://YOUR-USER.github.io/YOUR-REPO/index.yaml
       </div>
     </div>
 
