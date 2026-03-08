@@ -9,7 +9,7 @@ export default defineConfig(({ command }) => ({
     // Only use SSL in dev mode, not for preview/build
     ...(command === 'serve' && !process.env.CI ? [basicSsl()] : [])
   ],
-  base: '/open-learn/',
+  base: '/',
   server: {
     https: command === 'serve' && !process.env.CI,
     cors: true  // Enable CORS for cross-origin requests

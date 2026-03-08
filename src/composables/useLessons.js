@@ -96,7 +96,7 @@ export function useLessons() {
   function getShareUrl(workshopSlug) {
     const sourceUrl = getSourceForSlug(workshopSlug)
     if (!sourceUrl) return null
-    return `https://felixboehm.github.io/open-learn/#/add?source=${encodeURIComponent(sourceUrl)}`
+    return `https://open-learn.app/#/add?source=${encodeURIComponent(sourceUrl)}`
   }
 
   // Load a remote content source's languages and workshops
