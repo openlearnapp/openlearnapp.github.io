@@ -69,6 +69,7 @@
                 {{ getWorkshopSourceLabel(ws) }}
               </a>
               <button
+                v-if="!isDefaultWorkshop(ws)"
                 @click.stop="removeSource(ws)"
                 class="p-1 rounded text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition text-xs"
                 title="Remove">
@@ -123,7 +124,7 @@ const emit = defineEmits(['update-title'])
 const router = useRouter()
 const route = useRoute()
 
-const { availableContent, isLoading, loadAvailableContent, loadWorkshopsForLanguage, removeContentSource, isRemoteWorkshop, getSourceForSlug, getWorkshopMeta, getContentSources } = useLessons()
+const { availableContent, isLoading, loadAvailableContent, loadWorkshopsForLanguage, removeContentSource, isRemoteWorkshop, isDefaultSource, getSourceForSlug, getWorkshopMeta, getContentSources } = useLessons()
 const { selectedLanguage, setLanguage } = useLanguage()
 
 const copiedWorkshop = ref(null)
@@ -208,6 +209,11 @@ function getWorkshopSourceLabel(workshop) {
   } catch {
     return sourceUrl
   }
+}
+
+function isDefaultWorkshop(workshop) {
+  const sourceUrl = getSourceForSlug(workshop)
+  return sourceUrl ? isDefaultSource(sourceUrl) : false
 }
 
 function getWorkshopSourceUrl(workshop) {

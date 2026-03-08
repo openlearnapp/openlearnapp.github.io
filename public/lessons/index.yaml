@@ -5,7 +5,3 @@ languages:
     code: de-DE
   - folder: english
     code: en-US
-  - folder: farsi
-    code: fa-IR
-  - folder: arabic
-    code: ar-SA

@@ -28,6 +28,13 @@ function parseSource(source) {
   return null
 }
 
+// Default content sources shipped with the platform
+const DEFAULT_CONTENT_SOURCES = [
+  'https://open-learn.app/workshop-portugiesisch/index.yaml',
+  'https://open-learn.app/workshop-farsi/index.yaml',
+  'https://open-learn.app/workshop-arabisch/index.yaml',
+]
+
 export function useLessons() {
   const availableContent = ref({})
   const languageCodes = ref({}) // Store language codes
@@ -43,6 +50,21 @@ export function useLessons() {
     } catch {
       return []
     }
+  }
+
+  // Get all content sources (default + user-added), deduplicated
+  function getAllContentSources() {
+    const userSources = getContentSources()
+    const all = [...DEFAULT_CONTENT_SOURCES]
+    for (const s of userSources) {
+      if (!all.includes(s)) all.push(s)
+    }
+    return all
+  }
+
+  // Check if a source is a default (non-removable) source
+  function isDefaultSource(url) {
+    return DEFAULT_CONTENT_SOURCES.includes(url)
   }
 
   // Save content sources to localStorage
@@ -232,8 +254,8 @@ export function useLessons() {
         console.log(`  ✓ Language: ${key} (${source.type}) (${source.code || 'no code'})`)
       }
 
-      // Load remote content sources from localStorage
-      const contentSources = getContentSources()
+      // Load remote content sources (defaults + user-added)
+      const contentSources = getAllContentSources()
       for (const sourceUrl of contentSources) {
         await loadContentSource(sourceUrl, content, codes)
       }
@@ -487,8 +509,10 @@ export function useLessons() {
     getLanguageCode,
     getWorkshopCode,
     getContentSources,
+    getAllContentSources,
     addContentSource,
     removeContentSource,
+    isDefaultSource,
     isRemoteWorkshop,
     resolveWorkshopKey,
     getSourceForSlug,
