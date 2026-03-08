@@ -82,7 +82,7 @@ export function useLessons() {
     const sources = getContentSources()
     // Sources include index.yaml filename, strip it for prefix matching
     return sources.find(s => {
-      const base = s.replace(/\/workshop\.yaml$/, '')
+      const base = s.replace(/\/[^/]+\.yaml$/, '')
       return url.startsWith(base)
     }) || null
   }

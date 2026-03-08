@@ -219,26 +219,7 @@ async function copyWorkshopLink(workshop) {
   }
 }
 
-function getWorkshopWebsite(workshop) {
-  const sourceUrl = getSourceForSlug(workshop)
-  if (!sourceUrl) return null
-  try {
-    const url = new URL(sourceUrl)
-    url.pathname = url.pathname.replace(/\/index\.yaml$/, '/')
-    return url.toString()
-  } catch {
-    return null
-  }
-}
-
 function openWorkshop(workshop) {
-  if (isRemoteWorkshop(workshop)) {
-    const website = getWorkshopWebsite(workshop)
-    if (website) {
-      window.open(website, '_blank', 'noopener')
-      return
-    }
-  }
   localStorage.setItem('lastWorkshop', workshop)
   router.push({
     name: 'lessons-overview',
@@ -259,8 +240,7 @@ async function removeSource(workshopSlug) {
 
 function cleanupLegacySources() {
   const legacyUrls = [
-    'https://felixboehm.github.io/workshop-open-learn/index.yaml',
-    'https://felixboehm.github.io/workshop-english/index.yaml'
+    'https://felixboehm.github.io/workshop-open-learn/index.yaml'
   ]
   const sources = getContentSources()
   const cleaned = sources.filter(s => !legacyUrls.includes(s))
