@@ -28,12 +28,23 @@ function parseSource(source) {
   return null
 }
 
-// Default content sources shipped with the platform
-const DEFAULT_CONTENT_SOURCES = [
-  'https://open-learn.app/workshop-portugiesisch/index.yaml',
-  'https://open-learn.app/workshop-farsi/index.yaml',
-  'https://open-learn.app/workshop-arabisch/index.yaml',
-]
+// Default content sources loaded from default-sources.yaml
+let defaultContentSources = []
+
+async function loadDefaultSources() {
+  if (defaultContentSources.length > 0) return defaultContentSources
+  try {
+    const response = await fetch('default-sources.yaml')
+    if (!response.ok) return []
+    const text = await response.text()
+    const data = yaml.load(text)
+    defaultContentSources = data?.sources || []
+    console.log(`📋 Loaded ${defaultContentSources.length} default sources`)
+  } catch (error) {
+    console.warn('⚠️ Failed to load default-sources.yaml:', error)
+  }
+  return defaultContentSources
+}
 
 export function useLessons() {
   const availableContent = ref({})
@@ -55,7 +66,7 @@ export function useLessons() {
   // Get all content sources (default + user-added), deduplicated
   function getAllContentSources() {
     const userSources = getContentSources()
-    const all = [...DEFAULT_CONTENT_SOURCES]
+    const all = [...defaultContentSources]
     for (const s of userSources) {
       if (!all.includes(s)) all.push(s)
     }
@@ -64,7 +75,7 @@ export function useLessons() {
 
   // Check if a source is a default (non-removable) source
   function isDefaultSource(url) {
-    return DEFAULT_CONTENT_SOURCES.includes(url)
+    return defaultContentSources.includes(url)
   }
 
   // Save content sources to localStorage
@@ -255,7 +266,8 @@ export function useLessons() {
         console.log(`  ✓ Language: ${key} (${source.type}) (${source.code || 'no code'})`)
       }
 
-      // Load remote content sources (defaults + user-added)
+      // Load default sources from YAML, then merge with user-added
+      await loadDefaultSources()
       const contentSources = getAllContentSources()
       for (const sourceUrl of contentSources) {
         await loadContentSource(sourceUrl, content, codes)
