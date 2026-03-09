@@ -140,10 +140,10 @@ sections:
           - ["bin", "am", "to be"]
 ```
 
-### Adding a New Topic
+### Adding a New Workshop
 
-1. Create folder structure: `public/lessons/<learning>/<teaching>/`
-2. Add topic to `public/lessons/<learning>/topics.yaml`
+1. Create folder structure: `public/lessons/<learning>/<workshop>/`
+2. Add workshop to `public/lessons/<learning>/workshops.yaml`
 3. Create `lessons.yaml` with lesson folder names
 4. Add lesson folders with `content.yaml` files
 
@@ -191,16 +191,17 @@ Push to the `main` branch triggers automatic deployment via GitHub Actions (`.gi
 - **Dynamic Routing**: Hash-based routing for static hosting
 
 ### Routes
-- `#/` - Home (topic selection)
-- `#/:learning/:teaching/lessons` - Lessons overview
-- `#/:learning/:teaching/lesson/:number` - Lesson detail
-- `#/:learning/:teaching/items/:number?` - Learning items
+- `#/` - Home (workshop selection)
+- `#/:learning/:workshop/lessons` - Lessons overview
+- `#/:learning/:workshop/lesson/:number` - Lesson detail
+- `#/:learning/:workshop/items/:number?` - Learning items
 - `#/settings` - Settings panel
+- `#/add?source=URL` - Add external workshop
 
 ### Data Flow
 1. Load `lessons/index.yaml` → get available interface languages
-2. Load `lessons/{lang}/topics.yaml` → get topics
-3. Load `lessons/{lang}/{topic}/lessons.yaml` → get lesson folders
+2. Load `lessons/{lang}/workshops.yaml` → get workshops
+3. Load `lessons/{lang}/{workshop}/lessons.yaml` → get lesson folders
 4. Load lesson content dynamically with js-yaml
 5. Render with Vue components
 

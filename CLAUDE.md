@@ -53,19 +53,17 @@ open-learn/
 │   └── utils/
 │       └── formatters.js  # Display name formatting
 ├── public/
+│   ├── CNAME              # Custom domain: open-learn.app
 │   └── lessons/           # YAML lesson content (deployed as-is)
 │       ├── index.yaml    # Root index - lists available interface languages
 │       ├── deutsch/       # German interface folder
-│       │   ├── workshops.yaml         # Lists workshops (portugiesisch)
-│       │   └── portugiesisch/
-│       │       ├── lessons.yaml       # Lists lesson folder names
-│       │       ├── 01-essential-verbs/
-│       │       │   ├── content.yaml   # Lesson content
-│       │       │   └── audio/         # Audio files for this lesson
-│       │       ├── 02-action-verbs/
-│       │       │   ├── content.yaml
-│       │       │   └── audio/
-│       │       └── ...
+│       │   ├── workshops.yaml         # Lists bundled workshops
+│       │   ├── open-learn-guide/      # Bundled: platform tutorial
+│       │   └── open-learn-feedback/   # Bundled: feedback workshop
+│       ├── english/       # English interface folder
+│       │   ├── workshops.yaml
+│       │   ├── open-learn-guide/
+│       │   └── open-learn-feedback/
 │       └── README.md      # Lesson system documentation
 ├── docs/
 │   ├── features.md        # Complete feature inventory
@@ -83,7 +81,7 @@ open-learn/
 │   ├── coach-forwarding.test.js # Coach batch queue + API tests
 │   └── e2e/
 │       └── app.spec.js    # Playwright E2E tests
-├── vite.config.js         # Vite config (base: '/open-learn/')
+├── vite.config.js         # Vite config (base: '/')
 ├── tailwind.config.js     # Tailwind customization
 ├── playwright.config.js   # Playwright E2E test config
 └── package.json           # Dependencies and scripts
@@ -135,9 +133,10 @@ pnpm test:e2e
 
 **Composables** (Reusable logic, all use singleton pattern — see `docs/adr/005`):
 - `useLessons()` - Lesson loading with js-yaml parser
-  - `loadAvailableContent()` - Load main lesson index + registered content sources
+  - `loadAvailableContent()` - Load main lesson index + default + user content sources
   - `loadWorkshopsForLanguage(lang)` - Load workshops for a language
   - `loadAllLessonsForWorkshop(lang, workshop)` - Load all lessons for a workshop
+  - `DEFAULT_CONTENT_SOURCES` - Platform-shipped workshop repos (portugiesisch, farsi, arabisch)
   - Content source management (add/remove external workshops)
   - IPFS URL resolution
 - `useSettings()` - Settings management
@@ -207,13 +206,17 @@ sections:
 
 **Key Concepts**:
 - **Three-level hierarchy**: Language → Workshop → Lesson
-  - `lessons/<language>/<workshop>/<lesson-folder>/`
-  - Example: `deutsch/portugiesisch/01-essential-verbs/` = Portuguese lesson in German interface
-  - Example: `deutsch/math-algebra/01-basics/` = Math lesson in German interface
+  - Bundled: `lessons/<language>/<workshop>/<lesson-folder>/`
+  - Remote: loaded from `DEFAULT_CONTENT_SOURCES` or user-added sources
+  - Example: `deutsch/open-learn-guide/01-welcome/` = bundled tutorial
+  - Example: `open-learn.app/workshop-portugiesisch/` = remote workshop
 - **Self-contained lessons**: Each lesson folder contains its content and audio files
   - `content.yaml` - Lesson content
   - `audio/` - Audio files for pronunciation
   - Makes lessons portable and distributable (can be hosted on IPFS, CDN, etc.)
+- **Workshop repos**: Most workshops live in dedicated repos under `openlearnapp` org
+  - Deployed to `open-learn.app/<repo-name>/` via GitHub Pages
+  - Only `open-learn-guide` and `open-learn-feedback` are bundled in this repo
 - **Labels**: Optional categorization (e.g. for grammar, like "Futur", "Passiv")
 - **Related items (`rel`)**: Vocabulary/concepts with first element as unique identifier
 - **Markdown support**: Section explanations support markdown formatting
@@ -344,7 +347,7 @@ See `docs/features.md` for the complete feature inventory and `docs/adr/` for ar
 - Runs build
 - Deploys `dist/` to GitHub Pages
 
-**Important**: Vite is configured with `base: '/open-learn/'` for the GitHub Pages subdirectory deployment.
+**Important**: Vite is configured with `base: '/'` for custom domain deployment at `open-learn.app`.
 
 ## Browser APIs Used
 
