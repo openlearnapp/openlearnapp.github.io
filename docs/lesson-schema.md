@@ -89,6 +89,8 @@ Each lesson contains 5-10 sections. Sections have:
 sections:
   - title: "Section Title"          # Section title (string)
     video: "https://youtube.com/watch?v=abc123"  # Optional video URL
+    image: "screenshots/step1.png"  # Optional image (relative path or full URL)
+    image_caption: "The home screen"  # Optional caption shown below the image
     explanation: |                  # Optional markdown explanation
       This is an **explanation** of the section.
       It supports _markdown_ formatting.
@@ -99,6 +101,18 @@ sections:
 - Displayed above the explanation as an embedded video
 - YouTube watch URLs (`youtube.com/watch?v=...`) and short URLs (`youtu.be/...`) are automatically converted to embed URLs
 - Other URLs (e.g., Vimeo embed URLs) are used as-is in an iframe
+
+**Image Field** (optional):
+- Displayed below the video (if any) and above the explanation as a section header image
+- Supports both local relative paths and full URLs:
+  - **Relative path**: `image: "screenshots/step1.png"` — file is resolved relative to the lesson folder
+  - **Absolute URL**: `image: "https://example.com/photo.png"` — used as-is
+- Clicking the image opens it in a fullscreen lightbox overlay; press ESC or click to close
+- Renders with `max-h-96` height constraint and covers the full width of the card
+
+**Image Caption Field** (optional):
+- `image_caption: "Optional caption text"` — displayed as small italic text centered below the image
+- Also used as the `alt` attribute for the image (falls back to section title if absent)
 
 ### Example Structure
 

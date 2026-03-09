@@ -1,0 +1,67 @@
+number: 4
+title: "Bilder & Medien in Lektionen"
+description: "Wie du Bilder und Screenshots zu Lektionen hinzufügst"
+sections:
+  - title: "Ein Bild zu einer Sektion hinzufügen"
+    image: "https://picsum.photos/seed/openlearn1/800/400"
+    image_caption: "Beispiel: Ein Bild als Sektions-Header"
+    explanation: |
+      Bilder machen Lektionen visueller und leichter verständlich. Mit dem `image`-Feld kannst du jeder Sektion ein Bild hinzufügen.
+
+      ```yaml
+      sections:
+        - title: "Meine Sektion"
+          image: "screenshot.png"
+          image_caption: "Optionale Bildunterschrift"
+      ```
+
+      Das Bild erscheint über der Erklärung und den Beispielen — perfekt für Schritt-für-Schritt-Anleitungen.
+    examples:
+      - q: "Mit welchem YAML-Feld fügst du ein Bild zu einer Sektion hinzu?"
+        a: "`image: \"pfad/zum/bild.png\"`"
+      - q: "Wo wird das Bild in der Lektion angezeigt?"
+        a: "Über dem Erklärungstext, als Sektions-Header"
+      - q: "Kann man einem Bild eine Bildunterschrift geben?"
+        a: "Ja, mit dem `image_caption`-Feld"
+
+  - title: "Lokale vs. externe Bilder"
+    image: "https://picsum.photos/seed/openlearn2/800/400"
+    image_caption: "Bilder können von einer URL oder lokal gespeichert sein"
+    explanation: |
+      Du hast zwei Möglichkeiten für Bildquellen:
+
+      **Lokale Bilder** (im Lektion-Ordner gespeichert):
+      ```yaml
+      image: "screenshots/schritt1.png"
+      ```
+      Datei ablegen unter: `dein-lektion-ordner/screenshots/schritt1.png`
+
+      **Externe Bilder** (beliebige URL):
+      ```yaml
+      image: "https://beispiel.de/screenshot.png"
+      ```
+    examples:
+      - q: "Wo kommen lokale Bilder hin?"
+        a: "In einen Unterordner im Lektion-Ordner, z.B. `screenshots/`"
+      - q: "Kann man Bilder aus dem Internet verwenden?"
+        a: "Ja — einfach die vollständige URL ab `https://` angeben"
+
+  - title: "Schritt-für-Schritt-Anleitungen mit Bildern"
+    image: "https://picsum.photos/seed/openlearn3/800/400"
+    image_caption: "Screenshots machen aus Lektionen visuelle Anleitungen"
+    explanation: |
+      Bilder sind am wirkungsvollsten für Schritt-für-Schritt-Tutorials. Jede Sektion wird zu einem Schritt mit Screenshot.
+
+      **Beispiel Workshop-Struktur:**
+      - Sektion 1: App öffnen → Screenshot des Startbildschirms
+      - Sektion 2: Sprache wählen → Screenshot des Dropdowns
+      - Sektion 3: Workshop starten → Screenshot der Workshop-Kachel
+
+      Klicke auf ein Bild in einer Lektion zum Vergrößern — es öffnet sich im Vollbild.
+    examples:
+      - q: "Für welche Inhalte eignen sich Bilder am besten?"
+        a: "Schritt-für-Schritt-Anleitungen, Software-Tutorials, visuelle Erklärungen"
+      - q: "Wie vergrößert man ein Bild in einer Lektion?"
+        a: "Auf das Bild klicken — es öffnet sich im Vollbild. Nochmal klicken oder ESC zum Schließen"
+      - q: "Wie viele Bilder kann eine Lektion haben?"
+        a: "Eines pro Sektion — jede Sektion kann ihr eigenes Bild haben"

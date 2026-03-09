@@ -1,0 +1,67 @@
+number: 3
+title: "Images & Media in Lessons"
+description: "How to add images and screenshots to make lessons visual"
+sections:
+  - title: "Adding an Image to a Section"
+    image: "https://picsum.photos/seed/openlearn1/800/400"
+    image_caption: "Example: A section header image"
+    explanation: |
+      Images make lessons more visual and easier to understand. You can add an image to any section using the `image` field.
+
+      ```yaml
+      sections:
+        - title: "My Section"
+          image: "screenshot.png"
+          image_caption: "Optional caption"
+      ```
+
+      The image appears above the explanation and examples — perfect for step-by-step guides.
+    examples:
+      - q: "What YAML field adds an image to a section?"
+        a: "`image: \"path/to/image.png\"`"
+      - q: "Where is the image shown in the lesson?"
+        a: "Above the explanation text, as a section header"
+      - q: "Can you add a caption to an image?"
+        a: "Yes, use the `image_caption` field"
+
+  - title: "Local vs Remote Images"
+    image: "https://picsum.photos/seed/openlearn2/800/400"
+    image_caption: "Images can come from any URL or be stored locally"
+    explanation: |
+      You have two options for image sources:
+
+      **Local images** (stored in your lesson folder):
+      ```yaml
+      image: "screenshots/step1.png"
+      ```
+      Place the file at: `your-lesson-folder/screenshots/step1.png`
+
+      **Remote images** (any URL):
+      ```yaml
+      image: "https://example.com/screenshot.png"
+      ```
+    examples:
+      - q: "Where do local images go?"
+        a: "In a subfolder inside your lesson folder, e.g. `screenshots/`"
+      - q: "Can you use images from the internet?"
+        a: "Yes — use the full URL starting with `https://`"
+
+  - title: "Step-by-Step Guides with Images"
+    image: "https://picsum.photos/seed/openlearn3/800/400"
+    image_caption: "Screenshots turn lessons into visual guides"
+    explanation: |
+      Images are most powerful for step-by-step tutorials. Each section becomes one step with a screenshot.
+
+      **Example workshop structure:**
+      - Section 1: Open the app → screenshot of home screen
+      - Section 2: Select a language → screenshot of dropdown
+      - Section 3: Start a workshop → screenshot of workshop tile
+
+      Click any image in a lesson to zoom in — it opens in fullscreen.
+    examples:
+      - q: "What type of content works best with images?"
+        a: "Step-by-step guides, software tutorials, visual explanations"
+      - q: "How do you zoom into an image in a lesson?"
+        a: "Click the image — it opens fullscreen. Click again or press ESC to close."
+      - q: "How many images can a lesson have?"
+        a: "One per section — each section can have its own image"
