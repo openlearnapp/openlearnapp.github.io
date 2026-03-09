@@ -1,5 +1,7 @@
 # 🎓 Open Learn
 
+> **[🌐 open-learn.app](https://open-learn.app)**
+
 A modern, static single-page web application for learning any topic through practical examples. Built with Vue 3, this platform features interactive lessons with audio pronunciation, progress tracking, and a clean, responsive interface.
 
 ## ✨ Features
@@ -178,7 +180,7 @@ pnpm build
 
 Push to the `main` branch triggers automatic deployment via GitHub Actions (`.github/workflows/static.yml`).
 
-**Note**: Vite is configured with `base: '/open-learn/'` for subdirectory deployment.
+**Note**: Vite is configured with `base: '/'` for custom domain deployment at [open-learn.app](https://open-learn.app).
 
 ## 🏗 Architecture
 
@@ -204,12 +206,14 @@ Push to the `main` branch triggers automatic deployment via GitHub Actions (`.gi
 
 ## 📦 Workshops
 
-Add community workshops to Open Learn by clicking the links below:
+Community workshops hosted on [open-learn.app](https://open-learn.app):
 
 | Workshop | Description | Link |
 |----------|-------------|------|
-| **Learn English** | 10 lessons covering 30 core English verbs (German interface) | [Add workshop](https://felixboehm.github.io/open-learn/#/add?source=https://felixboehm.github.io/workshop-english/index.yaml) |
-| **Getting to Know Open Learn** | Learn how the platform works and create your own workshops (DE/EN) | [Add workshop](https://felixboehm.github.io/open-learn/#/add?source=https://felixboehm.github.io/workshop-open-learn/index.yaml) |
+| **Portugiesisch** | 10 lessons — 30 core Portuguese verbs (DE) | [Start](https://open-learn.app/#/add?source=https://open-learn.app/workshop-portugiesisch) · [Repo](https://github.com/openlearnapp/workshop-portugiesisch) |
+| **Englisch** | 10 lessons — 30 core English verbs (DE) | [Start](https://open-learn.app/#/add?source=https://open-learn.app/workshop-english) · [Repo](https://github.com/openlearnapp/workshop-english) |
+| **Farsi** | 5 lessons — key words and phrases (DE/EN/FA) | [Start](https://open-learn.app/#/add?source=https://open-learn.app/workshop-farsi) · [Repo](https://github.com/openlearnapp/workshop-farsi) |
+| **Arabisch** | 5 lessons — key words and phrases (DE/EN/AR) | [Start](https://open-learn.app/#/add?source=https://open-learn.app/workshop-arabisch) · [Repo](https://github.com/openlearnapp/workshop-arabisch) |
 
 Want to create your own workshop? See the [External Workshop Guide](docs/external-workshop-guide.md).
 
