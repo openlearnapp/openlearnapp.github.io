@@ -54,6 +54,7 @@ open-learn/
 │       └── formatters.js  # Display name formatting
 ├── public/
 │   ├── CNAME              # Custom domain: open-learn.app
+│   ├── default-sources.yaml # Default workshop sources (loaded at startup)
 │   └── lessons/           # YAML lesson content (deployed as-is)
 │       ├── index.yaml    # Root index - lists available interface languages
 │       ├── deutsch/       # German interface folder
@@ -136,7 +137,7 @@ pnpm test:e2e
   - `loadAvailableContent()` - Load main lesson index + default + user content sources
   - `loadWorkshopsForLanguage(lang)` - Load workshops for a language
   - `loadAllLessonsForWorkshop(lang, workshop)` - Load all lessons for a workshop
-  - `DEFAULT_CONTENT_SOURCES` - Platform-shipped workshop repos (portugiesisch, farsi, arabisch)
+  - `default-sources.yaml` - Platform-shipped workshop sources (loaded at startup, non-removable)
   - Content source management (add/remove external workshops)
   - IPFS URL resolution
 - `useSettings()` - Settings management
@@ -207,7 +208,7 @@ sections:
 **Key Concepts**:
 - **Three-level hierarchy**: Language → Workshop → Lesson
   - Bundled: `lessons/<language>/<workshop>/<lesson-folder>/`
-  - Remote: loaded from `DEFAULT_CONTENT_SOURCES` or user-added sources
+  - Remote: loaded from `public/default-sources.yaml` or user-added sources
   - Example: `deutsch/open-learn-guide/01-welcome/` = bundled tutorial
   - Example: `open-learn.app/workshop-portugiesisch/` = remote workshop
 - **Self-contained lessons**: Each lesson folder contains its content and audio files
