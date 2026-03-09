@@ -6,11 +6,13 @@ workshops:
     description: "Lerne die Plattform kennen — Videos, Quizze, Labels und mehr. Perfekt für neue Nutzer und Workshop-Ersteller."
     color: "145 45% 92%"
     primaryColor: "220 75% 50%"
+    image: "https://picsum.photos/seed/openlearn-guide-de/600/240"
   - folder: open-learn-feedback
     code: de-DE
     title: "Open Learn Feedback"
     description: "Teile deine Meinung und hilf mit, die Zukunft von Open Learn zu gestalten."
     color: "145 40% 94%"
     primaryColor: "152 60% 36%"
+    image: "https://picsum.photos/seed/openlearn-feedback-de/600/240"
     coach:
       email: "open-learn@felixboehm.it"

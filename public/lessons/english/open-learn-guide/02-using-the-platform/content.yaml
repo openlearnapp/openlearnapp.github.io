@@ -5,6 +5,8 @@ description: "Learn how to navigate Open Learn, track your progress, and customi
 
 sections:
   - title: "Navigation"
+    image: "https://picsum.photos/seed/openlearn-nav/900/400"
+    image_caption: "The navigation bar — back button, title, and settings"
     explanation: |
       Open Learn is organized in three levels:
 
@@ -30,6 +32,8 @@ sections:
         labels: ["Navigation"]
 
   - title: "Progress & Labels"
+    image: "https://picsum.photos/seed/openlearn-progress/900/400"
+    image_caption: "Learning items and progress tracking per lesson"
     explanation: |
       Each Q&A card can have **learning items** — vocabulary or concepts attached to it. You can mark these as *learned* to track your progress.
 

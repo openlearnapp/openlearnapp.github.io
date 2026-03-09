@@ -5,6 +5,8 @@ description: "Find out what Open Learn is, how it works, and what you can do wit
 
 sections:
   - title: "What is Open Learn?"
+    image: "https://picsum.photos/seed/openlearn-welcome/900/400"
+    image_caption: "Open Learn — learn anything, for free, in your browser"
     explanation: |
       **Open Learn** is a free, open-source learning platform. You can use it to learn anything — languages, professional skills, exam prep, or any topic someone has created a workshop for.
 

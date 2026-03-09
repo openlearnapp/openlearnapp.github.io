@@ -37,6 +37,39 @@
             </video>
           </div>
 
+          <div v-if="section.image" class="mb-4">
+            <img
+              :src="resolveImagePath(section.image)"
+              :alt="section.image_caption || section.title"
+              class="w-full rounded-lg object-cover max-h-96 cursor-zoom-in shadow-sm"
+              @click="openLightbox(resolveImagePath(section.image), section.image_caption)"
+            />
+            <p v-if="section.image_caption" class="text-xs text-muted-foreground mt-1.5 text-center italic">
+              {{ section.image_caption }}
+            </p>
+          </div>
+
+          <!-- Lightbox -->
+          <Teleport to="body">
+            <div
+              v-if="lightbox.open"
+              class="fixed inset-0 bg-black/90 z-[200] flex items-center justify-center p-4 cursor-zoom-out"
+              @click="closeLightbox"
+              @keydown.esc="closeLightbox">
+              <img
+                :src="lightbox.src"
+                :alt="lightbox.caption"
+                class="max-w-full max-h-full rounded-lg shadow-2xl object-contain"
+                @click.stop />
+              <p v-if="lightbox.caption" class="absolute bottom-6 left-0 right-0 text-center text-white text-sm opacity-80">
+                {{ lightbox.caption }}
+              </p>
+              <button
+                class="absolute top-4 right-4 text-white text-3xl hover:text-white/70 transition"
+                @click="closeLightbox">✕</button>
+            </div>
+          </Teleport>
+
           <div
             v-if="section.explanation"
             class="bg-muted p-4 rounded mb-4 prose prose-sm dark:prose-invert max-w-none"
@@ -234,6 +267,7 @@ const lesson = ref(null)
 const allLessons = ref([])
 const drafts = reactive({})
 const mcLive = reactive({})
+const lightbox = reactive({ open: false, src: '', caption: '' })
 
 function isYouTubeUrl(url) {
   return /(?:youtube\.com|youtu\.be)/.test(url)
@@ -256,6 +290,35 @@ function resolveVideoPath(videoPath) {
   }
   const filename = lesson.value?._filename || `${String(lesson.value?.number).padStart(2, '0')}-lesson`
   return `${baseUrl}lessons/${learning.value}/${workshop.value}/${filename}/${videoPath}`
+}
+
+function resolveImagePath(imagePath) {
+  if (!imagePath) return ''
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('/')) {
+    return imagePath
+  }
+  const baseUrl = import.meta.env.BASE_URL
+  if (lesson.value?._source?.type === 'url') {
+    return `${lesson.value._source.path}/${imagePath}`
+  }
+  const filename = lesson.value?._filename || `${String(lesson.value?.number).padStart(2, '0')}-lesson`
+  return `${baseUrl}lessons/${learning.value}/${workshop.value}/${filename}/${imagePath}`
+}
+
+function openLightbox(src, caption) {
+  lightbox.open = true
+  lightbox.src = src
+  lightbox.caption = caption || ''
+  document.addEventListener('keydown', handleLightboxKey)
+}
+
+function closeLightbox() {
+  lightbox.open = false
+  document.removeEventListener('keydown', handleLightboxKey)
+}
+
+function handleLightboxKey(e) {
+  if (e.key === 'Escape') closeLightbox()
 }
 
 function isAssessmentType(example) {
@@ -522,5 +585,6 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   cleanup()
   clearLessonFooter()
+  closeLightbox()
 })
 </script>
