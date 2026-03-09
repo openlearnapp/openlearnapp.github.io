@@ -19,10 +19,10 @@ function parseSource(source) {
   }
   if (typeof source === 'object') {
     if (source.folder) {
-      return { type: 'folder', path: source.folder, code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null }
+      return { type: 'folder', path: source.folder, code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null }
     }
     if (source.url) {
-      return { type: 'url', path: resolveUrl(source.url), code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null }
+      return { type: 'url', path: resolveUrl(source.url), code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null }
     }
   }
   return null
@@ -207,7 +207,8 @@ export function useLessons() {
               description: workshopSource.description || null,
               coach: workshopSource.coach || null,
               color: workshopSource.color || null,
-              primaryColor: workshopSource.primaryColor || null
+              primaryColor: workshopSource.primaryColor || null,
+              image: workshopSource.image || null
             }
 
             console.log(`  ✓ Remote workshop: ${slug} → ${workshopUrl} (${workshopSource.code || 'no code'})`)
@@ -332,7 +333,8 @@ export function useLessons() {
           description: source.description || null,
           coach: source.coach || null,
           color: source.color || null,
-          primaryColor: source.primaryColor || null
+          primaryColor: source.primaryColor || null,
+          image: source.image || null
         }
 
         console.log(`  ✓ Workshop: ${key} (${source.type}) (${source.code || 'no code'})`)
