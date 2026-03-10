@@ -22,7 +22,7 @@
         :key="lesson.number"
         @click="openLesson(lesson.number)"
         class="cursor-pointer transition hover:-translate-y-1 hover:shadow-xl overflow-hidden">
-        <div v-if="lesson.image" class="overflow-hidden h-36 bg-accent/20">
+        <div v-if="lesson.image" class="overflow-hidden aspect-[16/9] bg-accent/20">
           <img
             :src="resolveLessonImage(lesson)"
             :alt="lesson.title"
