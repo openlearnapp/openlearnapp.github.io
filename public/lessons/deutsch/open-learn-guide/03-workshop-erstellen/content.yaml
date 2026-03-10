@@ -2,9 +2,13 @@ version: 2
 number: 3
 title: "Eigene Workshops erstellen"
 description: "Lerne, wie du Workshops mit YAML-Dateien schreibst — von der Ordnerstruktur bis zur Veröffentlichung."
+image: "images/lesson-header.png"
+image_caption: "Workshop-Erstellungsanleitung — von YAML bis zur Veröffentlichung"
 
 sections:
   - title: "Ordnerstruktur"
+    image: "images/ordnerstruktur.png"
+    image_caption: "Workshop-Ordnerstruktur mit YAML-Dateien und Q&A-Karten zur Erklärung jeder Datei"
     explanation: |
       Ein Workshop besteht aus YAML-Dateien in einer Ordnerstruktur. So sieht sie aus:
 
@@ -61,6 +65,8 @@ sections:
         labels: ["Anpassung"]
 
   - title: "Eine Lektion schreiben"
+    image: "images/lektion-schreiben.png"
+    image_caption: "Das content.yaml-Schema mit Abschnitten, Beispielen und Markdown-Erklärungen"
     explanation: |
       Jede `content.yaml` folgt diesem Schema:
 
@@ -100,6 +106,8 @@ sections:
         labels: ["Schema"]
 
   - title: "Assessment-Typen"
+    image: "images/assessment-typen.png"
+    image_caption: "Interaktive Assessments — Texteingabe, Einzelauswahl und Mehrfachauswahl mit YAML-Syntax"
     explanation: |
       Open Learn unterstützt drei Assessment-Typen. Probiere jeden unten aus und sieh dir dann die YAML-Syntax an.
 
@@ -163,6 +171,8 @@ sections:
         labels: ["Assessment"]
 
   - title: "Veröffentlichen"
+    image: "images/veroeffentlichen.png"
+    image_caption: "Veröffentlichungsoptionen — GitHub Pages, externe URLs und IPFS"
     explanation: |
       Es gibt mehrere Wege, deinen Workshop zu teilen:
 

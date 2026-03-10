@@ -2,6 +2,8 @@ version: 2
 number: 1
 title: "Welcome to Open Learn"
 description: "Find out what Open Learn is, how it works, and what you can do with it."
+image: "images/lesson-header.png"
+image_caption: "The Open Learn welcome lesson — your starting point"
 
 sections:
   - title: "What is Open Learn?"

@@ -1,6 +1,17 @@
 <template>
   <div>
     <div v-if="lesson">
+      <div v-if="lesson.image" class="mb-5 rounded-lg overflow-hidden shadow-sm">
+        <img
+          :src="resolveImagePath(lesson.image)"
+          :alt="lesson.image_caption || lesson.title"
+          class="w-full max-h-64 object-cover cursor-zoom-in"
+          @click="openLightbox(resolveImagePath(lesson.image), lesson.image_caption)"
+        />
+        <p v-if="lesson.image_caption" class="text-xs text-muted-foreground mt-1.5 text-center italic">
+          {{ lesson.image_caption }}
+        </p>
+      </div>
       <h2 class="text-3xl font-bold text-foreground mb-3">
         {{ lesson.title }}
       </h2>

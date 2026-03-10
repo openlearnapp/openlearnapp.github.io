@@ -2,6 +2,8 @@ version: 2
 number: 2
 title: "Using the Platform"
 description: "Learn how to navigate Open Learn, track your progress, and customize your settings."
+image: "images/lesson-header.png"
+image_caption: "Platform navigation and settings — everything at your fingertips"
 
 sections:
   - title: "Navigation"

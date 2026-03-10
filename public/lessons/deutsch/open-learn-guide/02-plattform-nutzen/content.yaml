@@ -2,6 +2,8 @@ version: 2
 number: 2
 title: "Die Plattform nutzen"
 description: "Lerne, wie du in Open Learn navigierst, deinen Fortschritt verfolgst und die Einstellungen anpasst."
+image: "images/lesson-header.png"
+image_caption: "Plattform-Navigation und Einstellungen — alles auf einen Blick"
 
 sections:
   - title: "Navigation"

@@ -2,9 +2,13 @@ version: 2
 number: 1
 title: "Open Learn — Your Feedback"
 description: "Help shape the future of Open Learn! Share your thoughts on this free, open, and extensible learning platform. Your answers are stored locally — and optionally shared with us if you enable it in Settings."
+image: "images/lesson-header.png"
+image_caption: "Share your feedback on Open Learn"
 
 sections:
   - title: "First Impressions"
+    image: "images/first-impressions.png"
+    image_caption: "Survey-style assessments — share your first impressions with select and text input"
     explanation: |
       **Open Learn** is a free, open-source platform for learning anything — languages, science, trivia, you name it.
 
@@ -19,6 +23,8 @@ sections:
     examples:
       - type: select
         q: "How did you discover Open Learn?"
+        image: "images/select-example.png"
+        image_caption: "Single-select survey question with radio buttons"
         options:
           - text: "GitHub"
           - text: "A friend or colleague shared it"
@@ -37,6 +43,8 @@ sections:
         q: "In one sentence — what do you think makes Open Learn different from other learning platforms?"
 
   - title: "How Would You Use It?"
+    image: "images/usage-survey.png"
+    image_caption: "Multiple choice and open-ended questions about your learning goals"
     explanation: |
       Open Learn is designed to be a **general-purpose learning platform**.
       The same system that teaches Portuguese vocabulary can also teach:
@@ -49,6 +57,8 @@ sections:
     examples:
       - type: multiple-choice
         q: "What would you most like to learn with Open Learn? (pick all that apply)"
+        image: "images/multiple-choice-example.png"
+        image_caption: "Multiple-choice survey with checkboxes"
         options:
           - text: "A new language"
           - text: "Professional skills or certifications"
@@ -67,6 +77,8 @@ sections:
         q: "What specific topic would you love to see a workshop for?"
 
   - title: "Features & Wishes"
+    image: "images/features-wishes.png"
+    image_caption: "Tell us which features matter most and what you'd like to see next"
     explanation: |
       We're always looking for ideas. Here's what Open Learn already supports:
       - **Lessons** with sections, examples, and explanations
@@ -103,6 +115,8 @@ sections:
         q: "Any other thoughts, ideas, or feedback? We're all ears!"
 
   - title: "About You (Optional)"
+    image: "images/about-you.png"
+    image_caption: "Optional background questions to help us understand our users"
     explanation: |
       Totally optional — but it helps us understand who uses Open Learn.
     examples:

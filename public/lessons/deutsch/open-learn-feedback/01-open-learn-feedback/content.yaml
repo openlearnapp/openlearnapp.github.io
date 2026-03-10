@@ -2,9 +2,13 @@ version: 2
 number: 1
 title: "Open Learn — Dein Feedback"
 description: "Hilf mit, die Zukunft von Open Learn zu gestalten! Teile deine Gedanken zu dieser kostenlosen, offenen und erweiterbaren Lernplattform. Deine Antworten werden lokal gespeichert — und optional mit uns geteilt, wenn du es in den Einstellungen aktivierst."
+image: "images/lesson-header.png"
+image_caption: "Teile dein Feedback zu Open Learn"
 
 sections:
   - title: "Erster Eindruck"
+    image: "images/erster-eindruck.png"
+    image_caption: "Umfrage-Assessments — teile deinen ersten Eindruck per Auswahl und Texteingabe"
     explanation: |
       **Open Learn** ist eine kostenlose Open-Source-Plattform, um alles Mögliche zu lernen — Sprachen, Naturwissenschaften, Trivia und mehr.
 
@@ -19,6 +23,8 @@ sections:
     examples:
       - type: select
         q: "Wie hast du Open Learn entdeckt?"
+        image: "images/auswahl-beispiel.png"
+        image_caption: "Einzelauswahl-Umfragefrage mit Radio-Buttons"
         options:
           - text: "GitHub"
           - text: "Ein Freund oder Kollege hat es geteilt"
@@ -37,6 +43,8 @@ sections:
         q: "In einem Satz — was macht Open Learn deiner Meinung nach anders als andere Lernplattformen?"
 
   - title: "Wie würdest du es nutzen?"
+    image: "images/nutzung-umfrage.png"
+    image_caption: "Multiple Choice und offene Fragen zu deinen Lernzielen"
     explanation: |
       Open Learn ist als **universelle Lernplattform** konzipiert.
       Das gleiche System, das portugiesische Vokabeln lehrt, kann auch beibringen:
@@ -49,6 +57,8 @@ sections:
     examples:
       - type: multiple-choice
         q: "Was würdest du am liebsten mit Open Learn lernen? (wähle alle zutreffenden)"
+        image: "images/mehrfachauswahl-beispiel.png"
+        image_caption: "Multiple-Choice-Umfrage mit Checkboxen"
         options:
           - text: "Eine neue Sprache"
           - text: "Berufliche Fähigkeiten oder Zertifizierungen"
@@ -67,6 +77,8 @@ sections:
         q: "Zu welchem konkreten Thema hättest du gerne einen Workshop?"
 
   - title: "Features & Wünsche"
+    image: "images/features-wuensche.png"
+    image_caption: "Sag uns, welche Features dir am wichtigsten sind und was du dir als Nächstes wünschst"
     explanation: |
       Wir suchen immer nach Ideen. Folgendes unterstützt Open Learn bereits:
       - **Lektionen** mit Sections, Beispielen und Erklärungen
@@ -103,6 +115,8 @@ sections:
         q: "Noch andere Gedanken, Ideen oder Feedback? Wir sind ganz Ohr!"
 
   - title: "Über dich (Optional)"
+    image: "images/ueber-dich.png"
+    image_caption: "Optionale Hintergrundfragen, um unsere Nutzer besser zu verstehen"
     explanation: |
       Völlig optional — aber es hilft uns zu verstehen, wer Open Learn nutzt.
     examples:

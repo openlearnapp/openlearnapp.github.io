@@ -21,20 +21,28 @@
         v-for="lesson in lessons"
         :key="lesson.number"
         @click="openLesson(lesson.number)"
-        class="p-6 cursor-pointer transition hover:-translate-y-1 hover:shadow-xl">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="text-5xl font-bold text-primary flex-shrink-0 leading-none">
-            {{ lesson.number }}
-          </div>
-          <div class="text-2xl font-semibold text-foreground">
-            {{ lesson.title }}
-          </div>
+        class="cursor-pointer transition hover:-translate-y-1 hover:shadow-xl overflow-hidden">
+        <div v-if="lesson.image" class="overflow-hidden h-36 bg-accent/20">
+          <img
+            :src="resolveLessonImage(lesson)"
+            :alt="lesson.title"
+            class="w-full h-full object-cover" />
         </div>
-        <div class="text-muted-foreground mb-2">
-          {{ lesson.description || '' }}
-        </div>
-        <div class="text-primary font-semibold">
-          {{ lesson.sections.length }} {{ $t('lesson.sections') }}
+        <div class="p-6">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="text-5xl font-bold text-primary flex-shrink-0 leading-none">
+              {{ lesson.number }}
+            </div>
+            <div class="text-2xl font-semibold text-foreground">
+              {{ lesson.title }}
+            </div>
+          </div>
+          <div class="text-muted-foreground mb-2">
+            {{ lesson.description || '' }}
+          </div>
+          <div class="text-primary font-semibold">
+            {{ lesson.sections.length }} {{ $t('lesson.sections') }}
+          </div>
         </div>
       </Card>
     </div>
@@ -108,6 +116,19 @@ async function copyShareLink() {
     copied.value = true
     setTimeout(() => { copied.value = false }, 2000)
   } catch {}
+}
+
+function resolveLessonImage(lesson) {
+  const imagePath = lesson.image
+  if (!imagePath) return ''
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('/')) {
+    return imagePath
+  }
+  const baseUrl = import.meta.env.BASE_URL
+  if (lesson._source?.type === 'url') {
+    return `${lesson._source.path}/${imagePath}`
+  }
+  return `${baseUrl}lessons/${learning.value}/${workshop.value}/${lesson._filename}/${imagePath}`
 }
 
 function openLesson(number) {
