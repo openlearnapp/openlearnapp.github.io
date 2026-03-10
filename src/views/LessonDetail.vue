@@ -440,7 +440,11 @@ function toggleDraftOption(example, optIdx) {
   } else {
     drafts[key].splice(idx, 1)
   }
-  validateMcLive(example)
+  if (!hasValidation(example)) {
+    submitAnswer(example)
+  } else {
+    validateMcLive(example)
+  }
 }
 
 function validateMcLive(example) {
@@ -483,7 +487,8 @@ function submitAnswer(example) {
     if (!userAnswer) return
   } else if (type === 'multiple-choice') {
     userAnswer = drafts[draftKey(example)]
-    if (!Array.isArray(userAnswer) || userAnswer.length === 0) return
+    if (!Array.isArray(userAnswer)) return
+    if (userAnswer.length === 0 && hasValidation(example)) return
   } else if (type === 'select') {
     userAnswer = getDraftSelect(example)
     if (userAnswer === null) return
