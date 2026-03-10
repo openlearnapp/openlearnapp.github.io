@@ -320,6 +320,11 @@ const lightbox = reactive({ open: false, src: '', caption: '' })
 const revealedAnswers = reactive({})
 const activeLabel = ref(route.query.label || null)
 
+const audioSettings = computed(() => ({
+  ...settings.value,
+  activeLabel: activeLabel.value
+}))
+
 function isYouTubeUrl(url) {
   return /(?:youtube\.com|youtu\.be)/.test(url)
 }
@@ -586,7 +591,7 @@ function handleQuestionClick(example) {
 
 function handleExampleClick(example) {
   if (isAssessmentType(example)) return
-  jumpToExample(example._originalSectionIdx, example._originalExampleIdx, settings.value)
+  jumpToExample(example._originalSectionIdx, example._originalExampleIdx, audioSettings.value)
 }
 
 function isCurrentlyReading(example) {
@@ -599,7 +604,7 @@ function togglePlayPause() {
   if (isPlaying.value) {
     pause()
   } else {
-    play(settings.value)
+    play(audioSettings.value)
   }
 }
 
@@ -641,10 +646,10 @@ watch(nextLessonNumber, (val) => {
 })
 
 watch(
-  () => [settings.value.hideLearnedExamples, settings.value.readAnswers],
+  () => [settings.value.hideLearnedExamples, settings.value.readAnswers, activeLabel.value],
   async () => {
     if (lesson.value) {
-      await initializeAudio(lesson.value, learning.value, workshop.value, settings.value)
+      await initializeAudio(lesson.value, learning.value, workshop.value, audioSettings.value)
     }
   },
   { deep: true }
@@ -654,7 +659,7 @@ watch(
   progress,
   async () => {
     if (lesson.value && settings.value.hideLearnedExamples) {
-      await initializeAudio(lesson.value, learning.value, workshop.value, settings.value)
+      await initializeAudio(lesson.value, learning.value, workshop.value, audioSettings.value)
     }
   },
   { deep: true }
@@ -677,11 +682,11 @@ onMounted(async () => {
     // Set footer navigation data
     setLessonFooter(currentLearning, currentWorkshop, nextLessonNumber.value)
 
-    await initializeAudio(lesson.value, currentLearning, currentWorkshop, settings.value)
+    await initializeAudio(lesson.value, currentLearning, currentWorkshop, audioSettings.value)
     restoreDraftsFromSaved()
 
     if (route.query.autoplay) {
-      play(settings.value)
+      play(audioSettings.value)
     }
 
     if (route.query.scrollTo) {
