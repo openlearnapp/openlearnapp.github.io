@@ -66,7 +66,7 @@ This structure allows the same content to be presented from different linguistic
 
 To add lessons for a new topic:
 
-1. Create the folder structure: `lessons/<learning>/<teaching>/`
+1. Create the folder structure: `lessons/<language>/<workshop>/`
 2. Create `lessons.yaml` listing the lesson folders
 3. Add lesson folders with `content.yaml` following the schema (see `docs/lesson-schema.md`)
 4. Optionally add `audio/` subfolders with MP3 files
