@@ -170,6 +170,14 @@ if (isEndOfExample) {
 }
 ```
 
+#### Error Handling
+
+When audio fails to load or play, auto playback **stops** immediately instead of skipping to the next item. This prevents silent cascading failures when audio files are unavailable.
+
+#### Label Filtering
+
+When a label filter is active, the audio queue only includes examples matching the active label. The queue is re-initialized when the label changes.
+
 ## Settings
 
 Audio settings are managed in `src/composables/useSettings.js`:
@@ -212,7 +220,7 @@ navigator.mediaSession.metadata = new MediaMetadata({
 - Next Track
 - Previous Track
 
-**Artwork:** Uses `public/audio-test-artwork.svg`
+**Artwork:** Uses the workshop's `image` from metadata if available, falls back to `public/favicon.svg`.
 
 ## Audio File Specifications
 
@@ -259,7 +267,7 @@ Native macOS voices provide high-quality, natural-sounding speech:
 - **Lesson Detail View**: `src/views/LessonDetail.vue`
 - **Settings View**: `src/views/Settings.vue`
 - **Generated Audio**: `public/audio/`
-- **Artwork**: `public/audio-test-artwork.svg`
+- **Artwork**: Workshop `image` metadata or `public/favicon.svg` (fallback)
 
 ## Performance
 

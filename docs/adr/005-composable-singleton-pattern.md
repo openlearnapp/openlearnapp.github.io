@@ -48,7 +48,7 @@ Each composable:
 - `useProgress()` — learned items
 - `useAssessments()` — assessment answers + coach queue
 - `useAudio()` — playback state (not persisted)
-- `useLessons()` — content cache
+- `useLessons()` — content cache (`workshopSlugMap` is module-level for cross-composable access)
 
 ## Related
 - ADR 002: localStorage for persistence (composables handle save/load)

@@ -65,7 +65,7 @@ No explicit submit buttons. Answers are validated and saved automatically:
 |------|---------|
 | `input` | Enter key or blur (focus leaves field) |
 | `select` | Immediately on radio button click |
-| `multiple-choice` | Live per-option feedback, saves when all correct |
+| `multiple-choice` | Live per-option feedback, saves when all correct. Without validation: saves on first click |
 
 ### Live Visual Feedback
 - **Correct assessment**: Green background + green left border + ✓ checkmark on question title
@@ -126,10 +126,12 @@ Pre-generated MP3 files for questions and answers, played in sequence.
 ### Playback Features
 - Sequential playback through lesson (title → sections → examples)
 - Variable speed: 0.6×, 0.8×, 1.0×
-- Smart pausing: 800ms between examples, 1200ms after section titles, 1800ms between sections
+- Smart pausing: 800ms between examples, 1200ms after section titles, 1000ms after lesson title, 1800ms between sections
 - Section titles played at 70% of selected speed
 - Option to include/exclude answers in playback (`readAnswers` setting)
-- Click any example to jump to it in the audio queue
+- Label filtering: when a label filter is active, only filtered examples are played
+- Stops on error instead of skipping
+- Click question text to toggle answer, click example card to play audio
 
 ### Lock Screen Controls
 Media Session API integration for mobile lock screen play/pause/skip controls.
