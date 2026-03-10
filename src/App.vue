@@ -63,7 +63,7 @@
         </div>
 
         <!-- Title (grows to fill available space) -->
-        <h1 class="text-xl md:text-3xl font-bold text-center flex-grow truncate">
+        <h1 class="text-xl md:text-3xl font-bold flex-grow truncate px-3">
           {{ pageTitle }}
         </h1>
 
