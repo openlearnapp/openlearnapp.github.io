@@ -128,7 +128,7 @@
             ]">
             <div :class="example.image ? 'flex gap-4' : ''">
               <div :class="example.image ? 'flex-1 min-w-0' : ''">
-                <div class="text-lg font-semibold text-foreground mb-2">
+                <div class="text-lg font-semibold text-foreground mb-2" @click.stop="handleQuestionClick(example)">
                   <span v-if="isAssessmentCorrect(example)" class="text-green-600 dark:text-green-400 mr-1">✓</span>{{ example.q }}
                 </div>
 
@@ -576,22 +576,17 @@ function handleItemClick(itemId) {
   toggleItemLearned(learning.value, workshop.value, itemId)
 }
 
-function handleExampleClick(example) {
+function handleQuestionClick(example) {
   if (isAssessmentType(example)) return
-
   if (!settings.value.showAnswers && (!example.type || example.type === 'qa')) {
     const key = draftKey(example)
     revealedAnswers[key] = !revealedAnswers[key]
   }
+}
 
-  const originalSectionIdx = example._originalSectionIdx
-  const originalExampleIdx = example._originalExampleIdx
-
-  if (isPlaying.value) {
-    jumpToExample(originalSectionIdx, originalExampleIdx, settings.value)
-  } else {
-    jumpToExample(originalSectionIdx, originalExampleIdx, settings.value)
-  }
+function handleExampleClick(example) {
+  if (isAssessmentType(example)) return
+  jumpToExample(example._originalSectionIdx, example._originalExampleIdx, settings.value)
 }
 
 function isCurrentlyReading(example) {
