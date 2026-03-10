@@ -368,3 +368,7 @@ See `docs/features.md` for the complete feature inventory and `docs/adr/` for ar
 - Composables pattern for shared logic (useLessons, useSettings, useProgress, useAssessments, useAudio)
 - Navigation state is managed by Vue Router - no manual view switching
 - Dynamic page titles based on route and content
+
+## Changelog
+
+Maintain `CHANGELOG.md` in the project root. When creating a PR, add an entry to the changelog under the current date. Group entries by **Features**, **Fixes**, and **Docs & CI**. Include the PR number in parentheses.

@@ -43,8 +43,8 @@ A modern, static single-page web application for learning any topic through prac
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd open-learn
+git clone https://github.com/openlearnapp/openlearnapp.github.io.git
+cd openlearnapp.github.io
 
 # Install dependencies
 pnpm install
@@ -80,7 +80,7 @@ pnpm test:e2e
 ## 📁 Project Structure
 
 ```
-open-learn/
+openlearnapp.github.io/
 ├── src/
 │   ├── main.js              # Application entry point
 │   ├── App.vue              # Root component with navigation
@@ -116,8 +116,8 @@ open-learn/
 
 ### Adding a New Lesson
 
-1. Navigate to the appropriate folder: `public/lessons/<learning>/<teaching>/`
-2. Create a new lesson folder: `public/lessons/<learning>/<teaching>/##-lesson-name/`
+1. Navigate to the appropriate folder: `public/lessons/<language>/<workshop>/`
+2. Create a new lesson folder: `public/lessons/<language>/<workshop>/##-lesson-name/`
 3. Create `content.yaml` in the lesson folder following the schema (see `docs/lesson-schema.md`)
 4. Add the folder name to `lessons.yaml`
 5. Optionally generate audio files with `./generate-audio.sh`
@@ -215,6 +215,7 @@ Community workshops hosted on [open-learn.app](https://open-learn.app):
 | **Englisch** | 10 lessons — 30 core English verbs (DE) | [Start](https://open-learn.app/#/add?source=https://open-learn.app/workshop-english) · [Repo](https://github.com/openlearnapp/workshop-english) |
 | **Farsi** | 5 lessons — key words and phrases (DE/EN/FA) | [Start](https://open-learn.app/#/add?source=https://open-learn.app/workshop-farsi) · [Repo](https://github.com/openlearnapp/workshop-farsi) |
 | **Arabisch** | 5 lessons — key words and phrases (DE/EN/AR) | [Start](https://open-learn.app/#/add?source=https://open-learn.app/workshop-arabisch) · [Repo](https://github.com/openlearnapp/workshop-arabisch) |
+| **KI im Journalismus** | Workshop zum Einsatz von KI-Tools in der journalistischen Praxis | [Start](https://open-learn.app/#/add?source=https://open-learn.app/workshop-AI-im-Journalismus) · [Repo](https://github.com/openlearnapp/workshop-AI-im-Journalismus) |
 
 Want to create your own workshop? See the [External Workshop Guide](docs/external-workshop-guide.md).
 
