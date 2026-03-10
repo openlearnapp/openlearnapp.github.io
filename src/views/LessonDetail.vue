@@ -19,10 +19,22 @@
         {{ lesson.description }}
       </p>
 
+      <nav v-if="filteredSections.length > 1" class="mb-5 p-4 bg-muted rounded-lg">
+        <h3 class="text-sm font-semibold text-muted-foreground mb-2">{{ $t('lesson.sections') }}</h3>
+        <ol class="list-decimal list-inside space-y-1">
+          <li v-for="(section, idx) in filteredSections" :key="idx">
+            <a :href="`#section-${idx}`" class="text-primary hover:underline" @click.prevent="scrollToSection(idx)">
+              {{ section.title }}
+            </a>
+          </li>
+        </ol>
+      </nav>
+
       <!-- Sections -->
       <Card
         v-for="(section, idx) in filteredSections"
         :key="idx"
+        :id="`section-${idx}`"
         class="p-5 mb-5">
         <CardHeader class="p-0 pb-4">
           <CardTitle class="text-2xl text-primary">
@@ -283,7 +295,7 @@ const emit = defineEmits(['update-title'])
 const { loadAllLessonsForWorkshop } = useLessons()
 const { settings } = useSettings()
 const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress } = useProgress()
-const { isPlaying, isPaused, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
+const { isPlaying, isPaused, playbackFinished, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
 const { getAnswer, saveAnswer, validateAnswer } = useAssessments()
 const { setLessonFooter, clearLessonFooter } = useFooter()
 
@@ -516,6 +528,13 @@ const filteredSections = computed(() => {
     }
   }).filter(section => section.examples.length > 0)
 })
+
+function scrollToSection(idx) {
+  const el = document.getElementById(`section-${idx}`)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
 
 function handleItemClick(itemId) {
   toggleItemLearned(learning.value, workshop.value, itemId)
