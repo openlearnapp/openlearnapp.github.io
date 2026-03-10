@@ -42,14 +42,14 @@
         v-for="(section, idx) in filteredSections"
         :key="idx"
         :id="`section-${idx}`"
-        class="p-5 mb-5">
-        <CardHeader class="p-0 pb-4">
+        :class="activeLabel ? 'p-0 mb-3 border-0 shadow-none' : 'p-5 mb-5'">
+        <CardHeader v-if="!activeLabel" class="p-0 pb-4">
           <CardTitle class="text-2xl text-primary">
             {{ section.title }}
           </CardTitle>
         </CardHeader>
         <CardContent class="p-0">
-          <div v-if="section.video" class="mb-4">
+          <div v-if="section.video && !activeLabel" class="mb-4">
             <iframe
               v-if="isYouTubeUrl(section.video)"
               :src="normalizeVideoUrl(section.video)"
@@ -67,7 +67,7 @@
             </video>
           </div>
 
-          <div v-if="section.image" class="mb-4">
+          <div v-if="section.image && !activeLabel" class="mb-4">
             <img
               :src="resolveImagePath(section.image)"
               :alt="section.image_caption || section.title"
@@ -101,7 +101,7 @@
           </Teleport>
 
           <div
-            v-if="section.explanation"
+            v-if="section.explanation && !activeLabel"
             class="bg-muted p-4 rounded mb-4 prose prose-sm dark:prose-invert max-w-none"
             v-html="DOMPurify.sanitize(marked(section.explanation))">
           </div>
