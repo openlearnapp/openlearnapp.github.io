@@ -54,6 +54,13 @@
                 {{ getWorkshopTitle(ws) }}
               </h3>
               <button
+                @click.stop="toggleFavorite(ws)"
+                class="p-1.5 rounded-md hover:bg-accent transition flex-shrink-0"
+                :title="isFavorite(ws) ? 'Remove favorite' : 'Add favorite'">
+                <svg v-if="isFavorite(ws)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground/40"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              </button>
+              <button
                 @click.stop="copyWorkshopLink(ws)"
                 class="p-1.5 rounded-md hover:bg-accent transition flex-shrink-0"
                 :style="getWorkshopTitleStyle(ws)"
@@ -137,6 +144,7 @@ const { selectedLanguage, setLanguage } = useLanguage()
 
 const copiedWorkshop = ref(null)
 const addedNotice = ref(null)
+const favorites = ref(JSON.parse(localStorage.getItem('workshopFavorites') || '[]'))
 
 const knownWorkshops = []
 
@@ -162,7 +170,15 @@ function dismissNotice() {
 
 const workshops = computed(() => {
   if (!learning.value) return []
-  return Object.keys(availableContent.value[learning.value] || {})
+  const list = Object.keys(availableContent.value[learning.value] || {})
+  return list.sort((a, b) => {
+    const aFav = favorites.value.includes(a) ? 0 : 1
+    const bFav = favorites.value.includes(b) ? 0 : 1
+    if (aFav !== bFav) return aFav - bFav
+    const aImg = getWorkshopImage(a) ? 0 : 1
+    const bImg = getWorkshopImage(b) ? 0 : 1
+    return aImg - bImg
+  })
 })
 
 const availableWorkshops = computed(() => {
@@ -244,6 +260,20 @@ function getWorkshopSourceUrl(workshop) {
   } catch {
     return '#'
   }
+}
+
+function isFavorite(workshop) {
+  return favorites.value.includes(workshop)
+}
+
+function toggleFavorite(workshop) {
+  const idx = favorites.value.indexOf(workshop)
+  if (idx === -1) {
+    favorites.value.push(workshop)
+  } else {
+    favorites.value.splice(idx, 1)
+  }
+  localStorage.setItem('workshopFavorites', JSON.stringify(favorites.value))
 }
 
 async function copyWorkshopLink(workshop) {
