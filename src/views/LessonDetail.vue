@@ -621,7 +621,9 @@ watch(currentItem, async (newItem) => {
 // Auto-advance to next lesson when audio playback finishes
 watch(playbackFinished, (finished) => {
   if (finished && nextLessonNumber.value) {
-    router.replace(`/${learning.value}/${workshop.value}/lesson/${nextLessonNumber.value}?autoplay=true`)
+    const query = { autoplay: 'true' }
+    if (activeLabel.value) query.label = activeLabel.value
+    router.replace({ path: `/${learning.value}/${workshop.value}/lesson/${nextLessonNumber.value}`, query })
   }
 })
 
