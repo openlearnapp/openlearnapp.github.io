@@ -31,6 +31,9 @@ function parseSource(source) {
 // Default content sources loaded from default-sources.yaml
 let defaultContentSources = []
 
+// Module-level singleton state (shared across all useLessons() calls)
+const workshopSlugMap = ref({}) // slug → URL mapping for remote workshops
+
 async function loadDefaultSources() {
   if (defaultContentSources.length > 0) return defaultContentSources
   try {
@@ -50,7 +53,6 @@ export function useLessons() {
   const availableContent = ref({})
   const languageCodes = ref({}) // Store language codes
   const workshopCodes = ref({}) // Store workshop codes
-  const workshopSlugMap = ref({}) // slug → URL mapping for remote workshops
   const workshopMeta = ref({}) // { lang: { workshop: { title, description } } }
   const isLoading = ref(false)
 
