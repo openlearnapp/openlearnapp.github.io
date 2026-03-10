@@ -96,21 +96,11 @@
                   ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
                   : 'bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500'
             ]">
-            <div class="text-lg font-semibold text-foreground mb-2">
-              <span v-if="isAssessmentCorrect(example)" class="text-green-600 dark:text-green-400 mr-1">✓</span>{{ example.q }}
-            </div>
-
-            <div v-if="example.image" class="mb-3">
-              <img
-                :src="resolveImagePath(example.image)"
-                :alt="example.image_caption || example.q"
-                class="w-full rounded-lg object-cover max-h-64 cursor-zoom-in shadow-sm"
-                @click.stop="openLightbox(resolveImagePath(example.image), example.image_caption)"
-              />
-              <p v-if="example.image_caption" class="text-xs text-muted-foreground mt-1 text-center italic">
-                {{ example.image_caption }}
-              </p>
-            </div>
+            <div :class="example.image ? 'flex gap-4' : ''">
+              <div :class="example.image ? 'flex-1 min-w-0' : ''">
+                <div class="text-lg font-semibold text-foreground mb-2">
+                  <span v-if="isAssessmentCorrect(example)" class="text-green-600 dark:text-green-400 mr-1">✓</span>{{ example.q }}
+                </div>
 
             <template v-if="!example.type || example.type === 'qa'">
               <div
@@ -209,6 +199,17 @@
                 {{ label }}
               </Badge>
             </div>
+              </div><!-- end flex-1 text column -->
+
+              <div v-if="example.image" class="flex-shrink-0 w-32 sm:w-40">
+                <img
+                  :src="resolveImagePath(example.image)"
+                  :alt="example.image_caption || example.q"
+                  class="w-full rounded-lg object-cover cursor-zoom-in shadow-sm"
+                  @click.stop="openLightbox(resolveImagePath(example.image), example.image_caption)"
+                />
+              </div>
+            </div><!-- end flex row -->
           </div>
         </CardContent>
       </Card>
