@@ -281,6 +281,16 @@ process_lesson() {
     done
   done
 
+  # Generate manifest.yaml listing all audio files
+  local manifest_file="$audio_dir/manifest.yaml"
+  echo "files:" > "$manifest_file"
+  for mp3 in "$audio_dir"/*.mp3; do
+    if [[ -f "$mp3" ]]; then
+      echo "  - $(basename "$mp3")" >> "$manifest_file"
+    fi
+  done
+  echo "   📋 Written $manifest_file"
+
   # Report results
   if [[ $files_skipped -gt 0 ]]; then
     echo "   ✅ Generated $files_generated, skipped $files_skipped existing files"

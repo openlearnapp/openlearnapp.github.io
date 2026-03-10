@@ -19,6 +19,23 @@ const playbackFinished = ref(false)
 const lessonTitle = ref('')
 const lessonMetadata = ref({ learning: '', workshop: '', number: '' })
 
+// Determine audio base path for a lesson
+function getAudioBase(lesson, learning, workshop) {
+  const baseUrl = import.meta.env.BASE_URL
+  const lessonFilename = lesson._filename || `${String(lesson.number).padStart(2, '0')}-lesson`
+  const resolvedWorkshop = resolveWorkshopKey(workshop)
+
+  if (lesson._source && lesson._source.type === 'url') {
+    return `${lesson._source.path}/audio`
+  } else if (resolvedWorkshop && (resolvedWorkshop.startsWith('http://') || resolvedWorkshop.startsWith('https://'))) {
+    return `${resolvedWorkshop}/${lessonFilename}/audio`
+  } else if (learning && (learning.startsWith('http://') || learning.startsWith('https://'))) {
+    return `${learning}/${workshop}/${lessonFilename}/audio`
+  } else {
+    return `${baseUrl}lessons/${learning}/${workshop}/${lessonFilename}/audio`
+  }
+}
+
 // Build reading queue from lesson data
 function buildReadingQueue(lesson, learning, workshop, settings) {
   const queue = []
@@ -27,27 +44,7 @@ function buildReadingQueue(lesson, learning, workshop, settings) {
     return queue
   }
 
-  const baseUrl = import.meta.env.BASE_URL
-  const lessonFilename = lesson._filename || `${String(lesson.number).padStart(2, '0')}-lesson`
-
-  // Resolve slug to URL if needed
-  const resolvedWorkshop = resolveWorkshopKey(workshop)
-
-  // Determine audio base path based on lesson source
-  let audioBase
-  if (lesson._source && lesson._source.type === 'url') {
-    // Lesson is from URL
-    audioBase = `${lesson._source.path}/audio`
-  } else if (resolvedWorkshop && (resolvedWorkshop.startsWith('http://') || resolvedWorkshop.startsWith('https://'))) {
-    // Workshop is a URL (resolved from slug)
-    audioBase = `${resolvedWorkshop}/${lessonFilename}/audio`
-  } else if (learning && (learning.startsWith('http://') || learning.startsWith('https://'))) {
-    // Language is from URL
-    audioBase = `${learning}/${workshop}/${lessonFilename}/audio`
-  } else {
-    // Local folder structure: audio files are inside the lesson folder
-    audioBase = `${baseUrl}lessons/${learning}/${workshop}/${lessonFilename}/audio`
-  }
+  const audioBase = getAudioBase(lesson, learning, workshop)
 
   console.log(`🎵 Building audio queue from: ${audioBase}`)
   console.log(`🔍 Hide learned examples: ${settings.hideLearnedExamples}`)
@@ -132,12 +129,40 @@ function buildReadingQueue(lesson, learning, workshop, settings) {
   return queue
 }
 
-// Pre-load all audio files
-async function preloadAudioFiles(queue) {
+// Fetch audio manifest to know which files exist
+async function fetchAudioManifest(audioBase) {
+  try {
+    const response = await fetch(`${audioBase}/manifest.yaml`)
+    if (!response.ok) return null
+    const text = await response.text()
+    // Parse simple YAML: "files:\n  - filename.mp3\n  - ..."
+    const files = text.split('\n')
+      .map(line => line.trim())
+      .filter(line => line.startsWith('- '))
+      .map(line => line.slice(2))
+    console.log(`📋 Audio manifest: ${files.length} files`)
+    return new Set(files)
+  } catch {
+    return null
+  }
+}
+
+// Pre-load all audio files (filtered by manifest if available)
+async function preloadAudioFiles(queue, manifest) {
   console.log('📥 Pre-loading audio files...')
 
   const audioLoadPromises = queue
-    .filter(item => item.audioUrl) // Skip section titles
+    .filter(item => {
+      if (!item.audioUrl) return false
+      if (manifest) {
+        const filename = item.audioUrl.split('/').pop()
+        if (!manifest.has(filename)) {
+          console.log(`⏭️ Skipping (not in manifest): ${filename}`)
+          return false
+        }
+      }
+      return true
+    })
     .map(async (item) => {
       const audio = new Audio()
       audio.preload = 'auto'
@@ -239,8 +264,12 @@ async function initializeAudio(lesson, learning, workshop, settings) {
     audioUrl: item.audioUrl
   })))
 
-  // Pre-load all audio files
-  audioElements.value = await preloadAudioFiles(readingQueue.value)
+  // Fetch manifest to know which audio files exist (if missing, load all)
+  const audioBase = getAudioBase(lesson, learning, workshop)
+  const manifest = await fetchAudioManifest(audioBase)
+
+  // Pre-load audio files (filtered by manifest if available)
+  audioElements.value = await preloadAudioFiles(readingQueue.value, manifest)
 
   currentItemIndex.value = -1
   isPlaying.value = false
