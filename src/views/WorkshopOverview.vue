@@ -54,6 +54,13 @@
                 {{ getWorkshopTitle(ws) }}
               </h3>
               <button
+                @click.stop="toggleFavorite(ws)"
+                class="p-1.5 rounded-md hover:bg-accent transition flex-shrink-0"
+                :title="isFavorite(ws) ? 'Remove favorite' : 'Add favorite'">
+                <svg v-if="isFavorite(ws)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground/40"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              </button>
+              <button
                 @click.stop="copyWorkshopLink(ws)"
                 class="p-1.5 rounded-md hover:bg-accent transition flex-shrink-0"
                 :style="getWorkshopTitleStyle(ws)"
@@ -61,6 +68,14 @@
                 <svg v-if="copiedWorkshop !== ws" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                 <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
+            </div>
+
+            <div v-if="isActive(ws)" class="mb-2">
+              <Badge
+                @click.stop="deactivateWorkshop(ws)"
+                class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700 cursor-pointer hover:opacity-70 transition">
+                {{ isDE ? 'Aktiv' : 'Active' }} ✕
+              </Badge>
             </div>
 
             <p v-if="getWorkshopDescription(ws)" class="text-sm text-muted-foreground leading-relaxed mb-3">
@@ -127,6 +142,7 @@ import { useLessons } from '../composables/useLessons'
 import { useLanguage } from '../composables/useLanguage'
 import { formatLangName } from '../utils/formatters'
 import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 
 const emit = defineEmits(['update-title'])
 const router = useRouter()
@@ -137,6 +153,8 @@ const { selectedLanguage, setLanguage } = useLanguage()
 
 const copiedWorkshop = ref(null)
 const addedNotice = ref(null)
+const favorites = ref(JSON.parse(localStorage.getItem('workshopFavorites') || '[]'))
+const activeWorkshops = ref(JSON.parse(localStorage.getItem('activeWorkshops') || '[]'))
 
 const knownWorkshops = []
 
@@ -162,7 +180,20 @@ function dismissNotice() {
 
 const workshops = computed(() => {
   if (!learning.value) return []
-  return Object.keys(availableContent.value[learning.value] || {})
+  const list = Object.keys(availableContent.value[learning.value] || {})
+  return list.sort((a, b) => {
+    const aKey = `${learning.value}:${a}`
+    const bKey = `${learning.value}:${b}`
+    const aActive = activeWorkshops.value.includes(aKey) ? 0 : 1
+    const bActive = activeWorkshops.value.includes(bKey) ? 0 : 1
+    if (aActive !== bActive) return aActive - bActive
+    const aFav = favorites.value.includes(a) ? 0 : 1
+    const bFav = favorites.value.includes(b) ? 0 : 1
+    if (aFav !== bFav) return aFav - bFav
+    const aImg = getWorkshopImage(a) ? 0 : 1
+    const bImg = getWorkshopImage(b) ? 0 : 1
+    return aImg - bImg
+  })
 })
 
 const availableWorkshops = computed(() => {
@@ -246,6 +277,33 @@ function getWorkshopSourceUrl(workshop) {
   }
 }
 
+function isActive(workshop) {
+  return activeWorkshops.value.includes(`${learning.value}:${workshop}`)
+}
+
+function deactivateWorkshop(workshop) {
+  const key = `${learning.value}:${workshop}`
+  const idx = activeWorkshops.value.indexOf(key)
+  if (idx !== -1) {
+    activeWorkshops.value.splice(idx, 1)
+    localStorage.setItem('activeWorkshops', JSON.stringify(activeWorkshops.value))
+  }
+}
+
+function isFavorite(workshop) {
+  return favorites.value.includes(workshop)
+}
+
+function toggleFavorite(workshop) {
+  const idx = favorites.value.indexOf(workshop)
+  if (idx === -1) {
+    favorites.value.push(workshop)
+  } else {
+    favorites.value.splice(idx, 1)
+  }
+  localStorage.setItem('workshopFavorites', JSON.stringify(favorites.value))
+}
+
 async function copyWorkshopLink(workshop) {
   const base = window.location.href.replace(/#.*$/, '')
   const url = `${base}#/${learning.value}/${workshop}/lessons`
@@ -260,6 +318,11 @@ async function copyWorkshopLink(workshop) {
 
 function openWorkshop(workshop) {
   localStorage.setItem('lastWorkshop', workshop)
+  const key = `${learning.value}:${workshop}`
+  if (!activeWorkshops.value.includes(key)) {
+    activeWorkshops.value.push(key)
+    localStorage.setItem('activeWorkshops', JSON.stringify(activeWorkshops.value))
+  }
   router.push({
     name: 'lessons-overview',
     params: { learning: learning.value, workshop }
