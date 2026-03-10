@@ -5,7 +5,7 @@ description: "Learn how to navigate Open Learn, track your progress, and customi
 
 sections:
   - title: "Navigation"
-    image: "/open-learn/lessons/images/guide/lessons-overview.png"
+    image: "images/lessons-overview.png"
     image_caption: "The lessons overview — pick a lesson to start learning"
     explanation: |
       Open Learn is organized in three levels:
@@ -32,7 +32,7 @@ sections:
         labels: ["Navigation"]
 
   - title: "Progress & Labels"
-    image: "/open-learn/lessons/images/guide/qa-cards.png"
+    image: "images/qa-cards.png"
     image_caption: "Q&A cards with labels — tap a learning item to mark it as learned"
     explanation: |
       Each Q&A card can have **learning items** — vocabulary or concepts attached to it. You can mark these as *learned* to track your progress.
@@ -58,7 +58,7 @@ sections:
         labels: ["Progress"]
 
   - title: "Settings"
-    image: "/open-learn/lessons/images/guide/settings.png"
+    image: "images/settings.png"
     image_caption: "The settings page — customize how Open Learn works for you"
     explanation: |
       Open the **Settings** page using the gear icon in the top-right corner. Here you can customize how Open Learn works for you.

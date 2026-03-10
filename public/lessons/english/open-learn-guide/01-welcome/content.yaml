@@ -5,7 +5,7 @@ description: "Find out what Open Learn is, how it works, and what you can do wit
 
 sections:
   - title: "What is Open Learn?"
-    image: "/open-learn/lessons/images/guide/home-page.png"
+    image: "images/home-page.png"
     image_caption: "The Open Learn home page — learn anything, for free, in your browser"
     explanation: |
       **Open Learn** is a free, open-source learning platform. You can use it to learn anything — languages, professional skills, exam prep, or any topic someone has created a workshop for.
@@ -37,7 +37,7 @@ sections:
         labels: ["Content"]
 
   - title: "Features at a Glance"
-    image: "/open-learn/lessons/images/guide/qa-cards.png"
+    image: "images/qa-cards.png"
     image_caption: "Q&A cards with labels and answers — the core content format"
     explanation: |
       Open Learn has several features that make learning effective. Each Q&A pair below explains one feature — and you're already using Q&A right now!
@@ -65,7 +65,7 @@ sections:
         labels: ["Feature"]
 
   - title: "Check Your Understanding"
-    image: "/open-learn/lessons/images/guide/assessments.png"
+    image: "images/assessments.png"
     image_caption: "Interactive assessments — text input, single choice, and multiple choice"
     explanation: |
       Time to try the assessment features! Answer the questions below — your answers are saved automatically in your browser.
