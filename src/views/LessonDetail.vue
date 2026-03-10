@@ -115,7 +115,7 @@
 
             <template v-if="!example.type || example.type === 'qa'">
               <div
-                v-show="settings.showAnswers"
+                v-show="settings.showAnswers || revealedAnswers[draftKey(example)]"
                 class="text-muted-foreground italic mb-3">
                 {{ displayAnswer(example.a) }}
               </div>
@@ -292,6 +292,7 @@ const allLessons = ref([])
 const drafts = reactive({})
 const mcLive = reactive({})
 const lightbox = reactive({ open: false, src: '', caption: '' })
+const revealedAnswers = reactive({})
 
 function isYouTubeUrl(url) {
   return /(?:youtube\.com|youtu\.be)/.test(url)
@@ -523,6 +524,11 @@ function handleItemClick(itemId) {
 
 function handleExampleClick(example) {
   if (isAssessmentType(example)) return
+
+  if (!settings.value.showAnswers && (!example.type || example.type === 'qa')) {
+    const key = draftKey(example)
+    revealedAnswers[key] = !revealedAnswers[key]
+  }
 
   const originalSectionIdx = example._originalSectionIdx
   const originalExampleIdx = example._originalExampleIdx
