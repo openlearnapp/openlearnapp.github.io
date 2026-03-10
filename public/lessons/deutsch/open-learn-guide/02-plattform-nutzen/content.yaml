@@ -2,9 +2,13 @@ version: 2
 number: 2
 title: "Die Plattform nutzen"
 description: "Lerne, wie du in Open Learn navigierst, deinen Fortschritt verfolgst und die Einstellungen anpasst."
+image: "images/lesson-header.png"
+image_caption: "Plattform-Navigation und Einstellungen — alles auf einen Blick"
 
 sections:
   - title: "Navigation"
+    image: "images/lessons-overview.png"
+    image_caption: "Die Lektionsübersicht — wähle eine Lektion zum Lernen"
     explanation: |
       Open Learn ist in drei Ebenen aufgebaut:
 
@@ -30,6 +34,8 @@ sections:
         labels: ["Navigation"]
 
   - title: "Lernfortschritt & Labels"
+    image: "images/qa-cards.png"
+    image_caption: "Q&A-Karten mit Labels — tippe auf ein Lernelement, um es als gelernt zu markieren"
     explanation: |
       Jede Q&A-Karte kann **Lernelemente** haben — Vokabeln oder Konzepte, die daran angehängt sind. Du kannst diese als *gelernt* markieren, um deinen Fortschritt zu verfolgen.
 
@@ -54,6 +60,8 @@ sections:
         labels: ["Fortschritt"]
 
   - title: "Einstellungen"
+    image: "images/settings.png"
+    image_caption: "Die Einstellungen — passe Open Learn nach deinen Wünschen an"
     explanation: |
       Öffne die **Einstellungen** über das Zahnrad-Symbol oben rechts. Hier kannst du anpassen, wie Open Learn für dich funktioniert.
 

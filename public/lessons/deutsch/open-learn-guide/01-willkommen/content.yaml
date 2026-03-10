@@ -2,9 +2,13 @@ version: 2
 number: 1
 title: "Willkommen bei Open Learn"
 description: "Erfahre, was Open Learn ist, wie es funktioniert und was du damit machen kannst."
+image: "images/lesson-header.png"
+image_caption: "Die Open Learn Willkommens-Lektion — dein Startpunkt"
 
 sections:
   - title: "Was ist Open Learn?"
+    image: "images/home-page.png"
+    image_caption: "Die Open Learn Startseite — lerne alles, kostenlos, in deinem Browser"
     explanation: |
       **Open Learn** ist eine kostenlose, quelloffene Lernplattform. Du kannst damit alles lernen — Sprachen, Berufliches, Prüfungsvorbereitung oder jedes Thema, für das jemand einen Workshop erstellt hat.
 
@@ -35,6 +39,8 @@ sections:
         labels: ["Inhalte"]
 
   - title: "Features im Überblick"
+    image: "images/qa-cards.png"
+    image_caption: "Q&A-Karten mit Labels und Antworten — das zentrale Inhaltsformat"
     explanation: |
       Open Learn hat mehrere Features, die das Lernen effektiv machen. Jedes Q&A-Paar unten erklärt ein Feature — und du nutzt Q&A gerade selbst!
 
@@ -61,6 +67,8 @@ sections:
         labels: ["Feature"]
 
   - title: "Hast du es verstanden?"
+    image: "images/assessments.png"
+    image_caption: "Interaktive Assessments — Texteingabe, Einzelauswahl und Mehrfachauswahl"
     explanation: |
       Zeit, die Assessment-Features auszuprobieren! Beantworte die Fragen unten — deine Antworten werden automatisch im Browser gespeichert.
 

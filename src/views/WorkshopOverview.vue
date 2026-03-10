@@ -37,15 +37,16 @@
           class="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/50 overflow-hidden"
           :style="getWorkshopCardStyle(ws)">
 
-          <!-- Workshop thumbnail image (if available) -->
+          <!-- Color accent bar at top (always shown) -->
+          <div class="h-1.5 bg-gradient-to-r from-primary to-secondary" :style="getWorkshopBarStyle(ws)"></div>
+
+          <!-- Workshop thumbnail image (optional, no fallback) -->
           <div v-if="getWorkshopImage(ws)" class="overflow-hidden h-36 bg-accent/20">
             <img
               :src="getWorkshopImage(ws)"
               :alt="getWorkshopTitle(ws)"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           </div>
-          <!-- Color accent bar (shown when no image) -->
-          <div v-else class="h-1.5 bg-gradient-to-r from-primary to-secondary" :style="getWorkshopBarStyle(ws)"></div>
 
           <div class="p-5">
             <div class="flex items-start justify-between gap-2 mb-2">
@@ -198,7 +199,12 @@ function getWorkshopTitleStyle(workshop) {
 
 function getWorkshopImage(workshop) {
   const meta = getWorkshopMeta(learning.value, workshop)
-  return meta.image || null
+  if (!meta.image) return null
+  // Absolute URLs are used as-is; relative paths are resolved from the app base
+  if (meta.image.startsWith('http://') || meta.image.startsWith('https://') || meta.image.startsWith('/')) {
+    return meta.image
+  }
+  return `${import.meta.env.BASE_URL}${meta.image}`
 }
 
 function getWorkshopTitle(workshop) {

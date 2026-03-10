@@ -6,13 +6,13 @@ workshops:
     description: "Learn how the platform works — videos, quizzes, labels, and more. Perfect for new users and workshop creators."
     color: "145 45% 92%"
     primaryColor: "220 75% 50%"
-    image: "https://picsum.photos/seed/openlearn-guide-en/600/240"
+    image: "lessons/english/open-learn-guide/thumbnail.png"
   - folder: open-learn-feedback
     code: en-US
     title: "Open Learn Feedback"
     description: "Share your thoughts and help shape the future of Open Learn."
     color: "145 40% 94%"
     primaryColor: "152 60% 36%"
-    image: "https://picsum.photos/seed/openlearn-feedback/600/240"
+    image: "lessons/english/open-learn-feedback/thumbnail.png"
     coach:
       email: "open-learn@felixboehm.it"
