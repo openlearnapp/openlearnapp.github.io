@@ -7,6 +7,7 @@
     "play": "تشغيل",
     "pauseAudio": "إيقاف الصوت",
     "playAudio": "تشغيل الصوت",
+    "loadingAudio": "جاري تحميل الصوت...",
     "assessmentResults": "نتائج التقييم",
     "coach": "المدرب",
     "learningItems": "عناصر التعلم",
