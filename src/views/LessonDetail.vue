@@ -259,7 +259,7 @@
       v-if="lesson"
       size="icon"
       @click="togglePlayPause"
-      class="md:hidden fixed bottom-6 right-6 w-16 h-16 rounded-full shadow-lg text-3xl z-50"
+      class="md:hidden fixed bottom-20 right-6 w-16 h-16 rounded-full shadow-lg text-3xl z-50"
       :title="isPlaying ? $t('nav.pause') : $t('nav.play')"
       :aria-label="isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio')">
       {{ isPlaying ? '⏸' : '▶️' }}
