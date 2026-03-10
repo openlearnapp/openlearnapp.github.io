@@ -272,10 +272,12 @@
       v-if="lesson"
       size="icon"
       @click="togglePlayPause"
+      :disabled="isLoadingAudio"
       class="md:hidden fixed bottom-20 right-6 w-16 h-16 rounded-full shadow-lg text-3xl z-50"
-      :title="isPlaying ? $t('nav.pause') : $t('nav.play')"
-      :aria-label="isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio')">
-      {{ isPlaying ? '⏸' : '▶️' }}
+      :title="isLoadingAudio ? $t('nav.loading') : (isPlaying ? $t('nav.pause') : $t('nav.play'))"
+      :aria-label="isLoadingAudio ? $t('nav.loadingAudio') : (isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio'))">
+      <span v-if="isLoadingAudio" class="animate-spin">⏳</span>
+      <span v-else>{{ isPlaying ? '⏸' : '▶️' }}</span>
     </Button>
   </div>
 </template>
@@ -308,7 +310,7 @@ const emit = defineEmits(['update-title'])
 const { loadAllLessonsForWorkshop } = useLessons()
 const { settings } = useSettings()
 const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress } = useProgress()
-const { isPlaying, isPaused, playbackFinished, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
+const { isLoadingAudio, isPlaying, isPaused, playbackFinished, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
 const { getAnswer, saveAnswer, validateAnswer } = useAssessments()
 const { setLessonFooter, clearLessonFooter } = useFooter()
 

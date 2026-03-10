@@ -75,10 +75,12 @@
             variant="ghost"
             size="icon"
             @click="togglePlayPause"
+            :disabled="isLoadingAudio"
             class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
-            :title="isPlaying ? $t('nav.pause') : $t('nav.play')"
-            :aria-label="isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio')">
-            {{ isPlaying ? '⏸' : '▶️' }}
+            :title="isLoadingAudio ? $t('nav.loading') : (isPlaying ? $t('nav.pause') : $t('nav.play'))"
+            :aria-label="isLoadingAudio ? $t('nav.loadingAudio') : (isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio'))">
+            <span v-if="isLoadingAudio" class="animate-spin">⏳</span>
+            <span v-else>{{ isPlaying ? '⏸' : '▶️' }}</span>
           </Button>
 
           <!-- Results / Lesson# toggle button -->
@@ -213,7 +215,7 @@ const { locale } = useI18n()
 const pageTitle = ref('🎓 Open Learn')
 const showLanguageMenu = ref(false)
 
-const { isPlaying, play, pause, resume } = useAudio()
+const { isLoadingAudio, isPlaying, play, pause, resume } = useAudio()
 const { settings } = useSettings()
 const { availableContent, getWorkshopMeta, workshopMeta, loadAvailableContent, loadWorkshopsForLanguage } = useLessons()
 const { selectedLanguage, getFlag, setLanguage } = useLanguage()

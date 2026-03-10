@@ -9,6 +9,7 @@ const { getLanguageCode, getWorkshopCode, resolveWorkshopKey, getWorkshopMeta } 
 const { areAllItemsLearned } = useProgress()
 
 // Shared audio state (singleton pattern)
+const isLoadingAudio = ref(false)
 const isPlaying = ref(false)
 const isPaused = ref(false)
 const currentItemIndex = ref(-1)
@@ -256,6 +257,7 @@ async function initializeAudio(lesson, learning, workshop, settings) {
   lessonMetadata.value = { learning, workshop, number: lesson.number }
 
   playbackFinished.value = false
+  isLoadingAudio.value = true
   readingQueue.value = buildReadingQueue(lesson, learning, workshop, settings)
 
   console.log('📋 Built reading queue with', readingQueue.value.length, 'items')
@@ -272,6 +274,7 @@ async function initializeAudio(lesson, learning, workshop, settings) {
   // Pre-load audio files (filtered by manifest if available)
   audioElements.value = await preloadAudioFiles(readingQueue.value, manifest)
 
+  isLoadingAudio.value = false
   currentItemIndex.value = -1
   isPlaying.value = false
   isPaused.value = false
@@ -722,6 +725,7 @@ function cleanup() {
 
 export function useAudio() {
   return {
+    isLoadingAudio,
     isPlaying,
     isPaused,
     playbackFinished,
