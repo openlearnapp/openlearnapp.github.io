@@ -413,7 +413,8 @@ function goToResults() {
   const learning = route.params.learning
   const workshop = route.params.workshop
   if (learning && workshop) {
-    const query = route.params.number ? { fromLesson: route.params.number } : {}
+    const lessonNum = fromLessonNumber.value
+    const query = lessonNum ? { fromLesson: lessonNum } : {}
     router.push({
       name: 'assessment-results',
       params: { learning, workshop },
@@ -426,7 +427,8 @@ function goToCoach() {
   const learning = route.params.learning
   const workshop = route.params.workshop
   if (learning && workshop) {
-    const query = route.params.number ? { fromLesson: route.params.number } : {}
+    const lessonNum = fromLessonNumber.value
+    const query = lessonNum ? { fromLesson: lessonNum } : {}
     router.push({
       name: 'coach',
       params: { learning, workshop },
@@ -439,9 +441,11 @@ function goToItems() {
   const learning = route.params.learning
   const workshop = route.params.workshop
   const number = route.params.number
+  const lessonNum = fromLessonNumber.value
 
   if (learning && workshop) {
-    const query = route.query.label ? { label: route.query.label } : {}
+    const query = {}
+    if (route.query.label) query.label = route.query.label
     if (number && route.name === 'lesson-detail') {
       router.push({
         name: 'learning-items',
@@ -449,6 +453,7 @@ function goToItems() {
         query
       })
     } else {
+      if (lessonNum) query.fromLesson = lessonNum
       router.push({
         name: 'learning-items',
         params: { learning, workshop },
