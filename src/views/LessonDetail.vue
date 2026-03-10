@@ -577,6 +577,13 @@ watch(currentItem, async (newItem) => {
   }
 })
 
+// Auto-advance to next lesson when audio playback finishes
+watch(playbackFinished, (finished) => {
+  if (finished && nextLessonNumber.value) {
+    router.replace(`/${learning.value}/${workshop.value}/lesson/${nextLessonNumber.value}?autoplay=true`)
+  }
+})
+
 // Keep footer in sync with next lesson number
 watch(nextLessonNumber, (val) => {
   if (lesson.value) {
@@ -622,6 +629,10 @@ onMounted(async () => {
 
     await initializeAudio(lesson.value, currentLearning, currentWorkshop, settings.value)
     restoreDraftsFromSaved()
+
+    if (route.query.autoplay) {
+      play(settings.value)
+    }
   }
 })
 
