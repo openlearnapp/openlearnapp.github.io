@@ -49,9 +49,21 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
           </Button>
 
-          <!-- Back to lessons (on lesson detail and other workshop subpages) -->
+          <!-- Back to lesson (when on items/results with lesson number) -->
           <Button
-            v-if="isWorkshopSubpage && route.name !== 'lessons-overview'"
+            v-if="isWorkshopSubpage && route.name !== 'lessons-overview' && route.name !== 'lesson-detail' && route.params.number"
+            variant="ghost"
+            size="icon"
+            @click="goBackToLesson"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-lg font-bold flex-shrink-0"
+            :title="$t('nav.backToLessons')"
+            :aria-label="$t('nav.backToLessons')">
+            {{ route.params.number }}
+          </Button>
+
+          <!-- Back to lessons (on lesson detail and other workshop subpages without lesson number) -->
+          <Button
+            v-else-if="isWorkshopSubpage && route.name !== 'lessons-overview'"
             variant="ghost"
             size="icon"
             @click="goBackToLessons"
@@ -169,7 +181,7 @@
           {{ $t('home.feedback') }}
         </a>
         <a
-          href="https://github.com/felixboehm/open-learn/issues"
+          href="https://github.com/openlearnapp/openlearnapp.github.io/issues"
           target="_blank"
           rel="noopener"
           class="text-primary hover:underline whitespace-nowrap">
@@ -372,6 +384,16 @@ function goBackToLessons() {
   })
 }
 
+function goBackToLesson() {
+  const learning = route.params.learning
+  const workshop = route.params.workshop
+  const number = route.params.number
+  router.push({
+    name: 'lesson-detail',
+    params: { learning, workshop, number }
+  })
+}
+
 function goBack() {
   router.back()
 }
@@ -426,15 +448,18 @@ function goToItems() {
   }
 
   if (learning && workshop) {
+    const query = route.query.label ? { label: route.query.label } : {}
     if (number && route.name === 'lesson-detail') {
       router.push({
         name: 'learning-items',
-        params: { learning, workshop, number }
+        params: { learning, workshop, number },
+        query
       })
     } else {
       router.push({
         name: 'learning-items',
-        params: { learning, workshop }
+        params: { learning, workshop },
+        query
       })
     }
   }

@@ -81,7 +81,8 @@
           <div v-for="section in entry.sections" :key="section.index" class="mb-4">
             <div class="font-semibold text-primary mb-2">{{ section.title }}</div>
 
-            <div v-for="ex in section.examples" :key="ex.key" class="ml-4 mb-1 text-sm">
+            <div v-for="ex in section.examples" :key="ex.key" class="ml-4 mb-1 text-sm cursor-pointer hover:bg-accent/50 rounded px-1 -mx-1 transition"
+              @click="goToExample(entry.lesson.number, ex.key)">
               <template v-if="ex.answered">
                 <span v-if="ex.correct === true" class="text-green-600 dark:text-green-400 font-mono">[ok]</span>
                 <span v-else-if="ex.correct === false" class="text-red-600 dark:text-red-400 font-mono">[!!]</span>
@@ -137,7 +138,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useLessons } from '../composables/useLessons'
 import { useAssessments } from '../composables/useAssessments'
@@ -148,6 +149,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 const route = useRoute()
+const router = useRouter()
 const { t } = useI18n()
 const emit = defineEmits(['update-title'])
 
@@ -180,6 +182,14 @@ function formatDate(iso) {
   } catch {
     return iso
   }
+}
+
+function goToExample(lessonNumber, exKey) {
+  router.push({
+    name: 'lesson-detail',
+    params: { learning: learning.value, workshop: workshop.value, number: lessonNumber },
+    query: { scrollTo: `example-${exKey}` }
+  })
 }
 
 // Toggle a learning item
