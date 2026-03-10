@@ -666,6 +666,7 @@ watch(
 )
 
 onMounted(async () => {
+  window.scrollTo(0, 0)
   const currentLearning = route.params.learning
   const currentWorkshop = route.params.workshop
   const currentLessonNumber = parseInt(route.params.number)
