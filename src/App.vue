@@ -49,21 +49,9 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
           </Button>
 
-          <!-- Back to lesson (when on items/results with lesson number) -->
+          <!-- Back to lessons (on lesson detail and other workshop subpages) -->
           <Button
-            v-if="isWorkshopSubpage && route.name !== 'lessons-overview' && route.name !== 'lesson-detail' && (route.params.number || route.query.fromLesson)"
-            variant="ghost"
-            size="icon"
-            @click="goBackToLesson"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-lg font-bold flex-shrink-0"
-            :title="$t('nav.backToLessons')"
-            :aria-label="$t('nav.backToLessons')">
-            {{ route.params.number || route.query.fromLesson }}
-          </Button>
-
-          <!-- Back to lessons (on lesson detail and other workshop subpages without lesson number) -->
-          <Button
-            v-else-if="isWorkshopSubpage && route.name !== 'lessons-overview'"
+            v-if="isWorkshopSubpage && route.name !== 'lessons-overview'"
             variant="ghost"
             size="icon"
             @click="goBackToLessons"
@@ -128,6 +116,18 @@
             :aria-label="isOnItemsPage ? $t('nav.backToLessons') : $t('nav.learningItems')">
             <svg v-if="isOnItemsPage" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
             <span v-else>📚</span>
+          </Button>
+
+          <!-- Back to lesson number (on items/results/coach, right side) -->
+          <Button
+            v-if="!isLessonPage && fromLessonNumber && route.name !== 'lessons-overview'"
+            variant="ghost"
+            size="icon"
+            @click="goBackToLesson"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-lg font-bold flex-shrink-0"
+            :title="$t('nav.backToLessons')"
+            :aria-label="$t('nav.backToLessons')">
+            {{ fromLessonNumber }}
           </Button>
 
           <!-- Settings button (hidden on home and settings pages) -->
@@ -323,7 +323,12 @@ const hasCoach = computed(() => {
 const canShowItemsButton = computed(() => {
   return route.name === 'lesson-detail' ||
          route.name === 'lessons-overview' ||
-         route.name === 'learning-items'
+         route.name === 'learning-items' ||
+         route.name === 'assessment-results'
+})
+
+const fromLessonNumber = computed(() => {
+  return route.params.number || route.query.fromLesson || null
 })
 
 function toggleLanguageMenu() {
@@ -387,11 +392,13 @@ function goBackToLessons() {
 function goBackToLesson() {
   const learning = route.params.learning
   const workshop = route.params.workshop
-  const number = route.params.number || route.query.fromLesson
-  router.push({
-    name: 'lesson-detail',
-    params: { learning, workshop, number }
-  })
+  const number = fromLessonNumber.value
+  if (number) {
+    router.push({
+      name: 'lesson-detail',
+      params: { learning, workshop, number }
+    })
+  }
 }
 
 function goBack() {
