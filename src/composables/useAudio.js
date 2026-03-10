@@ -283,8 +283,8 @@ async function playNextItem(settings) {
     const audio = audioElements.value[item.audioUrl]
 
     if (!audio) {
-      console.warn('⚠️ Audio not found for:', item.audioUrl, '- skipping')
-      playNextItem(settings)
+      console.warn('⚠️ Audio not found for:', item.audioUrl, '- stopping')
+      stop()
       return
     }
 
@@ -346,11 +346,8 @@ async function playNextItem(settings) {
     }
 
     audio.onerror = (e) => {
-      console.error('❌ Audio playback error:', e)
-      // Skip to next on error
-      if (isPlaying.value) {
-        playNextItem(settings)
-      }
+      console.error('❌ Audio playback error:', e, '- stopping')
+      stop()
     }
 
     // Play
@@ -358,11 +355,8 @@ async function playNextItem(settings) {
     console.log('▶️ Playing audio:', item.audioUrl)
 
   } catch (error) {
-    console.error('❌ Error playing audio:', error)
-    // Skip to next on error
-    if (isPlaying.value) {
-      playNextItem(settings)
-    }
+    console.error('❌ Error playing audio:', error, '- stopping')
+    stop()
   }
 }
 
@@ -400,8 +394,8 @@ async function playCurrentItem(settings) {
     const audio = audioElements.value[item.audioUrl]
 
     if (!audio) {
-      console.warn('⚠️ Audio not found for:', item.audioUrl, '- skipping')
-      playNextItem(settings)
+      console.warn('⚠️ Audio not found for:', item.audioUrl, '- stopping')
+      stop()
       return
     }
 
@@ -460,11 +454,8 @@ async function playCurrentItem(settings) {
     }
 
     audio.onerror = (e) => {
-      console.error('❌ Audio playback error (resumed):', e)
-      // Skip to next on error
-      if (isPlaying.value) {
-        playNextItem(settings)
-      }
+      console.error('❌ Audio playback error (resumed):', e, '- stopping')
+      stop()
     }
 
     // Play from current position (resume)
@@ -472,11 +463,8 @@ async function playCurrentItem(settings) {
     console.log('▶️ Resumed audio:', item.audioUrl)
 
   } catch (error) {
-    console.error('❌ Error playing audio (resumed):', error)
-    // Skip to next on error
-    if (isPlaying.value) {
-      playNextItem(settings)
-    }
+    console.error('❌ Error playing audio (resumed):', error, '- stopping')
+    stop()
   }
 }
 
