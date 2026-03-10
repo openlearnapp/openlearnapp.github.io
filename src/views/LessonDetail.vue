@@ -5,7 +5,7 @@
         <img
           :src="resolveImagePath(lesson.image)"
           :alt="lesson.image_caption || lesson.title"
-          class="w-full max-h-64 object-cover cursor-zoom-in"
+          class="w-full rounded-lg cursor-zoom-in"
           @click="openLightbox(resolveImagePath(lesson.image), lesson.image_caption)"
         />
         <p v-if="lesson.image_caption" class="text-xs text-muted-foreground mt-1.5 text-center italic">
@@ -52,7 +52,7 @@
             <img
               :src="resolveImagePath(section.image)"
               :alt="section.image_caption || section.title"
-              class="w-full rounded-lg object-cover max-h-96 cursor-zoom-in shadow-sm"
+              class="w-full rounded-lg cursor-zoom-in shadow-sm"
               @click="openLightbox(resolveImagePath(section.image), section.image_caption)"
             />
             <p v-if="section.image_caption" class="text-xs text-muted-foreground mt-1.5 text-center italic">
@@ -216,7 +216,7 @@
                 <img
                   :src="resolveImagePath(example.image)"
                   :alt="example.image_caption || example.q"
-                  class="w-full rounded-lg object-cover cursor-zoom-in shadow-sm"
+                  class="w-full rounded-lg object-contain cursor-zoom-in shadow-sm"
                   @click.stop="openLightbox(resolveImagePath(example.image), example.image_caption)"
                 />
               </div>

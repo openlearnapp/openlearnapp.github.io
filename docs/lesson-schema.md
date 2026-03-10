@@ -116,7 +116,7 @@ sections:
   - **Relative path**: `image: "screenshots/step1.png"` — file is resolved relative to the lesson folder
   - **Absolute URL**: `image: "https://example.com/photo.png"` — used as-is
 - Clicking the image opens it in a fullscreen lightbox overlay; press ESC or click to close
-- Renders with `max-h-96` height constraint and covers the full width of the card
+- Renders at full width with natural height (no cropping)
 
 **Image Caption Field** (optional):
 - `image_caption: "Optional caption text"` — displayed as small italic text centered below the image
@@ -436,6 +436,7 @@ Audio files are automatically generated based on the language codes defined in `
 7. **Progressive difficulty** - order lessons from simple to complex
 8. **Use labels** to categorize examples by grammar concepts
 9. **Organize folders** by language/workshop hierarchy
+10. **Image sizes**: Lesson/section images should be at least 800px wide (any aspect ratio — displayed at full width without cropping). Workshop and lesson card thumbnails use a 16:9 aspect ratio — provide images at 640×360px or larger in 16:9 to avoid cropping
 
 ## Schema Flexibility
 

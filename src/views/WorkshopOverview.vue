@@ -41,7 +41,7 @@
           <div class="h-1.5 bg-gradient-to-r from-primary to-secondary" :style="getWorkshopBarStyle(ws)"></div>
 
           <!-- Workshop thumbnail image (optional, no fallback) -->
-          <div v-if="getWorkshopImage(ws)" class="overflow-hidden h-36 bg-accent/20">
+          <div v-if="getWorkshopImage(ws)" class="overflow-hidden aspect-[16/9] bg-accent/20">
             <img
               :src="getWorkshopImage(ws)"
               :alt="getWorkshopTitle(ws)"
