@@ -617,22 +617,6 @@ async function playSingleItem(index, settings) {
     // Set up event handlers
     audio.onended = () => {
       console.log('⏹️ Single item audio ended')
-
-      // If there's an answer right after this (next item), play it too
-      const nextItem = readingQueue.value[index + 1]
-      if (nextItem &&
-          nextItem.sectionIdx === item.sectionIdx &&
-          nextItem.exampleIdx === item.exampleIdx &&
-          nextItem.type === 'answer' &&
-          nextItem.audioUrl) {
-
-        const nextAudio = audioElements.value[nextItem.audioUrl]
-        if (nextAudio) {
-          console.log('📢 Playing answer too')
-          nextAudio.currentTime = 0
-          nextAudio.play().catch(e => console.error('Error playing answer:', e))
-        }
-      }
     }
 
     audio.onerror = (e) => {
