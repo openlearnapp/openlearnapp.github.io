@@ -164,8 +164,7 @@
     "loadingLessons": "Loading lessons...",
     "noLessonsFound": "No lessons found",
     "copied": "Copied!",
-    "share": "Share",
-    "noAutoCheck": "No auto-check — review your answer yourself"
+    "share": "Share"
   },
   "results": {
     "allLessons": "All Lessons",
