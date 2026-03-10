@@ -123,11 +123,19 @@ examples:
   # Default: Q&A (type field optional, defaults to "qa")
   - q: "Question or source sentence"    # Question/source language
     a: "Answer or target sentence"      # Answer/target language
+    image: "screenshots/step1.png"      # Optional image (relative or URL)
+    image_caption: "Caption text"       # Optional caption below the image
     labels: ["Futur", "Gerundium"]      # Optional labels for categorization
     rel:                                # Related items (vocabulary, etc.)
       - ["term1", "translation1"]       # Each item is an array of strings
       - ["term2", "translation2"]       # First element is the item ID
 ```
+
+**Example Image Fields** (optional):
+- `image` and `image_caption` work the same way as on sections
+- Displayed below the question and above the answer/assessment input
+- Clicking the image opens a fullscreen lightbox overlay
+- Useful for step-by-step guides with screenshots or visual questions
 
 ### Assessment Types (version 2)
 

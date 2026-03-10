@@ -100,6 +100,18 @@
               <span v-if="isAssessmentCorrect(example)" class="text-green-600 dark:text-green-400 mr-1">✓</span>{{ example.q }}
             </div>
 
+            <div v-if="example.image" class="mb-3">
+              <img
+                :src="resolveImagePath(example.image)"
+                :alt="example.image_caption || example.q"
+                class="w-full rounded-lg object-cover max-h-64 cursor-zoom-in shadow-sm"
+                @click.stop="openLightbox(resolveImagePath(example.image), example.image_caption)"
+              />
+              <p v-if="example.image_caption" class="text-xs text-muted-foreground mt-1 text-center italic">
+                {{ example.image_caption }}
+              </p>
+            </div>
+
             <template v-if="!example.type || example.type === 'qa'">
               <div
                 v-show="settings.showAnswers"

@@ -5,6 +5,8 @@ description: "Lerne, wie du in Open Learn navigierst, deinen Fortschritt verfolg
 
 sections:
   - title: "Navigation"
+    image: "/open-learn/lessons/images/guide/lessons-overview.png"
+    image_caption: "Die Lektionsübersicht — wähle eine Lektion zum Lernen"
     explanation: |
       Open Learn ist in drei Ebenen aufgebaut:
 
@@ -30,6 +32,8 @@ sections:
         labels: ["Navigation"]
 
   - title: "Lernfortschritt & Labels"
+    image: "/open-learn/lessons/images/guide/qa-cards.png"
+    image_caption: "Q&A-Karten mit Labels — tippe auf ein Lernelement, um es als gelernt zu markieren"
     explanation: |
       Jede Q&A-Karte kann **Lernelemente** haben — Vokabeln oder Konzepte, die daran angehängt sind. Du kannst diese als *gelernt* markieren, um deinen Fortschritt zu verfolgen.
 
@@ -54,6 +58,8 @@ sections:
         labels: ["Fortschritt"]
 
   - title: "Einstellungen"
+    image: "/open-learn/lessons/images/guide/settings.png"
+    image_caption: "Die Einstellungen — passe Open Learn nach deinen Wünschen an"
     explanation: |
       Öffne die **Einstellungen** über das Zahnrad-Symbol oben rechts. Hier kannst du anpassen, wie Open Learn für dich funktioniert.
 
