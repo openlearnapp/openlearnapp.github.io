@@ -177,7 +177,7 @@ function setupMediaSession(lessonTitle, learning, workshop) {
   }
 
   const baseUrl = import.meta.env.BASE_URL
-  const artworkUrl = `${baseUrl}audio-test-artwork.svg` // Reuse existing artwork
+  const artworkUrl = `${baseUrl}favicon.svg`
 
   navigator.mediaSession.metadata = new MediaMetadata({
     title: lessonTitle,
