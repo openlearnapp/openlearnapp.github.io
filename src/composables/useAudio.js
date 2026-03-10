@@ -64,8 +64,15 @@ function buildReadingQueue(lesson, learning, workshop, settings) {
   }
 
   lesson.sections.forEach((section, sectionIdx) => {
-    // Filter examples based on hideLearnedExamples setting
+    // Filter examples based on active label and hideLearnedExamples setting
     const visibleExamples = section.examples.filter((example) => {
+      // Filter by active label
+      if (settings.activeLabel) {
+        if (!example.labels || !example.labels.includes(settings.activeLabel)) {
+          return false
+        }
+      }
+
       // If hideLearnedExamples is disabled, show all examples
       if (!settings.hideLearnedExamples) {
         return true
