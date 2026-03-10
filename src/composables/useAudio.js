@@ -3,7 +3,7 @@ import { useLessons } from './useLessons'
 import { useProgress } from './useProgress'
 
 // Get lesson composable for language codes
-const { getLanguageCode, getWorkshopCode, resolveWorkshopKey } = useLessons()
+const { getLanguageCode, getWorkshopCode, resolveWorkshopKey, getWorkshopMeta } = useLessons()
 
 // Get progress composable for learned items
 const { areAllItemsLearned } = useProgress()
@@ -184,7 +184,8 @@ function setupMediaSession(lessonTitle, learning, workshop) {
   }
 
   const baseUrl = import.meta.env.BASE_URL
-  const artworkUrl = `${baseUrl}favicon.svg`
+  const meta = getWorkshopMeta(learning, workshop)
+  const artworkUrl = meta.image || `${baseUrl}favicon.svg`
 
   navigator.mediaSession.metadata = new MediaMetadata({
     title: lessonTitle,
