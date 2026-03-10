@@ -18,10 +18,14 @@ const routes = [
     meta: { title: '🎓 Open Learn' }
   },
   {
-    path: '/:learning/workshops',
+    path: '/:learning',
     name: 'workshop-overview',
     component: WorkshopOverview,
     meta: { title: 'Workshops' }
+  },
+  {
+    path: '/:learning/workshops',
+    redirect: to => `/${to.params.learning}`
   },
   {
     path: '/:learning/:workshop/lessons',

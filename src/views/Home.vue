@@ -77,7 +77,7 @@
             </div>
             <div class="text-sm font-medium text-foreground mb-3">{{ steps[1].title }}</div>
             <a
-              :href="'#/' + currentLanguage + '/workshops'"
+              :href="'#/' + currentLanguage"
               class="inline-flex items-center gap-1.5 bg-primary text-white font-medium text-sm rounded-full px-4 py-2 cursor-pointer hover:bg-primary/90 transition mb-3">
               {{ $t('home.browseWorkshops') }} →
             </a>
