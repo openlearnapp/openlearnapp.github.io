@@ -81,16 +81,18 @@
             {{ isPlaying ? '⏸' : '▶️' }}
           </Button>
 
-          <!-- Assessment Results button (visible when workshop context exists) -->
+          <!-- Results / Lesson# toggle button -->
           <Button
             v-if="canShowResultsButton"
             variant="ghost"
             size="icon"
-            @click="goToResults"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
-            :title="$t('nav.assessmentResults')"
-            :aria-label="$t('nav.assessmentResults')">
-            📋
+            @click="isOnResultsPage ? goBackToLesson() : goToResults()"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 flex-shrink-0"
+            :class="isOnResultsPage && fromLessonNumber ? 'text-lg font-bold' : 'text-2xl'"
+            :title="isOnResultsPage ? $t('nav.backToLessons') : $t('nav.assessmentResults')"
+            :aria-label="isOnResultsPage ? $t('nav.backToLessons') : $t('nav.assessmentResults')">
+            <span v-if="isOnResultsPage && fromLessonNumber">{{ fromLessonNumber }}</span>
+            <span v-else>📋</span>
           </Button>
 
           <!-- Coach button (visible when coach API is configured for workshop) -->
@@ -105,29 +107,18 @@
             🤖
           </Button>
 
-          <!-- Items/Lessons toggle button -->
+          <!-- Items / Lesson# toggle button -->
           <Button
             v-if="canShowItemsButton"
             variant="ghost"
             size="icon"
-            @click="goToItems"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
+            @click="isOnItemsPage ? goBackToLesson() : goToItems()"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 flex-shrink-0"
+            :class="isOnItemsPage && fromLessonNumber ? 'text-lg font-bold' : 'text-2xl'"
             :title="isOnItemsPage ? $t('nav.backToLessons') : $t('nav.learningItems')"
             :aria-label="isOnItemsPage ? $t('nav.backToLessons') : $t('nav.learningItems')">
-            <svg v-if="isOnItemsPage" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+            <span v-if="isOnItemsPage && fromLessonNumber">{{ fromLessonNumber }}</span>
             <span v-else>📚</span>
-          </Button>
-
-          <!-- Back to lesson number (on items/results/coach, right side) -->
-          <Button
-            v-if="!isLessonPage && fromLessonNumber && route.name !== 'lessons-overview'"
-            variant="ghost"
-            size="icon"
-            @click="goBackToLesson"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-lg font-bold flex-shrink-0"
-            :title="$t('nav.backToLessons')"
-            :aria-label="$t('nav.backToLessons')">
-            {{ fromLessonNumber }}
           </Button>
 
           <!-- Settings button (hidden on home and settings pages) -->
@@ -245,6 +236,7 @@ const isLessonPage = computed(() => {
   return route.name === 'lesson-detail'
 })
 const isOnItemsPage = computed(() => route.name === 'learning-items')
+const isOnResultsPage = computed(() => route.name === 'assessment-results')
 
 // Footer: learning param for links (from route or last known)
 const footerLearning = computed(() => {
@@ -309,7 +301,8 @@ const contentBgClass = computed(() => {
 const canShowResultsButton = computed(() => {
   return route.name === 'lesson-detail' ||
          route.name === 'lessons-overview' ||
-         route.name === 'learning-items'
+         route.name === 'learning-items' ||
+         route.name === 'assessment-results'
 })
 
 const hasCoach = computed(() => {
@@ -398,6 +391,11 @@ function goBackToLesson() {
       name: 'lesson-detail',
       params: { learning, workshop, number }
     })
+  } else {
+    router.push({
+      name: 'lessons-overview',
+      params: { learning, workshop }
+    })
   }
 }
 
@@ -441,22 +439,6 @@ function goToItems() {
   const learning = route.params.learning
   const workshop = route.params.workshop
   const number = route.params.number
-
-  if (route.name === 'learning-items') {
-    // If on items page, go back to lessons
-    if (number) {
-      router.push({
-        name: 'lesson-detail',
-        params: { learning, workshop, number }
-      })
-    } else {
-      router.push({
-        name: 'lessons-overview',
-        params: { learning, workshop }
-      })
-    }
-    return
-  }
 
   if (learning && workshop) {
     const query = route.query.label ? { label: route.query.label } : {}
