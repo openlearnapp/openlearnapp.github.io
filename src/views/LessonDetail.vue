@@ -200,9 +200,6 @@
               </div>
             </template>
 
-            <div v-if="isAssessmentType(example) && !hasValidation(example) && getSubmission(example)" class="mt-2 text-xs text-muted-foreground/60 italic">
-              {{ $t('lesson.noAutoCheck') }}
-            </div>
 
             <div v-if="settings.showLearningItems && example.rel && example.rel.length > 0" class="flex flex-wrap gap-2 mb-3">
               <Badge
@@ -391,6 +388,9 @@ function hasValidation(example) {
 function isAssessmentCorrect(example) {
   if (!isAssessmentType(example)) return false
   const sub = getSubmission(example)
+  if (!hasValidation(example)) {
+    return !!sub
+  }
   if (example.type === 'multiple-choice') {
     return getMcLive(example) === true || sub?.correct === true
   }
