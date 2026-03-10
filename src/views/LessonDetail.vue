@@ -19,10 +19,29 @@
         {{ lesson.description }}
       </p>
 
+      <div v-if="activeLabel" class="mb-4 flex items-center gap-2">
+        <Badge class="bg-primary text-primary-foreground px-3 py-1">
+          {{ activeLabel }}
+          <button @click="activeLabel = null" class="ml-2 hover:opacity-70">✕</button>
+        </Badge>
+      </div>
+
+      <nav v-if="filteredSections.length > 1" class="mb-5 p-4 bg-muted rounded-lg">
+        <h3 class="text-sm font-semibold text-muted-foreground mb-2">{{ $t('lesson.sections') }}</h3>
+        <ol class="list-decimal list-inside space-y-1">
+          <li v-for="(section, idx) in filteredSections" :key="idx">
+            <a :href="`#section-${idx}`" class="text-primary hover:underline" @click.prevent="scrollToSection(idx)">
+              {{ section.title }}
+            </a>
+          </li>
+        </ol>
+      </nav>
+
       <!-- Sections -->
       <Card
         v-for="(section, idx) in filteredSections"
         :key="idx"
+        :id="`section-${idx}`"
         class="p-5 mb-5">
         <CardHeader class="p-0 pb-4">
           <CardTitle class="text-2xl text-primary">
@@ -115,7 +134,7 @@
 
             <template v-if="!example.type || example.type === 'qa'">
               <div
-                v-show="settings.showAnswers"
+                v-show="settings.showAnswers || revealedAnswers[draftKey(example)]"
                 class="text-muted-foreground italic mb-3">
                 {{ displayAnswer(example.a) }}
               </div>
@@ -181,6 +200,10 @@
               </div>
             </template>
 
+            <div v-if="isAssessmentType(example) && !hasValidation(example) && getSubmission(example)" class="mt-2 text-xs text-muted-foreground/60 italic">
+              {{ $t('lesson.noAutoCheck') }}
+            </div>
+
             <div v-if="settings.showLearningItems && example.rel && example.rel.length > 0" class="flex flex-wrap gap-2 mb-3">
               <Badge
                 v-for="(item, relIdx) in example.rel"
@@ -206,7 +229,12 @@
             <div v-if="settings.showLabels && example.labels" class="flex gap-1">
               <Badge
                 v-for="label in example.labels"
-                :key="label">
+                :key="label"
+                @click.stop="toggleLabel(label)"
+                :class="[
+                  'cursor-pointer transition',
+                  activeLabel === label ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                ]">
                 {{ label }}
               </Badge>
             </div>
@@ -247,7 +275,7 @@
       v-if="lesson"
       size="icon"
       @click="togglePlayPause"
-      class="md:hidden fixed bottom-6 right-6 w-16 h-16 rounded-full shadow-lg text-3xl z-50"
+      class="md:hidden fixed bottom-20 right-6 w-16 h-16 rounded-full shadow-lg text-3xl z-50"
       :title="isPlaying ? $t('nav.pause') : $t('nav.play')"
       :aria-label="isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio')">
       {{ isPlaying ? '⏸' : '▶️' }}
@@ -283,7 +311,7 @@ const emit = defineEmits(['update-title'])
 const { loadAllLessonsForWorkshop } = useLessons()
 const { settings } = useSettings()
 const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress } = useProgress()
-const { isPlaying, isPaused, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
+const { isPlaying, isPaused, playbackFinished, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
 const { getAnswer, saveAnswer, validateAnswer } = useAssessments()
 const { setLessonFooter, clearLessonFooter } = useFooter()
 
@@ -292,6 +320,8 @@ const allLessons = ref([])
 const drafts = reactive({})
 const mcLive = reactive({})
 const lightbox = reactive({ open: false, src: '', caption: '' })
+const revealedAnswers = reactive({})
+const activeLabel = ref(route.query.label || null)
 
 function isYouTubeUrl(url) {
   return /(?:youtube\.com|youtu\.be)/.test(url)
@@ -347,6 +377,15 @@ function handleLightboxKey(e) {
 
 function isAssessmentType(example) {
   return example.type && example.type !== 'qa'
+}
+
+function hasValidation(example) {
+  if (!isAssessmentType(example)) return false
+  if (example.type === 'input') return !!example.a
+  if (example.type === 'multiple-choice' || example.type === 'select') {
+    return example.options?.some(opt => opt.correct === true)
+  }
+  return false
 }
 
 function isAssessmentCorrect(example) {
@@ -500,6 +539,11 @@ const filteredSections = computed(() => {
         _originalExampleIdx: originalExampleIdx
       }))
       .filter(example => {
+        if (activeLabel.value) {
+          if (!example.labels || !example.labels.includes(activeLabel.value)) {
+            return false
+          }
+        }
         if (!settings.value.hideLearnedExamples) {
           return true
         }
@@ -517,12 +561,28 @@ const filteredSections = computed(() => {
   }).filter(section => section.examples.length > 0)
 })
 
+function scrollToSection(idx) {
+  const el = document.getElementById(`section-${idx}`)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+function toggleLabel(label) {
+  activeLabel.value = activeLabel.value === label ? null : label
+}
+
 function handleItemClick(itemId) {
   toggleItemLearned(learning.value, workshop.value, itemId)
 }
 
 function handleExampleClick(example) {
   if (isAssessmentType(example)) return
+
+  if (!settings.value.showAnswers && (!example.type || example.type === 'qa')) {
+    const key = draftKey(example)
+    revealedAnswers[key] = !revealedAnswers[key]
+  }
 
   const originalSectionIdx = example._originalSectionIdx
   const originalExampleIdx = example._originalExampleIdx
@@ -556,6 +616,24 @@ watch(currentItem, async (newItem) => {
   if (element) {
     element.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
+})
+
+// Auto-advance to next lesson when audio playback finishes
+watch(playbackFinished, (finished) => {
+  if (finished && nextLessonNumber.value) {
+    router.replace(`/${learning.value}/${workshop.value}/lesson/${nextLessonNumber.value}?autoplay=true`)
+  }
+})
+
+// Sync active label to URL query param
+watch(activeLabel, (label) => {
+  const query = { ...route.query }
+  if (label) {
+    query.label = label
+  } else {
+    delete query.label
+  }
+  router.replace({ query })
 })
 
 // Keep footer in sync with next lesson number
@@ -603,6 +681,18 @@ onMounted(async () => {
 
     await initializeAudio(lesson.value, currentLearning, currentWorkshop, settings.value)
     restoreDraftsFromSaved()
+
+    if (route.query.autoplay) {
+      play(settings.value)
+    }
+
+    if (route.query.scrollTo) {
+      await nextTick()
+      const el = document.getElementById(route.query.scrollTo)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }
   }
 })
 

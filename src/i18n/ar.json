@@ -164,7 +164,8 @@
     "loadingLessons": "جارٍ تحميل الدروس...",
     "noLessonsFound": "لم يتم العثور على دروس",
     "copied": "تم النسخ!",
-    "share": "مشاركة"
+    "share": "مشاركة",
+    "noAutoCheck": "لا يوجد تصحيح تلقائي — راجع إجابتك بنفسك"
   },
   "results": {
     "allLessons": "جميع الدروس",

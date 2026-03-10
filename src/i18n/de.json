@@ -164,7 +164,8 @@
     "loadingLessons": "Lektionen werden geladen...",
     "noLessonsFound": "Keine Lektionen gefunden",
     "copied": "Kopiert!",
-    "share": "Teilen"
+    "share": "Teilen",
+    "noAutoCheck": "Keine automatische Korrektur — überprüfe deine Antwort selbst"
   },
   "results": {
     "allLessons": "Alle Lektionen",

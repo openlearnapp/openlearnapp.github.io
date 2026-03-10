@@ -15,6 +15,7 @@ const currentItemIndex = ref(-1)
 const readingQueue = ref([])
 const audioElements = ref([]) // Pre-loaded audio elements
 const currentAudio = ref(null) // Currently playing audio element
+const playbackFinished = ref(false)
 const lessonTitle = ref('')
 const lessonMetadata = ref({ learning: '', workshop: '', number: '' })
 
@@ -221,6 +222,7 @@ async function initializeAudio(lesson, learning, workshop, settings) {
   lessonTitle.value = lesson.title
   lessonMetadata.value = { learning, workshop, number: lesson.number }
 
+  playbackFinished.value = false
   readingQueue.value = buildReadingQueue(lesson, learning, workshop, settings)
 
   console.log('📋 Built reading queue with', readingQueue.value.length, 'items')
@@ -255,6 +257,7 @@ async function playNextItem(settings) {
   if (currentItemIndex.value >= readingQueue.value.length - 1) {
     // Reached end of queue
     console.log('✅ Reached end of queue, stopping')
+    playbackFinished.value = true
     stop()
     return
   }
@@ -488,6 +491,7 @@ function play(settings) {
 
   const wasResuming = isPaused.value && currentItemIndex.value >= 0
 
+  playbackFinished.value = false
   console.log('▶️ Setting isPlaying to true')
   isPlaying.value = true
   isPaused.value = false
@@ -711,6 +715,7 @@ export function useAudio() {
   return {
     isPlaying,
     isPaused,
+    playbackFinished,
     currentItem,
     currentItemIndex,
     readingQueue,

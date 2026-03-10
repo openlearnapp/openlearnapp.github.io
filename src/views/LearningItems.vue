@@ -28,6 +28,13 @@
       </div>
     </Card>
 
+    <div v-if="activeLabel" class="mb-4 flex items-center gap-2">
+      <Badge class="bg-primary text-primary-foreground px-3 py-1">
+        {{ activeLabel }}
+        <button @click="activeLabel = null" class="ml-2 hover:opacity-70">✕</button>
+      </Badge>
+    </div>
+
     <div v-if="!groupByLesson && !groupByLearnStatus">
       <div class="grid grid-cols-2 md:flex md:flex-wrap gap-2">
         <Badge
@@ -90,7 +97,7 @@
 
     <div v-else-if="groupByLesson">
       <div v-for="lesson in lessonsWithItems" :key="lesson.number" class="mb-6">
-        <h2 class="text-2xl font-bold text-primary mb-3">
+        <h2 class="text-2xl font-bold text-primary mb-3 cursor-pointer hover:underline" @click="openLesson(lesson.number)">
           {{ $t('items.lessonLabel') }} {{ lesson.number }}: {{ lesson.title }}
         </h2>
 
@@ -194,16 +201,21 @@ const selectedLesson = ref(lessonNumber.value || 'all')
 const groupByLearnStatus = ref(true)
 const groupByLesson = ref(lessonNumber.value ? false : true)
 const loading = ref(true)
+const activeLabel = ref(route.query.label || null)
 
 const showGroupByLessonOption = computed(() => {
   return selectedLesson.value === 'all'
 })
 
 const filteredItems = computed(() => {
-  if (selectedLesson.value === 'all') {
-    return allItems.value
+  let items = allItems.value
+  if (selectedLesson.value !== 'all') {
+    items = items.filter(item => item.lessonNumber === selectedLesson.value)
   }
-  return allItems.value.filter(item => item.lessonNumber === selectedLesson.value)
+  if (activeLabel.value) {
+    items = items.filter(item => item.labels && item.labels.includes(activeLabel.value))
+  }
+  return items
 })
 
 const unlearnedItems = computed(() => {
@@ -239,6 +251,13 @@ const lessonsWithItems = computed(() => {
   }).filter(lesson => lesson.items.length > 0)
 })
 
+function openLesson(number) {
+  router.push({
+    name: 'lesson-detail',
+    params: { learning: learning.value, workshop: workshop.value, number }
+  })
+}
+
 async function loadItems() {
   loading.value = true
 
@@ -262,6 +281,7 @@ async function loadItems() {
                   term: relItem[0],
                   translation: relItem[1] || '',
                   context: relItem[2] || '',
+                  labels: example.labels || [],
                   lessonNumber: lesson.number,
                   lessonTitle: lesson.title
                 })
