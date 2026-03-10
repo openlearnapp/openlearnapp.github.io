@@ -51,14 +51,14 @@
 
           <!-- Back to lesson (when on items/results with lesson number) -->
           <Button
-            v-if="isWorkshopSubpage && route.name !== 'lessons-overview' && route.name !== 'lesson-detail' && route.params.number"
+            v-if="isWorkshopSubpage && route.name !== 'lessons-overview' && route.name !== 'lesson-detail' && (route.params.number || route.query.fromLesson)"
             variant="ghost"
             size="icon"
             @click="goBackToLesson"
             class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-lg font-bold flex-shrink-0"
             :title="$t('nav.backToLessons')"
             :aria-label="$t('nav.backToLessons')">
-            {{ route.params.number }}
+            {{ route.params.number || route.query.fromLesson }}
           </Button>
 
           <!-- Back to lessons (on lesson detail and other workshop subpages without lesson number) -->
@@ -387,7 +387,7 @@ function goBackToLessons() {
 function goBackToLesson() {
   const learning = route.params.learning
   const workshop = route.params.workshop
-  const number = route.params.number
+  const number = route.params.number || route.query.fromLesson
   router.push({
     name: 'lesson-detail',
     params: { learning, workshop, number }
@@ -408,9 +408,11 @@ function goToResults() {
   const learning = route.params.learning
   const workshop = route.params.workshop
   if (learning && workshop) {
+    const query = route.params.number ? { fromLesson: route.params.number } : {}
     router.push({
       name: 'assessment-results',
-      params: { learning, workshop }
+      params: { learning, workshop },
+      query
     })
   }
 }
@@ -419,9 +421,11 @@ function goToCoach() {
   const learning = route.params.learning
   const workshop = route.params.workshop
   if (learning && workshop) {
+    const query = route.params.number ? { fromLesson: route.params.number } : {}
     router.push({
       name: 'coach',
-      params: { learning, workshop }
+      params: { learning, workshop },
+      query
     })
   }
 }
