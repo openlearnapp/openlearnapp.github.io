@@ -191,7 +191,7 @@
         <!-- Next Lesson button (right-aligned) -->
         <router-link
           v-if="isLessonPage && footerNextLesson"
-          :to="`/${lessonLearning}/${lessonWorkshop}/lesson/${footerNextLesson}`"
+          :to="{ path: `/${lessonLearning}/${lessonWorkshop}/lesson/${footerNextLesson}`, query: route.query.label ? { label: route.query.label } : {} }"
           class="ml-auto">
           <Button size="sm">
             {{ $t('lesson.nextLesson') }} {{ isRtl ? '←' : '→' }}
