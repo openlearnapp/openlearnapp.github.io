@@ -12,7 +12,25 @@
     "coach": "Coach",
     "learningItems": "Learning items",
     "settings": "Settings",
-    "done": "Done"
+    "done": "Done",
+    "profile": "My Profile",
+    "instructor": "Instructor Dashboard"
+  },
+  "profile": {
+    "title": "My Profile",
+    "notLoggedIn": "Sign in to sync your progress",
+    "notLoggedInDesc": "Create an account to save your progress across all your devices.",
+    "memberSince": "Member since",
+    "stats": {
+      "learned": "items learned",
+      "workshops": "workshops",
+      "assessments": "assessments answered"
+    },
+    "yourWorkshops": "Your Workshops",
+    "noWorkshops": "Start learning to see your progress here.",
+    "lastLesson": "Last: Lesson",
+    "continue": "Continue →",
+    "logout": "Sign out"
   },
   "home": {
     "title": "Learn anything. For free. On your terms.",
