@@ -218,7 +218,10 @@
     "featureLessons": "درس‌های تمرینی",
     "featureLessonsDesc": "درس‌های تولیدشده توسط هوش مصنوعی.",
     "online": "آنلاین",
-    "requestPractice": "درخواست درس تمرینی سفارشی"
+    "requestPractice": "درخواست درس تمرینی سفارشی",
+    "connecting": "در حال اتصال...",
+    "noApiDesc": "این کارگاه یک کوچ دارد، اما پشتیبان هوش مصنوعی هنوز راه‌اندازی نشده است.",
+    "contactCoach": "تماس با کوچ:"
   },
   "items": {
     "allLessons": "همه درس‌ها",

@@ -227,7 +227,10 @@
     "featureLessons": "Übungslektionen",
     "featureLessonsDesc": "KI-generierte Lektionen für deine Schwachstellen.",
     "online": "Online",
-    "requestPractice": "Individuelle Übungslektion anfordern"
+    "requestPractice": "Individuelle Übungslektion anfordern",
+    "connecting": "Verbinde...",
+    "noApiDesc": "Dieser Workshop hat einen Coach konfiguriert, aber das KI-Backend ist noch nicht eingerichtet. Du kannst den Coach direkt kontaktieren.",
+    "contactCoach": "Coach kontaktieren:"
   },
   "coachLesson": {
     "title": "Coach-Lektionen",

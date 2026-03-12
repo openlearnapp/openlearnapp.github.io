@@ -227,7 +227,10 @@
     "featureLessons": "Practice Lessons",
     "featureLessonsDesc": "Receive AI-generated lessons focused on your weak areas.",
     "online": "Online",
-    "requestPractice": "Request a custom practice lesson"
+    "requestPractice": "Request a custom practice lesson",
+    "connecting": "Connecting...",
+    "noApiDesc": "This workshop has a coach configured, but the AI backend is not set up yet. You can contact the coach directly.",
+    "contactCoach": "Contact the coach:"
   },
   "coachLesson": {
     "title": "Coach Lessons",

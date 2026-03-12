@@ -1,8 +1,8 @@
 <template>
   <div class="flex flex-col h-[calc(100vh-12rem)]">
 
-    <!-- No coach configured — beautiful placeholder -->
-    <div v-if="!coachApi" class="flex flex-col items-center justify-center flex-1 text-center px-4">
+    <!-- No coach configured — informative placeholder -->
+    <div v-if="!coachConfig" class="flex flex-col items-center justify-center flex-1 text-center px-4">
       <div class="w-20 h-20 rounded-full bg-muted flex items-center justify-center text-4xl mb-4">
         🤖
       </div>
@@ -11,7 +11,6 @@
         {{ $t('coachView.noCoachDesc') }}
       </p>
 
-      <!-- What the coach can do -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-lg mb-6 text-left">
         <div class="bg-muted/50 rounded-lg p-3">
           <div class="text-lg mb-1">💬</div>
@@ -35,7 +34,24 @@
       </p>
     </div>
 
-    <!-- Coach chat interface -->
+    <!-- Coach configured but no API (human coach only) -->
+    <div v-else-if="!coachApi" class="flex flex-col items-center justify-center flex-1 text-center px-4">
+      <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-4xl mb-4">
+        🤖
+      </div>
+      <h2 class="text-xl font-semibold mb-2">{{ coachConfig.name || $t('coachView.defaultName') }}</h2>
+      <p class="text-sm text-muted-foreground max-w-sm mb-4">
+        {{ $t('coachView.noApiDesc') }}
+      </p>
+      <div v-if="coachConfig.email" class="bg-muted/50 rounded-lg p-4 max-w-sm text-left text-sm">
+        <div class="font-medium mb-2">{{ $t('coachView.contactCoach') }}</div>
+        <a :href="`mailto:${coachConfig.email}`" class="text-primary hover:underline">
+          {{ coachConfig.email }}
+        </a>
+      </div>
+    </div>
+
+    <!-- Full chat interface (API configured) -->
     <template v-else>
 
       <!-- Coach header bar -->
@@ -44,10 +60,13 @@
           🤖
         </div>
         <div class="flex-1 min-w-0">
-          <div class="font-semibold text-sm truncate">{{ coachName || $t('coachView.defaultName') }}</div>
+          <div class="font-semibold text-sm truncate">{{ coachConfig.name || $t('coachView.defaultName') }}</div>
           <div class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
-            <span class="text-xs text-muted-foreground">{{ $t('coachView.online') }}</span>
+            <span v-if="isInitializing" class="w-2 h-2 rounded-full bg-yellow-400 inline-block animate-pulse"></span>
+            <span v-else class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+            <span class="text-xs text-muted-foreground">
+              {{ isInitializing ? $t('coachView.connecting') : $t('coachView.online') }}
+            </span>
           </div>
         </div>
         <div class="flex gap-1 flex-shrink-0">
@@ -65,8 +84,16 @@
       <!-- Chat messages -->
       <div ref="chatContainer" class="flex-1 overflow-y-auto space-y-3 mb-3 pr-1">
 
+        <!-- Initializing state -->
+        <div v-if="isInitializing && messages.length === 0" class="flex flex-col items-center justify-center h-full text-center px-4">
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-2xl mb-3 animate-pulse">
+            🤖
+          </div>
+          <p class="text-sm text-muted-foreground">{{ $t('coachView.connecting') }}...</p>
+        </div>
+
         <!-- Welcome screen (empty state) -->
-        <div v-if="messages.length === 0" class="flex flex-col items-center justify-center h-full text-center px-4">
+        <div v-else-if="messages.length === 0" class="flex flex-col items-center justify-center h-full text-center px-4">
           <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-3xl mb-3">
             🤖
           </div>
@@ -90,12 +117,8 @@
         <div
           v-for="(msg, idx) in messages"
           :key="idx"
-          :class="[
-            'flex gap-2',
-            msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-          ]">
+          :class="['flex gap-2', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
 
-          <!-- Avatar (assistant/error only) -->
           <div
             v-if="msg.role !== 'user'"
             class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-sm mt-0.5"
@@ -103,20 +126,16 @@
             {{ msg.role === 'error' ? '⚠️' : '🤖' }}
           </div>
 
-          <!-- Bubble -->
-          <div
-            :class="[
-              'max-w-[82%] rounded-2xl px-3.5 py-2.5',
-              msg.role === 'user'
-                ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                : msg.role === 'error'
-                  ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-tl-sm'
-                  : 'bg-muted text-foreground rounded-tl-sm'
-            ]">
+          <div :class="[
+            'max-w-[82%] rounded-2xl px-3.5 py-2.5',
+            msg.role === 'user'
+              ? 'bg-primary text-primary-foreground rounded-tr-sm'
+              : msg.role === 'error'
+                ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-tl-sm'
+                : 'bg-muted text-foreground rounded-tl-sm'
+          ]">
             <div class="text-sm leading-relaxed whitespace-pre-wrap">{{ msg.content }}</div>
-            <div class="text-xs opacity-50 mt-1 text-right">
-              {{ formatTime(msg.timestamp) }}
-            </div>
+            <div class="text-xs opacity-50 mt-1 text-right">{{ formatTime(msg.timestamp) }}</div>
           </div>
         </div>
 
@@ -133,13 +152,13 @@
         </div>
       </div>
 
-      <!-- Practice quick action (above input) -->
+      <!-- Practice quick action -->
       <div class="mb-2">
         <Button
           variant="outline"
           size="sm"
           class="w-full text-xs h-8 border-dashed"
-          :disabled="isLoading"
+          :disabled="isLoading || isInitializing"
           @click="handlePractice">
           📚 {{ $t('coachView.requestPractice') }}
         </Button>
@@ -148,13 +167,12 @@
       <!-- Input area -->
       <div class="flex gap-2">
         <Input
-          ref="inputRef"
           v-model="inputMessage"
           :placeholder="$t('coachView.placeholder')"
           @keyup.enter="send"
-          :disabled="isLoading"
+          :disabled="isLoading || isInitializing"
           class="flex-1" />
-        <Button @click="send" :disabled="isLoading || !inputMessage.trim()" class="px-4">
+        <Button @click="send" :disabled="isLoading || isInitializing || !inputMessage.trim()" class="px-4">
           {{ $t('coachView.send') }}
         </Button>
       </div>
@@ -178,25 +196,22 @@ const { t } = useI18n()
 const emit = defineEmits(['update-title'])
 
 const { loadAllLessonsForWorkshop, getWorkshopMeta } = useLessons()
-const { isLoading, getMessages, sendMessage, requestCustomLesson, clearChat, loadChatHistory } = useCoach()
+const { isLoading, getMessages, initSession, sendMessage, requestCustomLesson, clearChat, loadChatHistory } = useCoach()
 
 const lessons = ref([])
 const inputMessage = ref('')
 const chatContainer = ref(null)
-const inputRef = ref(null)
+const isInitializing = ref(false)
 
 const learning = computed(() => route.params.learning)
 const workshop = computed(() => route.params.workshop)
 
-const coachApi = computed(() => {
+const coachConfig = computed(() => {
   const meta = getWorkshopMeta(learning.value, workshop.value)
-  return meta.coach?.api || null
+  return meta.coach || null
 })
 
-const coachName = computed(() => {
-  const meta = getWorkshopMeta(learning.value, workshop.value)
-  return meta.coach?.name || null
-})
+const coachApi = computed(() => coachConfig.value?.api || null)
 
 const messages = computed(() => getMessages(learning.value, workshop.value))
 
@@ -209,9 +224,7 @@ const suggestions = computed(() => [
 function formatTime(iso) {
   try {
     return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-  } catch {
-    return ''
-  }
+  } catch { return '' }
 }
 
 async function send() {
@@ -219,7 +232,8 @@ async function send() {
   if (!text || !coachApi.value) return
 
   inputMessage.value = ''
-  await sendMessage(coachApi.value, learning.value, workshop.value, text, lessons.value)
+  const meta = getWorkshopMeta(learning.value, workshop.value)
+  await sendMessage(coachApi.value, learning.value, workshop.value, text, lessons.value, meta)
   scrollToBottom()
 }
 
@@ -246,17 +260,21 @@ function scrollToBottom() {
   })
 }
 
-// Watch for new messages to auto-scroll
-watch(messages, () => {
-  scrollToBottom()
-}, { deep: true })
+watch(messages, () => scrollToBottom(), { deep: true })
 
-// Load data
 loadChatHistory()
 
 watch([learning, workshop], async () => {
   if (!learning.value || !workshop.value) return
   lessons.value = await loadAllLessonsForWorkshop(learning.value, workshop.value)
-  emit('update-title', coachName.value || t('nav.coach'))
+  emit('update-title', coachConfig.value?.name || t('nav.coach'))
+
+  // Initialize session — send full workshop content to SA
+  if (coachApi.value && lessons.value.length > 0) {
+    isInitializing.value = true
+    const meta = getWorkshopMeta(learning.value, workshop.value)
+    await initSession(coachApi.value, learning.value, workshop.value, lessons.value, meta)
+    isInitializing.value = false
+  }
 }, { immediate: true })
 </script>

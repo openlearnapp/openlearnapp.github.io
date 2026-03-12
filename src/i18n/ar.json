@@ -218,7 +218,10 @@
     "featureLessons": "دروس تدريبية",
     "featureLessonsDesc": "دروس مولّدة بالذكاء الاصطناعي.",
     "online": "متصل",
-    "requestPractice": "طلب درس تدريبي مخصص"
+    "requestPractice": "طلب درس تدريبي مخصص",
+    "connecting": "جارٍ الاتصال...",
+    "noApiDesc": "هذه الورشة لديها مدرب مكوّن، لكن الواجهة الخلفية للذكاء الاصطناعي لم تُعدّ بعد.",
+    "contactCoach": "تواصل مع المدرب:"
   },
   "items": {
     "allLessons": "جميع الدروس",

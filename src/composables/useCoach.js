@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useAssessments } from './useAssessments'
 import { useProgress } from './useProgress'
+import { useSettings } from './useSettings'
 import { formatLangName } from '../utils/formatters'
 
 // Chat history per workshop: { "learning:workshop": [{ role, content, timestamp }] }
@@ -14,6 +15,9 @@ const error = ref('')
 
 // Session ID per workshop for SA context continuity
 const sessionIds = ref({})
+
+// Track which sessions have been initialized (workshop context sent)
+const initializedSessions = new Set()
 
 function getChatKey(learning, workshop) {
   return `${learning}:${workshop}`
@@ -69,6 +73,7 @@ function clearChat(learning, workshop) {
   const key = getChatKey(learning, workshop)
   delete chatHistory.value[key]
   delete sessionIds.value[key]
+  initializedSessions.delete(key)
   saveChatHistory()
 }
 
@@ -78,7 +83,90 @@ function clearCoachLessons(learning, workshop) {
   saveCoachLessons()
 }
 
-// Format assessment results as plain text for the agent context
+// Build learner info from settings
+function getLearner() {
+  const { settings } = useSettings()
+  return {
+    name: settings.value.coachIdentifier || 'anonymous',
+    consent: settings.value.coachConsent
+  }
+}
+
+// Build full workshop context for init payload
+function buildWorkshopContext(learning, workshop, lessons, meta) {
+  return {
+    title: meta.title || formatLangName(workshop),
+    description: meta.description || null,
+    objectives: meta.objectives || [],
+    source_language: meta.coach?.source_language || learning,
+    target_language: meta.coach?.target_language || workshop,
+    personality: meta.coach?.personality || 'encouraging',
+    lessons: lessons.map(lesson => ({
+      number: lesson.number,
+      title: lesson.title,
+      description: lesson.description || null,
+      sections: lesson.sections.map(section => ({
+        title: section.title,
+        explanation: section.explanation || null,
+        examples: section.examples.map(ex => ({
+          q: ex.q,
+          a: ex.a,
+          type: ex.type || 'qa',
+          labels: ex.labels || [],
+          rel: ex.rel || []
+        }))
+      }))
+    }))
+  }
+}
+
+// Build structured assessment payload
+function buildAssessmentPayload(learning, workshop, lessons) {
+  const { getAnswer } = useAssessments()
+  const { isItemLearned } = useProgress()
+
+  return lessons.map(lesson => {
+    const itemsSeen = new Set()
+    let learnedCount = 0
+    let totalItems = 0
+    const sections = lesson.sections.map((section, sIdx) => {
+      const answers = []
+      section.examples.forEach((example, eIdx) => {
+        if (example.rel) {
+          example.rel.forEach(item => {
+            const id = item[0]
+            if (!itemsSeen.has(id)) {
+              itemsSeen.add(id)
+              totalItems++
+              if (isItemLearned(learning, workshop, id)) learnedCount++
+            }
+          })
+        }
+        const type = example.type || 'qa'
+        if (type === 'qa') return
+        const saved = getAnswer(learning, workshop, lesson.number, sIdx, eIdx)
+        answers.push({
+          question: example.q,
+          expected: example.a,
+          type,
+          answered: !!saved,
+          correct: saved?.correct ?? null,
+          answer: saved?.answer ?? null
+        })
+      })
+      return { title: section.title, answers }
+    })
+    return {
+      number: lesson.number,
+      title: lesson.title,
+      learnedItems: learnedCount,
+      totalItems,
+      sections
+    }
+  })
+}
+
+// Format assessment results as plain text (used as fallback context in chat)
 function formatResultsAsText(learning, workshop, lessons) {
   const { getAnswer } = useAssessments()
   const { isItemLearned } = useProgress()
@@ -129,70 +217,67 @@ function formatResultsAsText(learning, workshop, lessons) {
   return lines.join('\n')
 }
 
-// Build structured assessment payload
-function buildAssessmentPayload(learning, workshop, lessons) {
-  const { getAnswer } = useAssessments()
-  const { isItemLearned } = useProgress()
-
-  return lessons.map(lesson => {
-    const itemsSeen = new Set()
-    let learnedCount = 0
-    let totalItems = 0
-    const sections = lesson.sections.map((section, sIdx) => {
-      const answers = []
-      section.examples.forEach((example, eIdx) => {
-        if (example.rel) {
-          example.rel.forEach(item => {
-            const id = item[0]
-            if (!itemsSeen.has(id)) {
-              itemsSeen.add(id)
-              totalItems++
-              if (isItemLearned(learning, workshop, id)) learnedCount++
-            }
-          })
-        }
-        const type = example.type || 'qa'
-        if (type === 'qa') return
-        const saved = getAnswer(learning, workshop, lesson.number, sIdx, eIdx)
-        answers.push({
-          question: example.q,
-          type,
-          answered: !!saved,
-          correct: saved?.correct ?? null,
-          answer: saved?.answer ?? null
-        })
-      })
-      return { title: section.title, answers }
-    })
-    return {
-      number: lesson.number,
-      title: lesson.title,
-      learnedItems: learnedCount,
-      totalItems,
-      sections
-    }
-  })
-}
-
-// Send a chat message to the service agent
-async function sendMessage(coachUrl, learning, workshop, userMessage, lessons) {
-  error.value = ''
-  isLoading.value = true
-  addMessage(learning, workshop, 'user', userMessage)
+// Initialize a coach session — send full workshop content so the SA knows the curriculum
+async function initSession(coachUrl, learning, workshop, lessons, meta) {
+  const key = getChatKey(learning, workshop)
+  if (initializedSessions.has(key)) return true // already initialized this session
 
   try {
-    const context = formatResultsAsText(learning, workshop, lessons)
     const sessionId = getOrCreateSessionId(learning, workshop)
+    const workshopContext = buildWorkshopContext(learning, workshop, lessons, meta)
+    const learner = getLearner()
 
     const response = await fetch(coachUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        type: 'chat',
+        type: 'init',
         session_id: sessionId,
-        message: userMessage,
-        context
+        learner,
+        workshop: workshopContext
       })
+    })
+
+    if (response.ok) {
+      initializedSessions.add(key)
+      return true
+    }
+    // If init fails (e.g. server doesn't support it), still mark as done to avoid retries
+    initializedSessions.add(key)
+    return false
+  } catch {
+    // Network error or server doesn't support init — continue without it
+    initializedSessions.add(key)
+    return false
+  }
+}
+
+// Send a chat message to the service agent
+async function sendMessage(coachUrl, learning, workshop, userMessage, lessons, meta) {
+  error.value = ''
+  isLoading.value = true
+  addMessage(learning, workshop, 'user', userMessage)
+
+  try {
+    const sessionId = getOrCreateSessionId(learning, workshop)
+    const learner = getLearner()
+
+    const body = {
+      type: 'chat',
+      session_id: sessionId,
+      learner,
+      message: userMessage
+    }
+
+    // Include assessment summary as context if available
+    if (lessons && lessons.length > 0) {
+      body.context = formatResultsAsText(learning, workshop, lessons)
+    }
+
+    const response = await fetch(coachUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
     })
 
     if (!response.ok) throw new Error(`Coach responded with ${response.status}`)
@@ -218,6 +303,7 @@ async function requestFeedback(coachUrl, learning, workshop, lessons) {
 
   try {
     const sessionId = getOrCreateSessionId(learning, workshop)
+    const learner = getLearner()
     const assessmentData = buildAssessmentPayload(learning, workshop, lessons)
 
     const response = await fetch(coachUrl, {
@@ -226,6 +312,7 @@ async function requestFeedback(coachUrl, learning, workshop, lessons) {
       body: JSON.stringify({
         type: 'assessment',
         session_id: sessionId,
+        learner,
         payload: { lessons: assessmentData }
       })
     })
@@ -253,6 +340,7 @@ async function requestCustomLesson(coachUrl, learning, workshop, lessons) {
 
   try {
     const sessionId = getOrCreateSessionId(learning, workshop)
+    const learner = getLearner()
     const assessmentData = buildAssessmentPayload(learning, workshop, lessons)
 
     const response = await fetch(coachUrl, {
@@ -261,6 +349,7 @@ async function requestCustomLesson(coachUrl, learning, workshop, lessons) {
       body: JSON.stringify({
         type: 'generate_lesson',
         session_id: sessionId,
+        learner,
         payload: { lessons: assessmentData }
       })
     })
@@ -303,11 +392,13 @@ export function useCoach() {
     loadChatHistory,
     getMessages,
     getCoachLessons,
+    initSession,
     sendMessage,
     requestFeedback,
     requestCustomLesson,
     clearChat,
     clearCoachLessons,
-    formatResultsAsText
+    formatResultsAsText,
+    buildWorkshopContext
   }
 }
