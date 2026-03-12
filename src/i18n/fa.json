@@ -207,7 +207,18 @@
     "placeholder": "از مربی خود بپرسید...",
     "send": "ارسال",
     "thinking": "در حال فکر کردن...",
-    "clearChat": "پاک کردن چت"
+    "clearChat": "پاک کردن چت",
+    "noCoachTitle": "هیچ کوچی تنظیم نشده",
+    "noCoachDesc": "این کارگاه هنوز یک کوچ هوش مصنوعی ندارد.",
+    "noCoachHint": "سازندگان کارگاه می‌توانند یک کوچ با پیکربندی یک نقطه API در workshops.yaml اضافه کنند.",
+    "featureChat": "چت",
+    "featureChatDesc": "سوال بپرسید و توضیحات دریافت کنید.",
+    "featureFeedback": "بازخورد",
+    "featureFeedbackDesc": "بازخورد شخصی برای نتایج ارزیابی خود دریافت کنید.",
+    "featureLessons": "درس‌های تمرینی",
+    "featureLessonsDesc": "درس‌های تولیدشده توسط هوش مصنوعی.",
+    "online": "آنلاین",
+    "requestPractice": "درخواست درس تمرینی سفارشی"
   },
   "items": {
     "allLessons": "همه درس‌ها",

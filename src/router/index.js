@@ -6,6 +6,7 @@ import LessonDetail from '../views/LessonDetail.vue'
 import LearningItems from '../views/LearningItems.vue'
 import AssessmentResults from '../views/AssessmentResults.vue'
 import Coach from '../views/Coach.vue'
+import CoachLesson from '../views/CoachLesson.vue'
 import Settings from '../views/Settings.vue'
 import AddSource from '../views/AddSource.vue'
 import Creators from '../views/Creators.vue'
@@ -55,7 +56,13 @@ const routes = [
     path: '/:learning/:workshop/coach',
     name: 'coach',
     component: Coach,
-    meta: { title: null } // Will be set dynamically
+    meta: { title: null }
+  },
+  {
+    path: '/:learning/:workshop/coach/lessons',
+    name: 'coach-lessons',
+    component: CoachLesson,
+    meta: { title: null }
   },
   {
     path: '/settings',

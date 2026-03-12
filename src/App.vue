@@ -231,7 +231,7 @@ const learningLanguages = computed(() => {
 const isHomePage = computed(() => route.name === 'home')
 const isWorkshopOverview = computed(() => route.name === 'workshop-overview')
 const isWorkshopSubpage = computed(() =>
-  ['lesson-detail', 'lessons-overview', 'learning-items', 'assessment-results', 'coach'].includes(route.name)
+  ['lesson-detail', 'lessons-overview', 'learning-items', 'assessment-results', 'coach', 'coach-lessons'].includes(route.name)
 )
 
 const isLessonPage = computed(() => {
@@ -312,7 +312,7 @@ const hasCoach = computed(() => {
   const workshop = route.params.workshop
   if (!learning || !workshop) return false
   const meta = getWorkshopMeta(learning, workshop)
-  return !!(meta.coach?.api)
+  return !!(meta.coach)
 })
 
 const canShowItemsButton = computed(() => {

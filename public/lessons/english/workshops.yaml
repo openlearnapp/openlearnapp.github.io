@@ -14,5 +14,12 @@ workshops:
     color: "145 40% 94%"
     primaryColor: "152 60% 36%"
     image: "lessons/english/open-learn-feedback/thumbnail.png"
+    objectives:
+      - "Understand what Open Learn is and how it works"
+      - "Give feedback about your learning experience"
     coach:
       email: "open-learn@felixboehm.it"
+      name: "Open Learn Coach"
+      personality: "encouraging"
+      source_language: "en-US"
+      target_language: "en-US"
