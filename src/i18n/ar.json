@@ -207,7 +207,21 @@
     "placeholder": "اسأل مدربك...",
     "send": "إرسال",
     "thinking": "جارٍ التفكير...",
-    "clearChat": "مسح المحادثة"
+    "clearChat": "مسح المحادثة",
+    "noCoachTitle": "لا يوجد مدرب مكوّن",
+    "noCoachDesc": "هذه الورشة لا تحتوي على مدرب ذكاء اصطناعي بعد.",
+    "noCoachHint": "يمكن لمنشئي الورشة إضافة مدرب عبر تكوين نقطة API في workshops.yaml.",
+    "featureChat": "محادثة",
+    "featureChatDesc": "اطرح أسئلة واحصل على شرح.",
+    "featureFeedback": "تغذية راجعة",
+    "featureFeedbackDesc": "احصل على ملاحظات شخصية على نتائجك.",
+    "featureLessons": "دروس تدريبية",
+    "featureLessonsDesc": "دروس مولّدة بالذكاء الاصطناعي.",
+    "online": "متصل",
+    "requestPractice": "طلب درس تدريبي مخصص",
+    "connecting": "جارٍ الاتصال...",
+    "noApiDesc": "هذه الورشة لديها مدرب مكوّن، لكن الواجهة الخلفية للذكاء الاصطناعي لم تُعدّ بعد.",
+    "contactCoach": "تواصل مع المدرب:"
   },
   "items": {
     "allLessons": "جميع الدروس",

@@ -143,6 +143,27 @@
       </CardContent>
     </Card>
 
+    <!-- Coach Section -->
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-2xl">🤖 {{ $t('settings.coach') }}</CardTitle>
+      </CardHeader>
+      <CardContent class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <Label class="text-lg font-semibold">{{ $t('settings.coachConsent') }}</Label>
+            <p class="text-sm text-muted-foreground">{{ $t('settings.coachConsentDesc') }}</p>
+          </div>
+          <Switch :checked="settings.coachConsent" @update:checked="settings.coachConsent = $event" />
+        </div>
+        <div v-if="settings.coachConsent">
+          <Label class="text-sm font-medium mb-1 block">{{ $t('settings.coachIdentifier') }}</Label>
+          <Input v-model="settings.coachIdentifier" :placeholder="$t('settings.coachIdentifierPlaceholder')" class="max-w-sm" />
+          <p class="text-xs text-muted-foreground mt-1">{{ $t('settings.coachIdentifierDesc') }}</p>
+        </div>
+      </CardContent>
+    </Card>
+
     <!-- Data Section -->
     <Card>
       <CardHeader>

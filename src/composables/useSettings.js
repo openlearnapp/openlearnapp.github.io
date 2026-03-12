@@ -3,14 +3,16 @@ import { useGun } from './useGun'
 
 // Shared state across all component instances (singleton pattern)
 const settings = ref({
-  showAnswers: true, // Renamed from showTranslation
+  showAnswers: true,
   showLearningItems: true,
   showLabels: true,
   darkMode: false,
-  audioSpeed: 1.0, // Audio playback speed: 0.6, 0.8, 1.0
-  readAnswers: true, // Whether to read the answer/translation during auto-play
-  hideLearnedExamples: true, // Whether to hide examples where all items are learned
-  showDebugOverlay: false // Show debug overlay for audio playback
+  audioSpeed: 1.0,
+  readAnswers: true,
+  hideLearnedExamples: true,
+  showDebugOverlay: false,
+  coachConsent: false, // Opt-in to send data to coach
+  coachIdentifier: '' // Name/alias sent with coach requests
 })
 
 let isInitialized = false
@@ -87,6 +89,14 @@ function initializeWatchers() {
   })
 
   watch(() => settings.value.showDebugOverlay, () => {
+    saveSettings()
+  })
+
+  watch(() => settings.value.coachConsent, () => {
+    saveSettings()
+  })
+
+  watch(() => settings.value.coachIdentifier, () => {
     saveSettings()
   })
 

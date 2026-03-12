@@ -123,6 +123,16 @@
             <span v-else>📚</span>
           </Button>
 
+          <!-- Avatar button (when logged in) -->
+          <button
+            v-if="isLoggedIn"
+            @click="goToProfile"
+            class="rounded-full w-12 h-12 text-sm font-bold text-white flex-shrink-0 flex items-center justify-center border-2 border-white/50 hover:border-white transition"
+            :style="{ backgroundColor: avatarBgColor }"
+            :title="gunUser">
+            {{ userInitials }}
+          </button>
+
           <!-- Settings button (hidden on home and settings pages) -->
           <Button
             v-if="!isHomePage && route.name !== 'settings'"
@@ -204,6 +214,8 @@ import { useSettings } from './composables/useSettings'
 import { useLessons } from './composables/useLessons'
 import { useLanguage } from './composables/useLanguage'
 import { useFooter } from './composables/useFooter'
+import { useGun } from './composables/useGun'
+import { useProfile } from './composables/useProfile'
 import { isRtlLocale } from './i18n'
 import { formatLangName } from './utils/formatters'
 import { Button } from '@/components/ui/button'
@@ -220,6 +232,11 @@ const { settings } = useSettings()
 const { availableContent, getWorkshopMeta, workshopMeta, loadAvailableContent, loadWorkshopsForLanguage } = useLessons()
 const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 const { nextLessonNumber: footerNextLesson, lessonLearning, lessonWorkshop } = useFooter()
+const { isLoggedIn, username: gunUser } = useGun()
+const { getAvatarColor, getInitials } = useProfile()
+
+const avatarBgColor = computed(() => getAvatarColor(gunUser.value))
+const userInitials = computed(() => getInitials(gunUser.value))
 
 const isRtl = computed(() => isRtlLocale(locale.value))
 
@@ -409,6 +426,10 @@ function goToSettings() {
   if (route.name !== 'settings') {
     router.push({ name: 'settings' })
   }
+}
+
+function goToProfile() {
+  router.push({ name: 'profile' })
 }
 
 function goToResults() {
