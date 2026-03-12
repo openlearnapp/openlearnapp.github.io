@@ -292,6 +292,7 @@ import { useProgress } from '../composables/useProgress'
 import { useAudio } from '../composables/useAudio'
 import { useAssessments } from '../composables/useAssessments'
 import { useFooter } from '../composables/useFooter'
+import { useProfile } from '../composables/useProfile'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { Button } from '@/components/ui/button'
@@ -313,6 +314,7 @@ const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress } = usePr
 const { isLoadingAudio, isPlaying, isPaused, playbackFinished, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
 const { getAnswer, saveAnswer, validateAnswer } = useAssessments()
 const { setLessonFooter, clearLessonFooter } = useFooter()
+const { trackLastLesson } = useProfile()
 
 const lesson = ref(null)
 const allLessons = ref([])
@@ -690,6 +692,7 @@ onMounted(async () => {
     setLessonFooter(currentLearning, currentWorkshop, nextLessonNumber.value)
 
     await initializeAudio(lesson.value, currentLearning, currentWorkshop, audioSettings.value)
+    trackLastLesson(currentLearning, currentWorkshop, currentLessonNumber)
     restoreDraftsFromSaved()
 
     if (route.query.autoplay) {

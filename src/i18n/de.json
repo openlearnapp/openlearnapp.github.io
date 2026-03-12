@@ -12,7 +12,25 @@
     "coach": "Coach",
     "learningItems": "Lernelemente",
     "settings": "Einstellungen",
-    "done": "Fertig"
+    "done": "Fertig",
+    "profile": "Mein Profil",
+    "instructor": "Kursleiter-Dashboard"
+  },
+  "profile": {
+    "title": "Mein Profil",
+    "notLoggedIn": "Anmelden um Fortschritt zu synchronisieren",
+    "notLoggedInDesc": "Erstelle ein Konto, um deinen Fortschritt auf allen Geräten zu speichern.",
+    "memberSince": "Mitglied seit",
+    "stats": {
+      "learned": "Elemente gelernt",
+      "workshops": "Workshops",
+      "assessments": "Aufgaben beantwortet"
+    },
+    "yourWorkshops": "Deine Workshops",
+    "noWorkshops": "Beginne zu lernen, um deinen Fortschritt hier zu sehen.",
+    "lastLesson": "Zuletzt: Lektion",
+    "continue": "Weiter →",
+    "logout": "Abmelden"
   },
   "home": {
     "title": "Lerne alles. Kostenlos. In deinem Tempo.",
