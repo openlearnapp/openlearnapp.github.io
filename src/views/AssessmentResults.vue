@@ -107,16 +107,38 @@
         </CardContent>
       </Card>
 
-      <!-- Send to coach button -->
-      <Card v-if="coachEmail" class="p-5 mb-5">
-        <div class="text-sm text-muted-foreground mb-3">
-          {{ $t('results.sendResultsTo') }} <strong class="text-foreground">{{ coachName || coachEmail }}</strong> {{ $t('results.viaEmail') }}
+      <!-- Send to coach / AI feedback buttons -->
+      <Card v-if="coachEmail || coachApi" class="p-5 mb-5">
+        <div class="text-sm font-semibold text-foreground mb-3">
+          {{ coachName || $t('coachView.defaultName') }}
         </div>
-        <a :href="mailtoLink" @click="onSendEmail">
-          <Button class="bg-green-600 hover:bg-green-700 text-white">
-            {{ $t('results.sendViaEmail') }}
+
+        <div class="flex flex-wrap gap-3">
+          <!-- Email button -->
+          <a v-if="coachEmail" :href="mailtoLink" @click="onSendEmail">
+            <Button variant="outline">
+              {{ $t('results.sendViaEmail') }}
+            </Button>
+          </a>
+
+          <!-- AI feedback button -->
+          <Button
+            v-if="coachApi"
+            :disabled="isFeedbackLoading"
+            @click="onRequestFeedback"
+            class="bg-primary hover:bg-primary/90 text-primary-foreground">
+            {{ isFeedbackLoading ? $t('coachView.thinking') : $t('results.getAIFeedback') }}
           </Button>
-        </a>
+
+          <!-- Go to coach chat -->
+          <router-link v-if="coachApi" :to="{ name: 'coach', params: { learning, workshop } }">
+            <Button variant="ghost">{{ $t('results.openCoachChat') }}</Button>
+          </router-link>
+        </div>
+
+        <div v-if="feedbackMessage" class="mt-3 p-3 rounded-lg bg-muted text-sm text-foreground whitespace-pre-wrap">
+          {{ feedbackMessage }}
+        </div>
       </Card>
     </div>
 
@@ -143,6 +165,7 @@ import { useI18n } from 'vue-i18n'
 import { useLessons } from '../composables/useLessons'
 import { useAssessments } from '../composables/useAssessments'
 import { useProgress } from '../composables/useProgress'
+import { useCoach } from '../composables/useCoach'
 import { formatLangName } from '../utils/formatters'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -156,10 +179,13 @@ const emit = defineEmits(['update-title'])
 const { loadAllLessonsForWorkshop, getWorkshopMeta } = useLessons()
 const { getAnswer, getLastSent, recordSent, getLessonHash } = useAssessments()
 const { isItemLearned, toggleItemLearned, progress } = useProgress()
+const { requestFeedback, loadChatHistory } = useCoach()
 
 const lessons = ref([])
 const isLoading = ref(true)
 const selectedLesson = ref(null)
+const isFeedbackLoading = ref(false)
+const feedbackMessage = ref('')
 
 const learning = computed(() => route.params.learning)
 const workshop = computed(() => route.params.workshop)
@@ -174,6 +200,20 @@ const coachName = computed(() => {
   const meta = getWorkshopMeta(learning.value, workshop.value)
   return meta.coach?.name || null
 })
+
+const coachApi = computed(() => {
+  const meta = getWorkshopMeta(learning.value, workshop.value)
+  return meta.coach?.api || null
+})
+
+async function onRequestFeedback() {
+  if (!coachApi.value) return
+  isFeedbackLoading.value = true
+  feedbackMessage.value = ''
+  const result = await requestFeedback(coachApi.value, learning.value, workshop.value, lessons.value)
+  feedbackMessage.value = result || ''
+  isFeedbackLoading.value = false
+}
 
 function formatDate(iso) {
   try {
