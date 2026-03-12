@@ -323,8 +323,8 @@ async function playNextItem(settings) {
     const audio = audioElements.value[item.audioUrl]
 
     if (!audio) {
-      console.warn('⚠️ Audio not found for:', item.audioUrl, '- stopping')
-      stop()
+      console.log('⏭️ Audio not available for:', item.audioUrl, '- skipping to next')
+      playNextItem(settings)
       return
     }
 
@@ -434,8 +434,8 @@ async function playCurrentItem(settings) {
     const audio = audioElements.value[item.audioUrl]
 
     if (!audio) {
-      console.warn('⚠️ Audio not found for:', item.audioUrl, '- stopping')
-      stop()
+      console.log('⏭️ Audio not available for:', item.audioUrl, '- skipping to next')
+      playNextItem(settings)
       return
     }
 
