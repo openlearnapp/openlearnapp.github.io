@@ -1,6 +1,5 @@
 # Coach Agent
 
-**Status: Concept** -- not yet approved for implementation.
 **Issue: [#7](https://github.com/openlearnapp/openlearnapp.github.io/issues/7)**
 
 ## Purpose

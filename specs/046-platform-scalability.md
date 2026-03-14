@@ -1,6 +1,5 @@
 # Platform Scalability
 
-**Status: Concept** -- not yet approved for implementation.
 **Issue: [#46](https://github.com/openlearnapp/openlearnapp.github.io/issues/46)**
 
 ## Purpose

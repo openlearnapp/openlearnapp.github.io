@@ -98,16 +98,13 @@ Small bugfixes don't need a full spec. But they still need:
 - A test if the bug is non-trivial
 - Their own PR (don't bundle with features)
 
-## Specs vs. Concept Docs
+## Specs as Source of Truth
 
-| | Specs (`specs/`) | Concept Docs (`docs/`) |
-|---|---|---|
-| **Purpose** | Define what will be built | Explore ideas, brainstorm |
-| **Status** | Reviewed and approved → ready to implement | Proposals, not commitments |
-| **Format** | One file per feature: `specs/<issue>-<name>.md` | Free-form in `docs/` |
-| **Required for PR?** | Yes — every feature PR needs a spec | No |
+The `specs/` folder is the single source of truth for product specifications. Each spec describes what a feature **should be** — regardless of whether it is already implemented or still planned. There is no separate "concept doc" category; if an idea is worth specifying, it belongs in `specs/`.
 
-A concept doc can evolve into a spec once it's scoped and reviewed.
+- **One file per feature**: `specs/<issue>-<name>.md`
+- **Every feature PR must include a spec** in `specs/`
+- Specs are living documents — they are updated as the feature evolves
 
 ## Checklist
 

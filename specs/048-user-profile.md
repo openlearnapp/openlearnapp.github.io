@@ -1,6 +1,5 @@
 # User Profile and Instructor Dashboard
 
-**Status: Concept** -- not yet approved for implementation.
 **Issue: [#48](https://github.com/openlearnapp/openlearnapp.github.io/issues/48)**
 
 ## Purpose

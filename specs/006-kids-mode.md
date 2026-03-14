@@ -1,6 +1,5 @@
 # Kids Mode
 
-**Status: Concept** -- not yet approved for implementation.
 **Issue: [#6](https://github.com/openlearnapp/openlearnapp.github.io/issues/6)**
 
 ## Purpose
