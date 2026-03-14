@@ -25,11 +25,9 @@ Keep it short. This is a conversation starter, not a final spec. If you're unsur
 
 ### 2. Spec — Define the Solution
 
-Once the issue direction is agreed upon, write a spec. This can be:
+Once the issue direction is agreed upon, write a spec as a Markdown file in the `specs/` folder — one file per feature or topic.
 
-- A concept document in `docs/` (e.g., `docs/coach-agent-concept.md`)
-- A detailed issue description with acceptance criteria
-- An ADR in `docs/adr/` for architectural decisions
+**Naming convention:** `specs/<issue-number>-<short-name>.md` (e.g., `specs/007-coach-agent.md`, `specs/048-user-profile.md`)
 
 A good spec answers:
 
@@ -40,25 +38,30 @@ A good spec answers:
 - **How do we verify** it works? (acceptance criteria, test plan)
 - **What are the dependencies?** (other issues, existing features)
 
-### 3. Review — Get Agreement Before Coding
+### 3. Spec PR — Review Before or With Implementation
 
-The spec is reviewed before implementation starts. This is the checkpoint where we align on:
+The spec is submitted as a PR. There are two valid workflows:
 
+**Option A — Spec first, then implement:**
+1. Open a PR that only adds the `specs/` file
+2. Get the spec reviewed and approved
+3. Open a separate PR with the implementation
+
+**Option B — Spec and implementation together:**
+1. Open a PR that includes both the `specs/` file and the implementation
+2. The spec is reviewed as part of the code review
+
+Both are fine. The key rule: **every feature PR must include a spec in `specs/`**.
+
+The spec review checks:
 - Is this the right solution?
 - Is the scope appropriate for one PR?
 - Are there architectural concerns?
 - Are dependencies met?
 
-A spec can be reviewed as:
-- A PR that adds a `docs/` concept file
-- Comments on the GitHub Issue
-- A conversation in the team
-
-**Only start coding after the spec is reviewed and approved.**
-
 ### 4. Implement — One Feature, One PR
 
-Create a PR that implements the approved spec:
+Create a PR that implements the approved spec (or includes the spec — see step 3):
 
 - **One feature per PR** — don't bundle unrelated changes
 - **Reference the issue** — `feat: coach chat UI (Issue #7)`
@@ -95,19 +98,22 @@ Small bugfixes don't need a full spec. But they still need:
 - A test if the bug is non-trivial
 - Their own PR (don't bundle with features)
 
-## Concept Documents
+## Specs vs. Concept Docs
 
-Concept docs live in `docs/` and describe ideas that are not yet approved for implementation. They are proposals, not commitments. A concept doc becomes a spec when it's reviewed and scoped into concrete work.
+| | Specs (`specs/`) | Concept Docs (`docs/`) |
+|---|---|---|
+| **Purpose** | Define what will be built | Explore ideas, brainstorm |
+| **Status** | Reviewed and approved → ready to implement | Proposals, not commitments |
+| **Format** | One file per feature: `specs/<issue>-<name>.md` | Free-form in `docs/` |
+| **Required for PR?** | Yes — every feature PR needs a spec | No |
 
-Examples:
-- `docs/coach-agent-concept.md` — what a coach integration could look like
-- `docs/kids-mode-concept.md` — ideas for a kids-friendly mode
+A concept doc can evolve into a spec once it's scoped and reviewed.
 
 ## Checklist
 
 Before opening a PR, check:
 
-- [ ] Is there an approved spec or issue for this work?
+- [ ] Is there a spec in `specs/` for this feature?
 - [ ] Is the PR scoped to one feature or fix?
 - [ ] Are tests included for new logic?
 - [ ] Are docs updated where needed?
