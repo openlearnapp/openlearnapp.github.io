@@ -98,13 +98,38 @@ Small bugfixes don't need a full spec. But they still need:
 - A test if the bug is non-trivial
 - Their own PR (don't bundle with features)
 
-## Specs as Source of Truth
+## Specs, ADRs, and Docs
 
-The `specs/` folder is the single source of truth for product specifications. Each spec describes what a feature **should be** — regardless of whether it is already implemented or still planned. There is no separate "concept doc" category; if an idea is worth specifying, it belongs in `specs/`.
+This project separates product truth from development documentation:
+
+### `specs/` — Product Specifications (Source of Truth)
+
+Each spec describes what a feature **should be** — regardless of whether it is already implemented or still planned. Specs are the single source of truth for product decisions.
 
 - **One file per feature**: `specs/<feature-name>.md`
 - **Every feature PR must include a spec** in `specs/`
 - Specs are living documents — they are updated as the feature evolves
+
+### `specs/adr/` — Architecture Decision Records
+
+ADRs document fundamental technical decisions that affect the entire project. They are numbered sequentially (`001-`, `002-`, ...) and rarely change once written.
+
+Use an ADR when:
+- A decision constrains future implementation choices (e.g., "no backend", "localStorage only")
+- The reasoning behind a choice needs to be preserved (e.g., "why hash-based routing?")
+- Reversing the decision would require significant rework
+
+Use a spec (not an ADR) when:
+- Describing a product feature or user-facing behavior
+- The document will evolve as the feature grows
+
+### `docs/` — Development Documentation
+
+How-to guides for developers and workshop creators. Not product truth, but practical reference:
+- How to set up the dev environment
+- How to create a workshop
+- How to use the audio system
+- Development process (this document)
 
 ## Checklist
 

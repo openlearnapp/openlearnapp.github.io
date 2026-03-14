@@ -369,6 +369,26 @@ See `docs/features.md` for the complete feature inventory and `specs/adr/` for a
 - Navigation state is managed by Vue Router - no manual view switching
 - Dynamic page titles based on route and content
 
+## Spec-Driven Development
+
+This project follows a spec-driven process. See `docs/development-process.md` for the full workflow.
+
+### Folder Separation
+
+| Folder | Purpose | Contents |
+|--------|---------|----------|
+| `specs/` | **Product truth** — what should be | One Markdown file per feature describing the product behavior, regardless of implementation status |
+| `specs/adr/` | **Architecture decisions** — why we chose | Numbered records (`001-`, `002-`, ...) for fundamental technical decisions that constrain the project |
+| `docs/` | **Developer documentation** — how to use/develop | Guides, schemas, process docs, development plans |
+
+### Rules
+
+- Every feature PR must include or reference a spec in `specs/`
+- Specs describe the **what and why** from a product perspective — no code
+- ADRs are for architectural choices that affect the whole project and rarely change
+- `docs/` is for practical how-to guides (dev setup, workshop creation, audio generation)
+- Small bugfixes don't need a spec, but do need their own PR
+
 ## Changelog
 
 Maintain `CHANGELOG.md` in the project root. When creating a PR, add an entry to the changelog under the current date. Group entries by **Features**, **Fixes**, and **Docs & CI**. Include the PR number in parentheses.
