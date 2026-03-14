@@ -27,7 +27,7 @@ Keep it short. This is a conversation starter, not a final spec. If you're unsur
 
 Once the issue direction is agreed upon, write a spec as a Markdown file in the `specs/` folder — one file per feature or topic.
 
-**Naming convention:** `specs/<issue-number>-<short-name>.md` (e.g., `specs/007-coach-agent.md`, `specs/048-user-profile.md`)
+**Naming convention:** `specs/<feature-name>.md` (e.g., `specs/coach-agent.md`, `specs/user-profile.md`)
 
 A good spec answers:
 
@@ -102,7 +102,7 @@ Small bugfixes don't need a full spec. But they still need:
 
 The `specs/` folder is the single source of truth for product specifications. Each spec describes what a feature **should be** — regardless of whether it is already implemented or still planned. There is no separate "concept doc" category; if an idea is worth specifying, it belongs in `specs/`.
 
-- **One file per feature**: `specs/<issue>-<name>.md`
+- **One file per feature**: `specs/<feature-name>.md`
 - **Every feature PR must include a spec** in `specs/`
 - Specs are living documents — they are updated as the feature evolves
 
