@@ -132,7 +132,7 @@ pnpm test:e2e
 - `Settings.vue` - Settings page (route: `/settings`)
 - `AddSource.vue` - Add external workshop (route: `/add?source=URL`)
 
-**Composables** (Reusable logic, all use singleton pattern — see `docs/adr/005`):
+**Composables** (Reusable logic, all use singleton pattern — see `specs/adr/005`):
 - `useLessons()` - Lesson loading with js-yaml parser
   - `loadAvailableContent()` - Load main lesson index + default + user content sources
   - `loadWorkshopsForLanguage(lang)` - Load workshops for a language
@@ -328,7 +328,7 @@ Examples can have a `type` field for interactive assessments (default is `qa` wh
 
 **Coach integration**: If `lesson.coach` is defined and user has `coachConsent`, answers are queued and batch-sent to the coach API.
 
-See `docs/features.md` for the complete feature inventory and `docs/adr/` for architectural decisions.
+See `docs/features.md` for the complete feature inventory and `specs/adr/` for architectural decisions.
 
 ## Testing
 
