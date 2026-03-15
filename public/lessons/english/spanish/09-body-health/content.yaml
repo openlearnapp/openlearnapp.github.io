@@ -1,0 +1,104 @@
+version: 1
+number: 9
+title: "Body and Health"
+description: "Body parts, doctor visits and health expressions in Spanish"
+sections:
+  - title: "Body Parts"
+    explanation: |
+      **Body parts** in Spanish are often used with the definite article
+      rather than a possessive pronoun. You say "me duele la cabeza" (my head hurts),
+      not "mi cabeza". This is especially true for pain and physical states.
+    examples:
+      - q: "la cabeza"
+        a: "the head"
+        rel:
+          - ["cabeza", "head", "noun, feminine"]
+      - q: "los ojos"
+        a: "the eyes"
+        rel:
+          - ["ojos", "eyes", "noun, masculine plural"]
+      - q: "la nariz"
+        a: "the nose"
+        rel:
+          - ["nariz", "nose", "noun, feminine"]
+      - q: "la boca"
+        a: "the mouth"
+        rel:
+          - ["boca", "mouth", "noun, feminine"]
+      - q: "el brazo"
+        a: "the arm"
+        rel:
+          - ["brazo", "arm", "noun, masculine"]
+      - q: "la mano"
+        a: "the hand"
+        rel:
+          - ["mano", "hand", "noun, feminine (irregular!)"]
+      - q: "la pierna"
+        a: "the leg"
+        rel:
+          - ["pierna", "leg", "noun, feminine"]
+      - q: "el pie"
+        a: "the foot"
+        rel:
+          - ["pie", "foot", "noun, masculine"]
+  - title: "At the Doctor"
+    explanation: |
+      **At the doctor** it is important to clearly describe your symptoms.
+      "Me duele + body part" means "my ... hurts".
+      "Estar enfermo/a" means to be sick — use "estar", not "ser".
+    examples:
+      - q: "Me duele..."
+        a: "My ... hurts"
+        rel:
+          - ["me", "me / for me", "indirect object"]
+          - ["duele", "hurts / aches", "verb doler, 3rd person"]
+      - q: "Estoy enfermo / enferma"
+        a: "I am sick / ill"
+        rel:
+          - ["estoy", "I am (currently)", "verb estar, 1st person"]
+          - ["enfermo", "sick (masculine)", "adjective"]
+          - ["enferma", "sick (feminine)", "adjective"]
+      - q: "Tengo fiebre"
+        a: "I have a fever"
+        rel:
+          - ["tengo", "I have", "verb tener, 1st person"]
+          - ["fiebre", "fever", "noun, feminine"]
+      - q: "Necesito un médico"
+        a: "I need a doctor"
+        rel:
+          - ["necesito", "I need", "verb necesitar, 1st person"]
+          - ["médico", "doctor", "noun, masculine"]
+      - q: "la farmacia"
+        a: "the pharmacy"
+        rel:
+          - ["farmacia", "pharmacy", "noun, feminine"]
+  - title: "Health Expressions"
+    explanation: |
+      **Health expressions** help describe how you feel.
+      "¿Cómo te encuentras?" is a caring way to ask how someone is doing.
+      "Sentirse" (to feel) is used for physical and emotional states.
+    examples:
+      - q: "¿Cómo te encuentras?"
+        a: "How are you feeling?"
+        rel:
+          - ["te", "yourself", "reflexive pronoun, 2nd person"]
+          - ["encuentras", "you find yourself / feel", "verb encontrarse"]
+      - q: "Me siento bien"
+        a: "I feel well"
+        rel:
+          - ["me siento", "I feel", "verb sentirse, 1st person"]
+          - ["bien", "well / good", "adverb"]
+      - q: "Me siento mal"
+        a: "I feel bad / unwell"
+        rel:
+          - ["me siento", "I feel", "verb sentirse, 1st person"]
+          - ["mal", "bad / badly", "adverb"]
+      - q: "Tengo alergia"
+        a: "I have an allergy"
+        rel:
+          - ["tengo", "I have", "verb tener, 1st person"]
+          - ["alergia", "allergy", "noun, feminine"]
+      - q: "el hospital"
+        a: "the hospital"
+        rel:
+          - ["hospital", "hospital", "noun, masculine"]

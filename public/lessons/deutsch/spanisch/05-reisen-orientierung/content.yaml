@@ -1,0 +1,93 @@
+version: 1
+number: 5
+title: "Reisen und Orientierung"
+description: "Verkehrsmittel, Wegbeschreibungen und nützliche Redewendungen für Reisende auf Spanisch"
+sections:
+  - title: "Verkehrsmittel"
+    explanation: |
+      **Verkehrsmittel** sind beim Reisen unverzichtbar. In Spanien und Lateinamerika
+      gibt es hervorragende öffentliche Verkehrsnetze. „A pie" bedeutet zu Fuß –
+      kein Fahrzeug, sondern die eigenen Beine!
+    examples:
+      - q: "el avión"
+        a: "das Flugzeug"
+        rel:
+          - ["avión", "Flugzeug", "Substantiv, maskulin"]
+      - q: "el tren"
+        a: "der Zug"
+        rel:
+          - ["tren", "Zug", "Substantiv, maskulin"]
+      - q: "el autobús"
+        a: "der Bus"
+        rel:
+          - ["autobús", "Bus", "Substantiv, maskulin"]
+      - q: "el taxi"
+        a: "das Taxi"
+        rel:
+          - ["taxi", "Taxi", "Substantiv, maskulin"]
+      - q: "el coche"
+        a: "das Auto"
+        rel:
+          - ["coche", "Auto / Wagen", "Substantiv, maskulin"]
+      - q: "a pie"
+        a: "zu Fuß"
+        rel:
+          - ["a", "zu / nach", "Präposition"]
+          - ["pie", "Fuß", "Substantiv, maskulin"]
+  - title: "Wegbeschreibung"
+    explanation: |
+      **Wegbeschreibungen** helfen Ihnen, ans Ziel zu kommen.
+      „Todo recto" ist die wichtigste Richtungsangabe – geradeaus.
+      Entfernungen werden mit „cerca" (nah) und „lejos" (weit) beschrieben.
+    examples:
+      - q: "a la derecha"
+        a: "rechts / nach rechts"
+        rel:
+          - ["derecha", "rechts / rechte Seite", "Substantiv, feminin"]
+      - q: "a la izquierda"
+        a: "links / nach links"
+        rel:
+          - ["izquierda", "links / linke Seite", "Substantiv, feminin"]
+      - q: "todo recto"
+        a: "geradeaus"
+        rel:
+          - ["todo", "alles / ganz", "Adjektiv"]
+          - ["recto", "gerade / direkt", "Adjektiv"]
+      - q: "cerca"
+        a: "nah / in der Nähe"
+        rel:
+          - ["cerca", "nah / in der Nähe", "Adverb"]
+      - q: "lejos"
+        a: "weit / entfernt"
+        rel:
+          - ["lejos", "weit / entfernt", "Adverb"]
+      - q: "¿Dónde está...?"
+        a: "Wo ist...?"
+        rel:
+          - ["dónde", "wo", "Fragewort"]
+          - ["está", "ist (befindet sich)", "Verb estar"]
+  - title: "Am Bahnhof"
+    explanation: |
+      **Am Bahnhof und unterwegs** braucht man praktische Sätze.
+      Ein „billete" ist eine Fahrkarte – für ein Ticket im Theater sagt man „entrada".
+      „¿A qué hora sale?" fragt nach der Abfahrtszeit.
+    examples:
+      - q: "un billete"
+        a: "eine Fahrkarte"
+        rel:
+          - ["billete", "Fahrkarte / Ticket", "Substantiv, maskulin"]
+      - q: "¿A qué hora sale?"
+        a: "Um wie viel Uhr fährt es ab?"
+        rel:
+          - ["a qué hora", "um wie viel Uhr", "Zeitfrage"]
+          - ["sale", "fährt ab / geht weg", "Verb salir"]
+      - q: "¿Dónde está el hotel?"
+        a: "Wo ist das Hotel?"
+        rel:
+          - ["hotel", "Hotel", "Substantiv, maskulin"]
+          - ["está", "ist (befindet sich)", "Verb estar"]
+      - q: "la parada de autobús"
+        a: "die Bushaltestelle"
+        rel:
+          - ["parada", "Haltestelle / Halt", "Substantiv, feminin"]
+          - ["autobús", "Bus", "Substantiv, maskulin"]

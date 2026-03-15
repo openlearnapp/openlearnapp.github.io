@@ -1,0 +1,99 @@
+version: 1
+number: 1
+title: "Begrüßungen und Höflichkeit"
+description: "Die wichtigsten Begrüßungen und höflichen Ausdrücke auf Spanisch"
+sections:
+  - title: "Begrüßungen"
+    explanation: |
+      **Spanische Begrüßungen** sind ein wesentlicher Teil der spanischen Kultur.
+      Die universelle Begrüßung ist „Hola", die in jeder Situation passt.
+      Je nach Tageszeit verwendet man unterschiedliche Grußformeln.
+    examples:
+      - q: "Hola"
+        a: "Hallo"
+        rel:
+          - ["Hola", "Hallo", "informelle Begrüßung"]
+      - q: "Buenos días"
+        a: "Guten Morgen"
+        rel:
+          - ["buenos", "gute", "Adjektiv, Plural"]
+          - ["días", "Tage / Morgen", "Substantiv, Plural"]
+      - q: "Buenas tardes"
+        a: "Guten Nachmittag"
+        rel:
+          - ["buenas", "gute", "Adjektiv, Plural feminin"]
+          - ["tardes", "Nachmittage", "Substantiv, Plural"]
+      - q: "Buenas noches"
+        a: "Guten Abend / Gute Nacht"
+        rel:
+          - ["buenas", "gute", "Adjektiv, Plural feminin"]
+          - ["noches", "Nächte", "Substantiv, Plural"]
+      - q: "Adiós"
+        a: "Auf Wiedersehen"
+        rel:
+          - ["Adiós", "Auf Wiedersehen", "formeller Abschied"]
+      - q: "Hasta luego"
+        a: "Bis später"
+        rel:
+          - ["hasta", "bis", "Präposition"]
+          - ["luego", "später / dann", "Adverb"]
+  - title: "Höfliche Ausdrücke"
+    explanation: |
+      **Höflichkeit** spielt im Spanischen eine große Rolle. Diese grundlegenden
+      Ausdrücke helfen Ihnen, in jeder Situation respektvoll zu kommunizieren.
+    examples:
+      - q: "Gracias"
+        a: "Danke"
+        rel:
+          - ["Gracias", "Danke", "Dankesausdruck"]
+      - q: "Por favor"
+        a: "Bitte"
+        rel:
+          - ["por", "für / durch", "Präposition"]
+          - ["favor", "Gefallen / Gunst", "Substantiv"]
+      - q: "De nada"
+        a: "Bitte sehr / Gern geschehen"
+        rel:
+          - ["de", "von / aus", "Präposition"]
+          - ["nada", "nichts", "Pronomen"]
+      - q: "Perdón"
+        a: "Entschuldigung / Verzeihung"
+        rel:
+          - ["Perdón", "Entschuldigung", "Höflichkeitsform"]
+      - q: "Lo siento"
+        a: "Es tut mir leid"
+        rel:
+          - ["lo", "es", "Pronomen"]
+          - ["siento", "ich fühle / bedaure", "Verb sentir"]
+  - title: "Sich vorstellen"
+    explanation: |
+      **Sich vorstellen** ist wichtig beim Kennenlernen neuer Menschen.
+      Im Spanischen gibt es zwei Formen für „sein": **ser** (dauerhaft) und **estar** (vorübergehend).
+      Für Namen und Herkunft verwendet man **ser**.
+    examples:
+      - q: "¿Cómo estás?"
+        a: "Wie geht es dir?"
+        rel:
+          - ["cómo", "wie", "Fragewort"]
+          - ["estás", "du bist (gerade)", "Verb estar, 2. Person"]
+      - q: "Bien, gracias"
+        a: "Gut, danke"
+        rel:
+          - ["bien", "gut", "Adverb"]
+          - ["gracias", "danke", "Dankesausdruck"]
+      - q: "Me llamo..."
+        a: "Ich heiße..."
+        rel:
+          - ["me", "mich / mir", "Reflexivpronomen"]
+          - ["llamo", "ich heiße / rufe", "Verb llamarse"]
+      - q: "Mucho gusto"
+        a: "Freut mich"
+        rel:
+          - ["mucho", "viel / sehr", "Adjektiv"]
+          - ["gusto", "Freude / Geschmack", "Substantiv"]
+      - q: "¿De dónde eres?"
+        a: "Woher kommst du?"
+        rel:
+          - ["de", "von / aus", "Präposition"]
+          - ["dónde", "wo / woher", "Fragewort"]
+          - ["eres", "du bist", "Verb ser, 2. Person"]

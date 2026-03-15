@@ -7,6 +7,13 @@ workshops:
     color: "145 45% 92%"
     primaryColor: "220 75% 50%"
     image: "lessons/english/open-learn-guide/thumbnail.png"
+  - folder: spanish
+    code: es-ES
+    title: "Spanish"
+    description: "10 lessons to learn the most important words and expressions in Spanish."
+    color: "35 90% 93%"
+    primaryColor: "35 90% 45%"
+    image: "lessons/english/spanish/thumbnail.svg"
   - folder: open-learn-feedback
     code: en-US
     title: "Open Learn Feedback"

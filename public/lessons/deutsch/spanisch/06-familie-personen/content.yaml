@@ -1,0 +1,116 @@
+version: 1
+number: 6
+title: "Familie und Personen"
+description: "Familienmitglieder, Personenbeschreibungen und Beziehungen auf Spanisch"
+sections:
+  - title: "Familie"
+    explanation: |
+      **Familienmitglieder** auf Spanisch haben oft männliche und weibliche Formen.
+      „Los abuelos" kann sowohl „die Großväter" als auch „die Großeltern" bedeuten –
+      der maskuline Plural schließt im Spanischen oft beide Geschlechter ein.
+    examples:
+      - q: "la madre"
+        a: "die Mutter"
+        rel:
+          - ["madre", "Mutter", "Substantiv, feminin"]
+      - q: "el padre"
+        a: "der Vater"
+        rel:
+          - ["padre", "Vater", "Substantiv, maskulin"]
+      - q: "el hermano"
+        a: "der Bruder"
+        rel:
+          - ["hermano", "Bruder", "Substantiv, maskulin"]
+      - q: "la hermana"
+        a: "die Schwester"
+        rel:
+          - ["hermana", "Schwester", "Substantiv, feminin"]
+      - q: "los abuelos"
+        a: "die Großeltern"
+        rel:
+          - ["abuelos", "Großeltern / Großväter", "Substantiv, maskulin Plural"]
+      - q: "el hijo"
+        a: "der Sohn"
+        rel:
+          - ["hijo", "Sohn", "Substantiv, maskulin"]
+      - q: "la hija"
+        a: "die Tochter"
+        rel:
+          - ["hija", "Tochter", "Substantiv, feminin"]
+      - q: "los tíos"
+        a: "die Onkel und Tanten"
+        rel:
+          - ["tíos", "Onkel (Plural, schließt Tanten ein)", "Substantiv, maskulin Plural"]
+  - title: "Beschreibungen"
+    explanation: |
+      **Adjektive** auf Spanisch passen sich dem Geschlecht des Substantivs an.
+      Maskulin endet oft auf -o, feminin auf -a.
+      Beispiel: alto (groß, maskulin) → alta (groß, feminin).
+    examples:
+      - q: "joven"
+        a: "jung"
+        rel:
+          - ["joven", "jung", "Adjektiv, unveränderlich"]
+      - q: "viejo / vieja"
+        a: "alt"
+        rel:
+          - ["viejo", "alt (maskulin)", "Adjektiv"]
+          - ["vieja", "alt (feminin)", "Adjektiv"]
+      - q: "alto / alta"
+        a: "groß / groß gewachsen"
+        rel:
+          - ["alto", "groß / hoch (maskulin)", "Adjektiv"]
+          - ["alta", "groß / hoch (feminin)", "Adjektiv"]
+      - q: "bajo / baja"
+        a: "klein / niedrig"
+        rel:
+          - ["bajo", "klein / niedrig (maskulin)", "Adjektiv"]
+          - ["baja", "klein / niedrig (feminin)", "Adjektiv"]
+      - q: "delgado / delgada"
+        a: "dünn / schlank"
+        rel:
+          - ["delgado", "schlank / dünn (maskulin)", "Adjektiv"]
+      - q: "gordo / gorda"
+        a: "dick / fett"
+        rel:
+          - ["gordo", "dick / fett (maskulin)", "Adjektiv"]
+      - q: "guapo / guapa"
+        a: "schön / gut aussehend"
+        rel:
+          - ["guapo", "gut aussehend (maskulin)", "Adjektiv"]
+      - q: "simpático / simpática"
+        a: "sympathisch / nett"
+        rel:
+          - ["simpático", "sympathisch / nett (maskulin)", "Adjektiv"]
+  - title: "Beziehungen"
+    explanation: |
+      **Beziehungen** werden im Spanischen oft mit Artikel verwendet.
+      Im direkten Ansprechen oder mit Possessivpronomen entfällt der Artikel.
+      Beispiel: „mi amigo" (mein Freund), aber „el amigo de María".
+    examples:
+      - q: "el amigo / la amiga"
+        a: "der Freund / die Freundin"
+        rel:
+          - ["amigo", "Freund", "Substantiv, maskulin"]
+          - ["amiga", "Freundin", "Substantiv, feminin"]
+      - q: "el novio / la novia"
+        a: "der Freund / die Freundin (romantisch)"
+        rel:
+          - ["novio", "Freund / Verlobter", "Substantiv, maskulin"]
+          - ["novia", "Freundin / Verlobte", "Substantiv, feminin"]
+      - q: "el marido"
+        a: "der Ehemann"
+        rel:
+          - ["marido", "Ehemann", "Substantiv, maskulin"]
+      - q: "la mujer"
+        a: "die Frau / die Ehefrau"
+        rel:
+          - ["mujer", "Frau / Ehefrau", "Substantiv, feminin"]
+      - q: "los padres"
+        a: "die Eltern"
+        rel:
+          - ["padres", "Eltern / Väter", "Substantiv, maskulin Plural"]
+      - q: "los hijos"
+        a: "die Kinder (Söhne und Töchter)"
+        rel:
+          - ["hijos", "Kinder / Söhne", "Substantiv, maskulin Plural"]

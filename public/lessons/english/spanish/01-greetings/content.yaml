@@ -1,0 +1,99 @@
+version: 1
+number: 1
+title: "Greetings and Politeness"
+description: "The most important greetings and polite expressions in Spanish"
+sections:
+  - title: "Greetings"
+    explanation: |
+      **Spanish greetings** are an essential part of Spanish culture.
+      The universal greeting is "Hola", which works in any situation.
+      Depending on the time of day, different greeting formulas are used.
+    examples:
+      - q: "Hola"
+        a: "Hello / Hi"
+        rel:
+          - ["Hola", "Hello", "informal greeting"]
+      - q: "Buenos días"
+        a: "Good morning"
+        rel:
+          - ["buenos", "good", "adjective, plural"]
+          - ["días", "days / morning", "noun, plural"]
+      - q: "Buenas tardes"
+        a: "Good afternoon"
+        rel:
+          - ["buenas", "good", "adjective, plural feminine"]
+          - ["tardes", "afternoons", "noun, plural"]
+      - q: "Buenas noches"
+        a: "Good evening / Good night"
+        rel:
+          - ["buenas", "good", "adjective, plural feminine"]
+          - ["noches", "nights", "noun, plural"]
+      - q: "Adiós"
+        a: "Goodbye"
+        rel:
+          - ["Adiós", "Goodbye", "formal farewell"]
+      - q: "Hasta luego"
+        a: "See you later"
+        rel:
+          - ["hasta", "until", "preposition"]
+          - ["luego", "later / then", "adverb"]
+  - title: "Polite Expressions"
+    explanation: |
+      **Politeness** plays an important role in Spanish. These basic expressions
+      will help you communicate respectfully in any situation.
+    examples:
+      - q: "Gracias"
+        a: "Thank you"
+        rel:
+          - ["Gracias", "Thank you", "expression of thanks"]
+      - q: "Por favor"
+        a: "Please"
+        rel:
+          - ["por", "for / by", "preposition"]
+          - ["favor", "favor / kindness", "noun"]
+      - q: "De nada"
+        a: "You're welcome"
+        rel:
+          - ["de", "of / from", "preposition"]
+          - ["nada", "nothing", "pronoun"]
+      - q: "Perdón"
+        a: "Excuse me / Pardon"
+        rel:
+          - ["Perdón", "Pardon / Excuse me", "polite expression"]
+      - q: "Lo siento"
+        a: "I'm sorry"
+        rel:
+          - ["lo", "it", "pronoun"]
+          - ["siento", "I feel / regret", "verb sentir"]
+  - title: "Introducing Yourself"
+    explanation: |
+      **Introducing yourself** is key when meeting new people.
+      In Spanish there are two verbs for "to be": **ser** (permanent) and **estar** (temporary).
+      For names and origin, use **ser**.
+    examples:
+      - q: "¿Cómo estás?"
+        a: "How are you?"
+        rel:
+          - ["cómo", "how", "question word"]
+          - ["estás", "you are (right now)", "verb estar, 2nd person"]
+      - q: "Bien, gracias"
+        a: "Fine, thank you"
+        rel:
+          - ["bien", "well / fine", "adverb"]
+          - ["gracias", "thank you", "expression of thanks"]
+      - q: "Me llamo..."
+        a: "My name is..."
+        rel:
+          - ["me", "myself", "reflexive pronoun"]
+          - ["llamo", "I call / my name is", "verb llamarse"]
+      - q: "Mucho gusto"
+        a: "Nice to meet you"
+        rel:
+          - ["mucho", "much / a lot", "adjective"]
+          - ["gusto", "pleasure / taste", "noun"]
+      - q: "¿De dónde eres?"
+        a: "Where are you from?"
+        rel:
+          - ["de", "from / of", "preposition"]
+          - ["dónde", "where", "question word"]
+          - ["eres", "you are", "verb ser, 2nd person"]
