@@ -1,0 +1,97 @@
+version: 1
+number: 8
+title: "At the Restaurant"
+description: "Ordering, naming dishes and paying at a Spanish restaurant"
+sections:
+  - title: "Ordering"
+    explanation: |
+      **Ordering at a restaurant** requires polite phrases.
+      "Quisiera" and "para mí" are the most elegant forms.
+      "¿Me trae...?" literally means "Will you bring me...?" and is very common.
+    examples:
+      - q: "Quisiera..."
+        a: "I would like..."
+        rel:
+          - ["quisiera", "I would like", "verb querer, imperfect subjunctive"]
+      - q: "Para mí..."
+        a: "For me..."
+        rel:
+          - ["para", "for", "preposition"]
+          - ["mí", "me", "stressed personal pronoun"]
+      - q: "¿Me trae...?"
+        a: "Could you bring me...?"
+        rel:
+          - ["me", "me / for me", "personal pronoun, indirect object"]
+          - ["trae", "he/she brings", "verb traer, 3rd person"]
+      - q: "¿Qué recomienda?"
+        a: "What do you recommend?"
+        rel:
+          - ["recomienda", "he/she recommends", "verb recomendar, 3rd person"]
+      - q: "La carta, por favor"
+        a: "The menu, please"
+        rel:
+          - ["carta", "letter / menu", "noun, feminine"]
+          - ["por favor", "please", "polite expression"]
+  - title: "Dishes"
+    explanation: |
+      **Typical Spanish dishes** are known worldwide.
+      Tapas, paella and gazpacho are just a few examples.
+      Restaurants often offer a "menú del día" — an affordable daily set menu.
+    examples:
+      - q: "la sopa"
+        a: "the soup"
+        rel:
+          - ["sopa", "soup", "noun, feminine"]
+      - q: "la ensalada"
+        a: "the salad"
+        rel:
+          - ["ensalada", "salad", "noun, feminine"]
+      - q: "el filete"
+        a: "the steak / the fillet"
+        rel:
+          - ["filete", "steak / fillet", "noun, masculine"]
+      - q: "el pollo"
+        a: "the chicken"
+        rel:
+          - ["pollo", "chicken", "noun, masculine"]
+      - q: "los mariscos"
+        a: "the seafood"
+        rel:
+          - ["mariscos", "seafood", "noun, masculine plural"]
+      - q: "el postre"
+        a: "the dessert"
+        rel:
+          - ["postre", "dessert", "noun, masculine"]
+      - q: "el vino"
+        a: "the wine"
+        rel:
+          - ["vino", "wine", "noun, masculine"]
+      - q: "la cerveza"
+        a: "the beer"
+        rel:
+          - ["cerveza", "beer", "noun, feminine"]
+  - title: "Paying"
+    explanation: |
+      **When paying**, "La cuenta, por favor" is the most important phrase.
+      In Spain, tipping (propina) is voluntary but appreciated.
+      Credit cards are not accepted everywhere — ask beforehand!
+    examples:
+      - q: "La cuenta, por favor"
+        a: "The bill, please"
+        rel:
+          - ["cuenta", "bill / account", "noun, feminine"]
+      - q: "¿Está incluido el servicio?"
+        a: "Is the service charge included?"
+        rel:
+          - ["incluido", "included", "past participle"]
+          - ["servicio", "service", "noun, masculine"]
+      - q: "¿Se puede pagar con tarjeta?"
+        a: "Can I pay by card?"
+        rel:
+          - ["se puede", "one can / it is possible", "reflexive + verb poder"]
+          - ["pagar", "to pay", "infinitive"]
+          - ["tarjeta", "card", "noun, feminine"]
+      - q: "propina"
+        a: "tip / gratuity"
+        rel:
+          - ["propina", "tip / gratuity", "noun, feminine"]

@@ -1,0 +1,116 @@
+version: 1
+number: 3
+title: "Zahlen und Zeit"
+description: "Zahlen von 1 bis 1000 und Zeitangaben auf Spanisch"
+sections:
+  - title: "Zahlen 1–20"
+    explanation: |
+      **Die Zahlen von 1 bis 20** sind auf Spanisch unregelmäßig und müssen
+      auswendig gelernt werden. Ab 16 werden sie zusammengeschrieben (dieciséis, etc.).
+      Diese Zahlen bilden die Grundlage für alle größeren Zahlen.
+    examples:
+      - q: "uno / dos / tres"
+        a: "eins / zwei / drei"
+        rel:
+          - ["uno", "eins", "Grundzahl"]
+          - ["dos", "zwei", "Grundzahl"]
+          - ["tres", "drei", "Grundzahl"]
+      - q: "cuatro / cinco / seis"
+        a: "vier / fünf / sechs"
+        rel:
+          - ["cuatro", "vier", "Grundzahl"]
+          - ["cinco", "fünf", "Grundzahl"]
+          - ["seis", "sechs", "Grundzahl"]
+      - q: "siete / ocho / nueve"
+        a: "sieben / acht / neun"
+        rel:
+          - ["siete", "sieben", "Grundzahl"]
+          - ["ocho", "acht", "Grundzahl"]
+          - ["nueve", "neun", "Grundzahl"]
+      - q: "diez / once / doce"
+        a: "zehn / elf / zwölf"
+        rel:
+          - ["diez", "zehn", "Grundzahl"]
+          - ["once", "elf", "Grundzahl"]
+          - ["doce", "zwölf", "Grundzahl"]
+      - q: "trece / catorce / quince"
+        a: "dreizehn / vierzehn / fünfzehn"
+        rel:
+          - ["trece", "dreizehn", "Grundzahl"]
+          - ["catorce", "vierzehn", "Grundzahl"]
+          - ["quince", "fünfzehn", "Grundzahl"]
+      - q: "dieciséis / diecisiete / dieciocho / diecinueve / veinte"
+        a: "sechzehn / siebzehn / achtzehn / neunzehn / zwanzig"
+        rel:
+          - ["dieciséis", "sechzehn", "Grundzahl"]
+          - ["diecisiete", "siebzehn", "Grundzahl"]
+          - ["dieciocho", "achtzehn", "Grundzahl"]
+          - ["diecinueve", "neunzehn", "Grundzahl"]
+          - ["veinte", "zwanzig", "Grundzahl"]
+  - title: "Große Zahlen"
+    explanation: |
+      **Größere Zahlen** folgen einem regelmäßigen Muster. Die Zehner enden auf
+      -enta (außer treinta) und werden mit „y" (und) mit den Einern verbunden.
+      Beispiel: treinta y cinco = 35.
+    examples:
+      - q: "treinta"
+        a: "dreißig"
+        rel:
+          - ["treinta", "dreißig", "Zehnerzahl"]
+      - q: "cuarenta"
+        a: "vierzig"
+        rel:
+          - ["cuarenta", "vierzig", "Zehnerzahl"]
+      - q: "cincuenta"
+        a: "fünfzig"
+        rel:
+          - ["cincuenta", "fünfzig", "Zehnerzahl"]
+      - q: "sesenta / setenta / ochenta / noventa"
+        a: "sechzig / siebzig / achtzig / neunzig"
+        rel:
+          - ["sesenta", "sechzig", "Zehnerzahl"]
+          - ["setenta", "siebzig", "Zehnerzahl"]
+          - ["ochenta", "achtzig", "Zehnerzahl"]
+          - ["noventa", "neunzig", "Zehnerzahl"]
+      - q: "cien"
+        a: "hundert"
+        rel:
+          - ["cien", "hundert (genau 100)", "Grundzahl"]
+      - q: "mil"
+        a: "tausend"
+        rel:
+          - ["mil", "tausend", "Grundzahl"]
+  - title: "Uhrzeit"
+    explanation: |
+      **Die Uhrzeit** wird im Spanischen mit dem Verb „ser" ausgedrückt.
+      Für 1 Uhr sagt man „es la una", für alle anderen Stunden „son las + Zahl".
+      Minuten werden mit „y" (nach der vollen Stunde) oder „menos" (vor der Stunde) angefügt.
+    examples:
+      - q: "¿Qué hora es?"
+        a: "Wie spät ist es?"
+        rel:
+          - ["qué", "was / wie", "Fragewort"]
+          - ["hora", "Stunde / Uhr", "Substantiv"]
+      - q: "Son las tres"
+        a: "Es ist drei Uhr"
+        rel:
+          - ["son", "es sind", "Verb ser, Plural"]
+          - ["las", "die", "bestimmter Artikel, Plural feminin"]
+          - ["tres", "drei", "Grundzahl"]
+      - q: "Es la una"
+        a: "Es ist ein Uhr"
+        rel:
+          - ["es", "es ist", "Verb ser, Singular"]
+          - ["la una", "ein Uhr", "Singular, weil nur eine Stunde"]
+      - q: "de la mañana"
+        a: "morgens / vormittags"
+        rel:
+          - ["mañana", "Morgen / morgen", "Substantiv / Adverb"]
+      - q: "de la tarde"
+        a: "nachmittags / abends"
+        rel:
+          - ["tarde", "Nachmittag / spät", "Substantiv / Adverb"]
+      - q: "de la noche"
+        a: "nachts / abends (spät)"
+        rel:
+          - ["noche", "Nacht", "Substantiv"]
