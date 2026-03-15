@@ -255,9 +255,15 @@ const allEntries = computed(() => {
       }
     })
 
-    // Sent status tracking
+    // Sent status tracking — only include progress items belonging to this lesson
     const workshopProgress = progress.value[`${learning.value}:${workshop.value}`] || {}
-    const currentHash = getLessonHash(lessonKey, workshopProgress)
+    const lessonProgress = {}
+    itemsSeen.forEach(id => {
+      if (workshopProgress[id] !== undefined) {
+        lessonProgress[id] = workshopProgress[id]
+      }
+    })
+    const currentHash = getLessonHash(lessonKey, lessonProgress)
     const lastSent = getLastSent(lessonKey)
     let sentStatus = 'never-sent'
     let sentStatusLabel = t('results.neverSent')

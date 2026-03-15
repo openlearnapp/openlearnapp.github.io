@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-03-15
+
+### Fixes
+
+#### Audio button hidden when no audio available (Issue #45)
+- Play button no longer shows for workshops without audio files (Farsi, Arabic)
+- `hasAudio` ref exposed from `useAudio()` — true only when at least one file loaded
+
+#### Progress hash scoped per lesson (Issue #4)
+- Assessment sent-status no longer marks all lessons as "changed" when any item is learned
+- Hash now only includes progress items belonging to that specific lesson
+
 ## 2026-03-10
 
 ### Features

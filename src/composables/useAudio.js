@@ -17,6 +17,7 @@ const readingQueue = ref([])
 const audioElements = ref([]) // Pre-loaded audio elements
 const currentAudio = ref(null) // Currently playing audio element
 const playbackFinished = ref(false)
+const hasAudio = ref(false) // True when at least one audio file loaded successfully
 const lessonTitle = ref('')
 const lessonMetadata = ref({ learning: '', workshop: '', number: '' })
 
@@ -273,6 +274,9 @@ async function initializeAudio(lesson, learning, workshop, settings) {
 
   // Pre-load audio files (filtered by manifest if available)
   audioElements.value = await preloadAudioFiles(readingQueue.value, manifest)
+
+  hasAudio.value = Object.keys(audioElements.value).length > 0
+  console.log(`🔊 Has audio: ${hasAudio.value} (${Object.keys(audioElements.value).length} files loaded)`)
 
   isLoadingAudio.value = false
   currentItemIndex.value = -1
@@ -729,6 +733,7 @@ export function useAudio() {
     isPlaying,
     isPaused,
     playbackFinished,
+    hasAudio,
     currentItem,
     currentItemIndex,
     readingQueue,
