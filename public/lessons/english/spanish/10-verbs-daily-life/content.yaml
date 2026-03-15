@@ -1,0 +1,107 @@
+version: 1
+number: 10
+title: "Verbs and Daily Life"
+description: "Important verbs and daily routines in Spanish"
+sections:
+  - title: "Important Verbs"
+    explanation: |
+      **The most important Spanish verbs** are often irregular but essential.
+      Particularly important: **ser** vs. **estar** — both mean "to be", but:
+      Ser for permanent characteristics, nationality, time. Estar for temporary states and locations.
+    examples:
+      - q: "ser / estar"
+        a: "to be"
+        rel:
+          - ["ser", "to be (permanent)", "verb, irregular"]
+          - ["estar", "to be (temporary / location)", "verb, irregular"]
+      - q: "tener"
+        a: "to have"
+        rel:
+          - ["tener", "to have", "verb, irregular"]
+      - q: "ir"
+        a: "to go"
+        rel:
+          - ["ir", "to go", "verb, irregular"]
+      - q: "querer"
+        a: "to want / to love"
+        rel:
+          - ["querer", "to want / to love", "verb, irregular (e→ie)"]
+      - q: "poder"
+        a: "to be able to / can"
+        rel:
+          - ["poder", "to be able to / can", "verb, irregular (o→ue)"]
+      - q: "saber"
+        a: "to know (a fact / skill)"
+        rel:
+          - ["saber", "to know (facts / how to do something)", "verb, irregular"]
+      - q: "hacer"
+        a: "to do / to make"
+        rel:
+          - ["hacer", "to do / to make", "verb, irregular"]
+      - q: "decir"
+        a: "to say / to tell"
+        rel:
+          - ["decir", "to say / to tell", "verb, irregular"]
+  - title: "Daily Routine"
+    explanation: |
+      **Daily routines** in Spanish are often expressed with reflexive verbs.
+      "Levantarse" (to get up), "ducharse" (to shower) — the reflexive pronoun shows
+      that the action is directed at the person themselves.
+    examples:
+      - q: "levantarse"
+        a: "to get up"
+        rel:
+          - ["levantarse", "to get up", "reflexive verb"]
+          - ["levantar", "to lift / to raise", "base verb"]
+      - q: "desayunar"
+        a: "to have breakfast"
+        rel:
+          - ["desayunar", "to have breakfast", "verb"]
+      - q: "trabajar"
+        a: "to work"
+        rel:
+          - ["trabajar", "to work", "verb, regular"]
+      - q: "comer"
+        a: "to eat / to have lunch"
+        rel:
+          - ["comer", "to eat", "verb, regular"]
+      - q: "dormir"
+        a: "to sleep"
+        rel:
+          - ["dormir", "to sleep", "verb, irregular (o→ue)"]
+      - q: "ducharse"
+        a: "to take a shower"
+        rel:
+          - ["ducharse", "to shower", "reflexive verb"]
+          - ["ducha", "shower", "noun, feminine"]
+  - title: "At Work"
+    explanation: |
+      **At the office and at work** you need specific vocabulary.
+      The Spanish word "ordenador" (computer) is mainly used in Spain —
+      in Latin America "computadora" or "computador" is more common.
+    examples:
+      - q: "el trabajo"
+        a: "the work / the job"
+        rel:
+          - ["trabajo", "work / job", "noun, masculine"]
+      - q: "la oficina"
+        a: "the office"
+        rel:
+          - ["oficina", "office", "noun, feminine"]
+      - q: "el ordenador"
+        a: "the computer"
+        rel:
+          - ["ordenador", "computer (Spain)", "noun, masculine"]
+      - q: "la reunión"
+        a: "the meeting"
+        rel:
+          - ["reunión", "meeting / gathering", "noun, feminine"]
+      - q: "el jefe / la jefa"
+        a: "the boss"
+        rel:
+          - ["jefe", "boss / manager (masculine)", "noun"]
+          - ["jefa", "boss / manager (feminine)", "noun"]
+      - q: "el colega"
+        a: "the colleague"
+        rel:
+          - ["colega", "colleague (masculine/feminine)", "noun"]

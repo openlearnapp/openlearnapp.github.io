@@ -1,0 +1,116 @@
+version: 1
+number: 3
+title: "Numbers and Time"
+description: "Numbers from 1 to 1000 and time expressions in Spanish"
+sections:
+  - title: "Numbers 1–20"
+    explanation: |
+      **Numbers from 1 to 20** in Spanish are irregular and must be memorized.
+      From 16 onwards they are written as one word (dieciséis, etc.).
+      These numbers form the basis for all larger numbers.
+    examples:
+      - q: "uno / dos / tres"
+        a: "one / two / three"
+        rel:
+          - ["uno", "one", "cardinal number"]
+          - ["dos", "two", "cardinal number"]
+          - ["tres", "three", "cardinal number"]
+      - q: "cuatro / cinco / seis"
+        a: "four / five / six"
+        rel:
+          - ["cuatro", "four", "cardinal number"]
+          - ["cinco", "five", "cardinal number"]
+          - ["seis", "six", "cardinal number"]
+      - q: "siete / ocho / nueve"
+        a: "seven / eight / nine"
+        rel:
+          - ["siete", "seven", "cardinal number"]
+          - ["ocho", "eight", "cardinal number"]
+          - ["nueve", "nine", "cardinal number"]
+      - q: "diez / once / doce"
+        a: "ten / eleven / twelve"
+        rel:
+          - ["diez", "ten", "cardinal number"]
+          - ["once", "eleven", "cardinal number"]
+          - ["doce", "twelve", "cardinal number"]
+      - q: "trece / catorce / quince"
+        a: "thirteen / fourteen / fifteen"
+        rel:
+          - ["trece", "thirteen", "cardinal number"]
+          - ["catorce", "fourteen", "cardinal number"]
+          - ["quince", "fifteen", "cardinal number"]
+      - q: "dieciséis / diecisiete / dieciocho / diecinueve / veinte"
+        a: "sixteen / seventeen / eighteen / nineteen / twenty"
+        rel:
+          - ["dieciséis", "sixteen", "cardinal number"]
+          - ["diecisiete", "seventeen", "cardinal number"]
+          - ["dieciocho", "eighteen", "cardinal number"]
+          - ["diecinueve", "nineteen", "cardinal number"]
+          - ["veinte", "twenty", "cardinal number"]
+  - title: "Larger Numbers"
+    explanation: |
+      **Larger numbers** follow a regular pattern. Tens end in -enta (except treinta)
+      and are connected to units with "y" (and).
+      Example: treinta y cinco = 35.
+    examples:
+      - q: "treinta"
+        a: "thirty"
+        rel:
+          - ["treinta", "thirty", "tens"]
+      - q: "cuarenta"
+        a: "forty"
+        rel:
+          - ["cuarenta", "forty", "tens"]
+      - q: "cincuenta"
+        a: "fifty"
+        rel:
+          - ["cincuenta", "fifty", "tens"]
+      - q: "sesenta / setenta / ochenta / noventa"
+        a: "sixty / seventy / eighty / ninety"
+        rel:
+          - ["sesenta", "sixty", "tens"]
+          - ["setenta", "seventy", "tens"]
+          - ["ochenta", "eighty", "tens"]
+          - ["noventa", "ninety", "tens"]
+      - q: "cien"
+        a: "one hundred"
+        rel:
+          - ["cien", "one hundred (exactly 100)", "cardinal number"]
+      - q: "mil"
+        a: "one thousand"
+        rel:
+          - ["mil", "one thousand", "cardinal number"]
+  - title: "Time"
+    explanation: |
+      **Telling the time** in Spanish uses the verb "ser".
+      For 1 o'clock say "es la una"; for all other hours use "son las + number".
+      Minutes are added with "y" (past) or "menos" (to the hour).
+    examples:
+      - q: "¿Qué hora es?"
+        a: "What time is it?"
+        rel:
+          - ["qué", "what / which", "question word"]
+          - ["hora", "hour / time", "noun"]
+      - q: "Son las tres"
+        a: "It is three o'clock"
+        rel:
+          - ["son", "they are", "verb ser, plural"]
+          - ["las", "the", "definite article, plural feminine"]
+          - ["tres", "three", "cardinal number"]
+      - q: "Es la una"
+        a: "It is one o'clock"
+        rel:
+          - ["es", "it is", "verb ser, singular"]
+          - ["la una", "one o'clock", "singular because only one hour"]
+      - q: "de la mañana"
+        a: "in the morning / a.m."
+        rel:
+          - ["mañana", "morning / tomorrow", "noun / adverb"]
+      - q: "de la tarde"
+        a: "in the afternoon / p.m."
+        rel:
+          - ["tarde", "afternoon / late", "noun / adverb"]
+      - q: "de la noche"
+        a: "at night / p.m. (late)"
+        rel:
+          - ["noche", "night", "noun"]

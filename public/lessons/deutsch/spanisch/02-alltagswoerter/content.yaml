@@ -1,0 +1,119 @@
+version: 1
+number: 2
+title: "Alltagswörter"
+description: "Grundlegende Wörter und Ausdrücke für den täglichen Gebrauch auf Spanisch"
+sections:
+  - title: "Grundlegende Wörter"
+    explanation: |
+      **Grundlegende Wörter** sind die Bausteine jeder Sprache.
+      Diese häufig verwendeten Wörter helfen Ihnen, einfache Sätze auf Spanisch zu bilden
+      und in alltäglichen Situationen zu kommunizieren.
+    examples:
+      - q: "sí"
+        a: "ja"
+        rel:
+          - ["sí", "ja", "Partikel"]
+      - q: "no"
+        a: "nein"
+        rel:
+          - ["no", "nein / nicht", "Partikel / Verneinung"]
+      - q: "y"
+        a: "und"
+        rel:
+          - ["y", "und", "Konjunktion"]
+      - q: "o"
+        a: "oder"
+        rel:
+          - ["o", "oder", "Konjunktion"]
+      - q: "pero"
+        a: "aber"
+        rel:
+          - ["pero", "aber", "Konjunktion"]
+      - q: "porque"
+        a: "weil / denn"
+        rel:
+          - ["porque", "weil / denn", "Konjunktion"]
+      - q: "también"
+        a: "auch / ebenfalls"
+        rel:
+          - ["también", "auch", "Adverb"]
+      - q: "muy"
+        a: "sehr"
+        rel:
+          - ["muy", "sehr", "Adverb"]
+      - q: "bien"
+        a: "gut"
+        rel:
+          - ["bien", "gut", "Adverb"]
+      - q: "mal"
+        a: "schlecht"
+        rel:
+          - ["mal", "schlecht / schlimm", "Adverb"]
+  - title: "Fragen"
+    explanation: |
+      **Fragewörter** sind unentbehrlich, um Informationen einzuholen.
+      Im Spanischen werden Fragen mit umgekehrtem Fragezeichen (¿) eingeleitet.
+      Diese Fragewörter helfen Ihnen in den unterschiedlichsten Situationen.
+    examples:
+      - q: "¿Qué?"
+        a: "Was?"
+        rel:
+          - ["qué", "was", "Fragewort"]
+      - q: "¿Quién?"
+        a: "Wer?"
+        rel:
+          - ["quién", "wer", "Fragewort"]
+      - q: "¿Dónde?"
+        a: "Wo?"
+        rel:
+          - ["dónde", "wo / wohin", "Fragewort"]
+      - q: "¿Cuándo?"
+        a: "Wann?"
+        rel:
+          - ["cuándo", "wann", "Fragewort"]
+      - q: "¿Por qué?"
+        a: "Warum?"
+        rel:
+          - ["por qué", "warum", "Fragewort"]
+      - q: "¿Cómo?"
+        a: "Wie?"
+        rel:
+          - ["cómo", "wie", "Fragewort"]
+      - q: "¿Cuánto?"
+        a: "Wie viel?"
+        rel:
+          - ["cuánto", "wie viel", "Fragewort"]
+  - title: "Wochentage"
+    explanation: |
+      **Die Wochentage** auf Spanisch werden kleingeschrieben und haben
+      keine Entsprechung zu „Montag" auf -tag. Die Woche beginnt traditionell
+      mit dem Montag (lunes). Das Wochenende ist „el fin de semana".
+    examples:
+      - q: "lunes"
+        a: "Montag"
+        rel:
+          - ["lunes", "Montag", "Wochentag"]
+      - q: "martes"
+        a: "Dienstag"
+        rel:
+          - ["martes", "Dienstag", "Wochentag"]
+      - q: "miércoles"
+        a: "Mittwoch"
+        rel:
+          - ["miércoles", "Mittwoch", "Wochentag"]
+      - q: "jueves"
+        a: "Donnerstag"
+        rel:
+          - ["jueves", "Donnerstag", "Wochentag"]
+      - q: "viernes"
+        a: "Freitag"
+        rel:
+          - ["viernes", "Freitag", "Wochentag"]
+      - q: "sábado"
+        a: "Samstag"
+        rel:
+          - ["sábado", "Samstag", "Wochentag"]
+      - q: "domingo"
+        a: "Sonntag"
+        rel:
+          - ["domingo", "Sonntag", "Wochentag"]

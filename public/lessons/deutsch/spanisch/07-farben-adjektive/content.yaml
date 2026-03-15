@@ -1,0 +1,120 @@
+version: 1
+number: 7
+title: "Farben und Adjektive"
+description: "Farben, Größenangaben und Eigenschaften auf Spanisch"
+sections:
+  - title: "Farben"
+    explanation: |
+      **Farben** auf Spanisch sind Adjektive und stimmen mit dem Substantiv überein.
+      Einige Farben haben jedoch nur eine Form für maskulin und feminin (z. B. azul, verde).
+      Farben stehen meist nach dem Substantiv: „el coche rojo" (das rote Auto).
+    examples:
+      - q: "rojo / roja"
+        a: "rot"
+        rel:
+          - ["rojo", "rot (maskulin)", "Farbadjektiv"]
+          - ["roja", "rot (feminin)", "Farbadjektiv"]
+      - q: "azul"
+        a: "blau"
+        rel:
+          - ["azul", "blau", "Farbadjektiv, unveränderlich"]
+      - q: "verde"
+        a: "grün"
+        rel:
+          - ["verde", "grün", "Farbadjektiv, unveränderlich"]
+      - q: "amarillo / amarilla"
+        a: "gelb"
+        rel:
+          - ["amarillo", "gelb (maskulin)", "Farbadjektiv"]
+      - q: "blanco / blanca"
+        a: "weiß"
+        rel:
+          - ["blanco", "weiß (maskulin)", "Farbadjektiv"]
+      - q: "negro / negra"
+        a: "schwarz"
+        rel:
+          - ["negro", "schwarz (maskulin)", "Farbadjektiv"]
+      - q: "naranja"
+        a: "orange"
+        rel:
+          - ["naranja", "orange", "Farbadjektiv, unveränderlich"]
+      - q: "rosa"
+        a: "rosa / pink"
+        rel:
+          - ["rosa", "rosa / pink", "Farbadjektiv, unveränderlich"]
+      - q: "marrón"
+        a: "braun"
+        rel:
+          - ["marrón", "braun", "Farbadjektiv"]
+      - q: "gris"
+        a: "grau"
+        rel:
+          - ["gris", "grau", "Farbadjektiv, unveränderlich"]
+  - title: "Größe und Form"
+    explanation: |
+      **Größe und Form** werden mit Adjektiven beschrieben, die dem Substantiv folgen.
+      „Grande" wird vor dem Substantiv zu „gran" verkürzt: „un gran hombre" (ein großer Mann).
+      Diese Adjektive sind nützlich beim Beschreiben von Objekten.
+    examples:
+      - q: "grande"
+        a: "groß"
+        rel:
+          - ["grande", "groß", "Adjektiv"]
+      - q: "pequeño / pequeña"
+        a: "klein"
+        rel:
+          - ["pequeño", "klein (maskulin)", "Adjektiv"]
+      - q: "largo / larga"
+        a: "lang"
+        rel:
+          - ["largo", "lang (maskulin)", "Adjektiv"]
+      - q: "corto / corta"
+        a: "kurz"
+        rel:
+          - ["corto", "kurz (maskulin)", "Adjektiv"]
+      - q: "redondo / redonda"
+        a: "rund"
+        rel:
+          - ["redondo", "rund (maskulin)", "Adjektiv"]
+      - q: "cuadrado / cuadrada"
+        a: "quadratisch / viereckig"
+        rel:
+          - ["cuadrado", "quadratisch (maskulin)", "Adjektiv"]
+  - title: "Eigenschaften"
+    explanation: |
+      **Eigenschaften** helfen, Dinge und Personen zu beschreiben.
+      Mit diesen Adjektiven können Sie Gegenstände, Situationen und Erfahrungen
+      präzise charakterisieren. Beachten Sie die Genus-Anpassung!
+    examples:
+      - q: "nuevo / nueva"
+        a: "neu"
+        rel:
+          - ["nuevo", "neu (maskulin)", "Adjektiv"]
+      - q: "viejo / vieja"
+        a: "alt"
+        rel:
+          - ["viejo", "alt (maskulin)", "Adjektiv"]
+      - q: "bonito / bonita"
+        a: "hübsch / schön"
+        rel:
+          - ["bonito", "hübsch / schön (maskulin)", "Adjektiv"]
+      - q: "feo / fea"
+        a: "hässlich"
+        rel:
+          - ["feo", "hässlich (maskulin)", "Adjektiv"]
+      - q: "rápido / rápida"
+        a: "schnell"
+        rel:
+          - ["rápido", "schnell (maskulin)", "Adjektiv"]
+      - q: "lento / lenta"
+        a: "langsam"
+        rel:
+          - ["lento", "langsam (maskulin)", "Adjektiv"]
+      - q: "fácil"
+        a: "leicht / einfach"
+        rel:
+          - ["fácil", "leicht / einfach", "Adjektiv, unveränderlich"]
+      - q: "difícil"
+        a: "schwierig / schwer"
+        rel:
+          - ["difícil", "schwierig / schwer", "Adjektiv, unveränderlich"]

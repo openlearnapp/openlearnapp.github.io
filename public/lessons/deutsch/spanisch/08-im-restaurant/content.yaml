@@ -1,0 +1,97 @@
+version: 1
+number: 8
+title: "Im Restaurant"
+description: "Bestellen, Speisen benennen und bezahlen in einem spanischen Restaurant"
+sections:
+  - title: "Bestellen"
+    explanation: |
+      **Im Restaurant bestellen** erfordert höfliche Formulierungen.
+      „Quisiera" und „para mí" sind die elegantesten Formen.
+      „¿Me trae...?" bedeutet wörtlich „Bringen Sie mir...?" und ist sehr gebräuchlich.
+    examples:
+      - q: "Quisiera..."
+        a: "Ich hätte gerne..."
+        rel:
+          - ["quisiera", "ich möchte / hätte gerne", "Verb querer, Konjunktiv Imperfekt"]
+      - q: "Para mí..."
+        a: "Für mich..."
+        rel:
+          - ["para", "für", "Präposition"]
+          - ["mí", "mich / mir", "Betontes Personalpronomen"]
+      - q: "¿Me trae...?"
+        a: "Bringen Sie mir...?"
+        rel:
+          - ["me", "mir", "Personalpronomen, indirektes Objekt"]
+          - ["trae", "er/sie bringt", "Verb traer, 3. Person"]
+      - q: "¿Qué recomienda?"
+        a: "Was empfehlen Sie?"
+        rel:
+          - ["recomienda", "er/sie empfiehlt", "Verb recomendar, 3. Person"]
+      - q: "La carta, por favor"
+        a: "Die Speisekarte, bitte"
+        rel:
+          - ["carta", "Brief / Speisekarte", "Substantiv, feminin"]
+          - ["por favor", "bitte", "Höflichkeitsausdruck"]
+  - title: "Speisen"
+    explanation: |
+      **Typische Speisen** der spanischen Küche sind weltweit bekannt.
+      Tapas, Paella und Gazpacho sind nur einige Beispiele.
+      In Restaurants gibt es oft ein „menú del día" – ein günstiges Tagesmenü.
+    examples:
+      - q: "la sopa"
+        a: "die Suppe"
+        rel:
+          - ["sopa", "Suppe", "Substantiv, feminin"]
+      - q: "la ensalada"
+        a: "der Salat"
+        rel:
+          - ["ensalada", "Salat", "Substantiv, feminin"]
+      - q: "el filete"
+        a: "das Steak / das Filet"
+        rel:
+          - ["filete", "Steak / Filet", "Substantiv, maskulin"]
+      - q: "el pollo"
+        a: "das Hähnchen"
+        rel:
+          - ["pollo", "Hähnchen / Huhn", "Substantiv, maskulin"]
+      - q: "los mariscos"
+        a: "die Meeresfrüchte"
+        rel:
+          - ["mariscos", "Meeresfrüchte", "Substantiv, maskulin Plural"]
+      - q: "el postre"
+        a: "das Dessert / der Nachtisch"
+        rel:
+          - ["postre", "Dessert / Nachtisch", "Substantiv, maskulin"]
+      - q: "el vino"
+        a: "der Wein"
+        rel:
+          - ["vino", "Wein", "Substantiv, maskulin"]
+      - q: "la cerveza"
+        a: "das Bier"
+        rel:
+          - ["cerveza", "Bier", "Substantiv, feminin"]
+  - title: "Bezahlen"
+    explanation: |
+      **Beim Bezahlen** ist „La cuenta, por favor" der wichtigste Satz.
+      In Spanien ist Trinkgeld (propina) freiwillig, aber es wird gerne gesehen.
+      Kreditkarten werden nicht überall akzeptiert – fragen Sie vorher!
+    examples:
+      - q: "La cuenta, por favor"
+        a: "Die Rechnung, bitte"
+        rel:
+          - ["cuenta", "Rechnung / Konto", "Substantiv, feminin"]
+      - q: "¿Está incluido el servicio?"
+        a: "Ist das Bedienungsgeld inbegriffen?"
+        rel:
+          - ["incluido", "inbegriffen / inklusive", "Partizip Perfekt"]
+          - ["servicio", "Service / Bedienung", "Substantiv, maskulin"]
+      - q: "¿Se puede pagar con tarjeta?"
+        a: "Kann man mit Karte zahlen?"
+        rel:
+          - ["se puede", "man kann", "Reflexivkonstruktion + Verb poder"]
+          - ["pagar", "zahlen / bezahlen", "Infinitiv"]
+          - ["tarjeta", "Karte", "Substantiv, feminin"]
+      - q: "propina"
+        a: "Trinkgeld"
+        rel:
+          - ["propina", "Trinkgeld", "Substantiv, feminin"]

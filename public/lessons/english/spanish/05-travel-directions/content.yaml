@@ -1,0 +1,93 @@
+version: 1
+number: 5
+title: "Travel and Directions"
+description: "Transport, directions and useful phrases for travelers in Spanish"
+sections:
+  - title: "Transport"
+    explanation: |
+      **Means of transport** are essential when traveling. Spain and Latin America
+      have excellent public transport networks. "A pie" means on foot —
+      no vehicle, just your own two legs!
+    examples:
+      - q: "el avión"
+        a: "the airplane"
+        rel:
+          - ["avión", "airplane", "noun, masculine"]
+      - q: "el tren"
+        a: "the train"
+        rel:
+          - ["tren", "train", "noun, masculine"]
+      - q: "el autobús"
+        a: "the bus"
+        rel:
+          - ["autobús", "bus", "noun, masculine"]
+      - q: "el taxi"
+        a: "the taxi"
+        rel:
+          - ["taxi", "taxi", "noun, masculine"]
+      - q: "el coche"
+        a: "the car"
+        rel:
+          - ["coche", "car", "noun, masculine"]
+      - q: "a pie"
+        a: "on foot"
+        rel:
+          - ["a", "to / at", "preposition"]
+          - ["pie", "foot", "noun, masculine"]
+  - title: "Directions"
+    explanation: |
+      **Directions** help you find your way.
+      "Todo recto" is the most important direction — straight ahead.
+      Distances are described with "cerca" (near) and "lejos" (far).
+    examples:
+      - q: "a la derecha"
+        a: "to the right"
+        rel:
+          - ["derecha", "right / right side", "noun, feminine"]
+      - q: "a la izquierda"
+        a: "to the left"
+        rel:
+          - ["izquierda", "left / left side", "noun, feminine"]
+      - q: "todo recto"
+        a: "straight ahead"
+        rel:
+          - ["todo", "all / whole", "adjective"]
+          - ["recto", "straight / direct", "adjective"]
+      - q: "cerca"
+        a: "near / nearby"
+        rel:
+          - ["cerca", "near / close by", "adverb"]
+      - q: "lejos"
+        a: "far / far away"
+        rel:
+          - ["lejos", "far / distant", "adverb"]
+      - q: "¿Dónde está...?"
+        a: "Where is...?"
+        rel:
+          - ["dónde", "where", "question word"]
+          - ["está", "is (located)", "verb estar"]
+  - title: "At the Station"
+    explanation: |
+      **At the station and on the road** you need practical phrases.
+      A "billete" is a travel ticket — for a theater ticket you say "entrada".
+      "¿A qué hora sale?" asks about the departure time.
+    examples:
+      - q: "un billete"
+        a: "a ticket"
+        rel:
+          - ["billete", "ticket / fare", "noun, masculine"]
+      - q: "¿A qué hora sale?"
+        a: "What time does it leave?"
+        rel:
+          - ["a qué hora", "at what time", "time question"]
+          - ["sale", "leaves / departs", "verb salir"]
+      - q: "¿Dónde está el hotel?"
+        a: "Where is the hotel?"
+        rel:
+          - ["hotel", "hotel", "noun, masculine"]
+          - ["está", "is (located)", "verb estar"]
+      - q: "la parada de autobús"
+        a: "the bus stop"
+        rel:
+          - ["parada", "stop / halt", "noun, feminine"]
+          - ["autobús", "bus", "noun, masculine"]

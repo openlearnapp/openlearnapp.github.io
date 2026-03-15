@@ -29,7 +29,7 @@ This is a static single-page web application for learning any workshops by examp
 ## Directory Structure
 
 ```
-open-learn/
+openlearnapp.github.io/
 ├── index.html              # Minimal HTML entry point
 ├── src/
 │   ├── main.js            # App entry point - creates Vue app with router
@@ -38,25 +38,36 @@ open-learn/
 │   ├── router/
 │   │   └── index.js       # Vue Router configuration
 │   ├── views/             # Page components
-│   │   ├── Home.vue       # Workshop selection page
-│   │   ├── LessonsOverview.vue  # Lessons grid page
-│   │   ├── LessonDetail.vue     # Individual lesson page (assessments, audio, progress)
-│   │   ├── LearningItems.vue    # Learning items browser
-│   │   ├── Settings.vue   # Settings page (preferences, coach, export/import)
-│   │   └── AddSource.vue  # Add external workshop page
+│   │   ├── Home.vue              # Language selection (entry point)
+│   │   ├── WorkshopOverview.vue  # Workshop selection for a language
+│   │   ├── LessonsOverview.vue   # Lessons grid page
+│   │   ├── LessonDetail.vue      # Individual lesson page (assessments, audio, progress)
+│   │   ├── LearningItems.vue     # Learning items browser
+│   │   ├── AssessmentResults.vue # Assessment results overview with coach option
+│   │   ├── Coach.vue             # Coach chat/response view
+│   │   ├── Creators.vue          # Workshop creator info page
+│   │   ├── Settings.vue          # Settings page (preferences, coach, export/import)
+│   │   └── AddSource.vue         # Add external workshop page
 │   ├── composables/       # Reusable composition functions (singleton pattern)
-│   │   ├── useLessons.js  # Lesson loading logic with js-yaml + remote sources
-│   │   ├── useSettings.js # Settings persistence logic
-│   │   ├── useProgress.js # Progress tracking logic (learning items)
-│   │   ├── useAssessments.js  # Assessment answers, validation, coach queue
-│   │   └── useAudio.js    # Audio playback system
+│   │   ├── useLessons.js     # Lesson loading logic with js-yaml + remote sources
+│   │   ├── useSettings.js    # Settings persistence logic
+│   │   ├── useProgress.js    # Progress tracking logic (learning items)
+│   │   ├── useAssessments.js # Assessment answers, validation, coach queue
+│   │   ├── useAudio.js       # Audio playback system
+│   │   ├── useCoach.js       # Coach API integration, batch answer forwarding
+│   │   ├── useFooter.js      # Footer visibility state
+│   │   ├── useGun.js         # Decentralized identity via GunDB SEA
+│   │   └── useLanguage.js    # Language/locale switching
+│   ├── components/        # Shared UI components
+│   ├── i18n/              # Internationalization strings
+│   ├── lib/               # Library utilities
 │   └── utils/
 │       └── formatters.js  # Display name formatting
 ├── public/
 │   ├── CNAME              # Custom domain: open-learn.app
 │   ├── default-sources.yaml # Default workshop sources (loaded at startup)
 │   └── lessons/           # YAML lesson content (deployed as-is)
-│       ├── index.yaml    # Root index - lists available interface languages
+│       ├── index.yaml     # Root index - lists available interface languages
 │       ├── deutsch/       # German interface folder
 │       │   ├── workshops.yaml         # Lists bundled workshops
 │       │   ├── open-learn-guide/      # Bundled: platform tutorial
@@ -125,10 +136,14 @@ pnpm test:e2e
 
 **Main Components**:
 - `App.vue` - Root component with unified navigation (back button, dynamic title, settings button)
-- `Home.vue` - Workshop selection page (route: `/`)
+- `Home.vue` - Language selection page (route: `/`)
+- `WorkshopOverview.vue` - Workshop selection for a chosen language (route: `/:learning`)
 - `LessonsOverview.vue` - Lessons grid page (route: `/:learning/:workshop/lessons`)
 - `LessonDetail.vue` - Individual lesson page (route: `/:learning/:workshop/lesson/:number`)
 - `LearningItems.vue` - Learning items browser (route: `/:learning/:workshop/items/:number?`)
+- `AssessmentResults.vue` - Assessment results with coach forwarding option (route: `/:learning/:workshop/results`)
+- `Coach.vue` - Coach chat/response view (route: `/:learning/:workshop/coach`)
+- `Creators.vue` - Workshop creator info page (route: `/creators`)
 - `Settings.vue` - Settings page (route: `/settings`)
 - `AddSource.vue` - Add external workshop (route: `/add?source=URL`)
 
@@ -157,14 +172,26 @@ pnpm test:e2e
   - Pre-loads MP3 files per lesson
   - Media Session API for lock screen controls
   - Variable playback speed
+- `useCoach()` - Coach API integration
+  - Batch answer submission to external coach endpoint
+  - Consent-gated queue management
+- `useFooter()` - Footer visibility state (shared across components)
+- `useGun()` - Decentralized identity via GunDB SEA
+  - User key pair generation and persistence
+  - Experimental feature for future community features
+- `useLanguage()` - Language/locale switching
 
 **Routing**:
-- `#/` - Home page (workshop selection)
+- `#/` - Home page (language selection)
+- `#/:learning` - Workshop overview for a language
 - `#/:learning/:workshop/lessons` - Lessons overview grid
 - `#/:learning/:workshop/lesson/:number` - Lesson detail view
 - `#/:learning/:workshop/items/:number?` - Learning items
+- `#/:learning/:workshop/results` - Assessment results
+- `#/:learning/:workshop/coach` - Coach view
 - `#/settings` - Settings panel
 - `#/add?source=URL` - Add external workshop
+- `#/creators` - Creator info page
 
 Uses hash-based routing (`createWebHashHistory`) for GitHub Pages compatibility.
 

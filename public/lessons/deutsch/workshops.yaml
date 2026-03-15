@@ -7,6 +7,13 @@ workshops:
     color: "145 45% 92%"
     primaryColor: "220 75% 50%"
     image: "lessons/deutsch/open-learn-guide/thumbnail.png"
+  - folder: spanisch
+    code: es-ES
+    title: "Spanisch"
+    description: "10 Lektionen zum Erlernen der wichtigsten Wörter und Ausdrücke auf Spanisch."
+    color: "35 90% 93%"
+    primaryColor: "35 90% 45%"
+    image: "lessons/deutsch/spanisch/thumbnail.svg"
   - folder: open-learn-feedback
     code: de-DE
     title: "Open Learn Feedback"

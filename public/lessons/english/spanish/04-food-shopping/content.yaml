@@ -1,0 +1,100 @@
+version: 1
+number: 4
+title: "Food and Shopping"
+description: "Food vocabulary and important shopping expressions in Spanish"
+sections:
+  - title: "Food"
+    explanation: |
+      **Food items** in Spanish have grammatical gender.
+      Words with "el" are masculine, words with "la" are feminine.
+      In the plural "el" becomes "los" and "la" becomes "las".
+    examples:
+      - q: "el pan"
+        a: "the bread"
+        rel:
+          - ["pan", "bread", "noun, masculine"]
+      - q: "la leche"
+        a: "the milk"
+        rel:
+          - ["leche", "milk", "noun, feminine"]
+      - q: "el agua"
+        a: "the water"
+        rel:
+          - ["agua", "water", "noun, feminine (but el in singular)"]
+      - q: "la carne"
+        a: "the meat"
+        rel:
+          - ["carne", "meat", "noun, feminine"]
+      - q: "el pescado"
+        a: "the fish"
+        rel:
+          - ["pescado", "fish (as food)", "noun, masculine"]
+      - q: "las verduras"
+        a: "the vegetables"
+        rel:
+          - ["verduras", "vegetables (plural)", "noun, feminine plural"]
+      - q: "la fruta"
+        a: "the fruit"
+        rel:
+          - ["fruta", "fruit", "noun, feminine"]
+      - q: "el arroz"
+        a: "the rice"
+        rel:
+          - ["arroz", "rice", "noun, masculine"]
+  - title: "Shopping"
+    explanation: |
+      **When shopping** you need certain polite phrases.
+      "Quisiera" is the polite subjunctive form of "querer" (to want) —
+      much more courteous than "quiero" (I want).
+    examples:
+      - q: "¿Cuánto cuesta?"
+        a: "How much does it cost?"
+        rel:
+          - ["cuánto", "how much", "question word"]
+          - ["cuesta", "costs", "verb costar"]
+      - q: "Es muy caro"
+        a: "It is very expensive"
+        rel:
+          - ["caro", "expensive", "adjective"]
+          - ["muy", "very", "adverb"]
+      - q: "¿Tiene...?"
+        a: "Do you have...?"
+        rel:
+          - ["tiene", "he/she/you have", "verb tener, 3rd person"]
+      - q: "Quisiera..."
+        a: "I would like..."
+        rel:
+          - ["quisiera", "I would like", "verb querer, subjunctive"]
+      - q: "La cuenta, por favor"
+        a: "The bill, please"
+        rel:
+          - ["cuenta", "bill / account", "noun, feminine"]
+          - ["por favor", "please", "polite expression"]
+  - title: "Meals"
+    explanation: |
+      **Meals** in Spain follow a different schedule than in English-speaking countries.
+      Lunch (el almuerzo) is the main meal, often eaten at 2–3 p.m.
+      Dinner (la cena) is commonly after 9 p.m.
+    examples:
+      - q: "el desayuno"
+        a: "breakfast"
+        rel:
+          - ["desayuno", "breakfast", "noun, masculine"]
+      - q: "el almuerzo"
+        a: "lunch"
+        rel:
+          - ["almuerzo", "lunch", "noun, masculine"]
+      - q: "la cena"
+        a: "dinner"
+        rel:
+          - ["cena", "dinner", "noun, feminine"]
+      - q: "tener hambre"
+        a: "to be hungry"
+        rel:
+          - ["tener", "to have", "verb"]
+          - ["hambre", "hunger", "noun, feminine"]
+      - q: "tener sed"
+        a: "to be thirsty"
+        rel:
+          - ["tener", "to have", "verb"]
+          - ["sed", "thirst", "noun, feminine"]

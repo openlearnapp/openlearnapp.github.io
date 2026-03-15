@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-03-15
+
+### Features
+
+#### Spanish Workshop (Issue #53)
+- Add bundled Spanish workshop for German interface (`deutsch/spanisch`, 10 lessons)
+- Add bundled Spanish workshop for English interface (`english/spanish`, 10 lessons)
+- Full audio for all lessons: Spanish questions (Mónica), German/English answers (Anna/Samantha)
+- SVG thumbnails for both language versions
+
 ## 2026-03-10
 
 ### Features

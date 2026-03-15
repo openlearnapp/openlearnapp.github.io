@@ -1,0 +1,116 @@
+version: 1
+number: 6
+title: "Family and People"
+description: "Family members, personal descriptions and relationships in Spanish"
+sections:
+  - title: "Family"
+    explanation: |
+      **Family members** in Spanish often have masculine and feminine forms.
+      "Los abuelos" can mean both "the grandfathers" and "the grandparents" —
+      the masculine plural in Spanish often includes both genders.
+    examples:
+      - q: "la madre"
+        a: "the mother"
+        rel:
+          - ["madre", "mother", "noun, feminine"]
+      - q: "el padre"
+        a: "the father"
+        rel:
+          - ["padre", "father", "noun, masculine"]
+      - q: "el hermano"
+        a: "the brother"
+        rel:
+          - ["hermano", "brother", "noun, masculine"]
+      - q: "la hermana"
+        a: "the sister"
+        rel:
+          - ["hermana", "sister", "noun, feminine"]
+      - q: "los abuelos"
+        a: "the grandparents"
+        rel:
+          - ["abuelos", "grandparents / grandfathers", "noun, masculine plural"]
+      - q: "el hijo"
+        a: "the son"
+        rel:
+          - ["hijo", "son", "noun, masculine"]
+      - q: "la hija"
+        a: "the daughter"
+        rel:
+          - ["hija", "daughter", "noun, feminine"]
+      - q: "los tíos"
+        a: "the aunts and uncles"
+        rel:
+          - ["tíos", "uncles (plural includes aunts)", "noun, masculine plural"]
+  - title: "Descriptions"
+    explanation: |
+      **Adjectives** in Spanish agree with the gender of the noun.
+      Masculine often ends in -o, feminine in -a.
+      Example: alto (tall, masculine) → alta (tall, feminine).
+    examples:
+      - q: "joven"
+        a: "young"
+        rel:
+          - ["joven", "young", "adjective, invariable"]
+      - q: "viejo / vieja"
+        a: "old"
+        rel:
+          - ["viejo", "old (masculine)", "adjective"]
+          - ["vieja", "old (feminine)", "adjective"]
+      - q: "alto / alta"
+        a: "tall"
+        rel:
+          - ["alto", "tall / high (masculine)", "adjective"]
+          - ["alta", "tall / high (feminine)", "adjective"]
+      - q: "bajo / baja"
+        a: "short / low"
+        rel:
+          - ["bajo", "short / low (masculine)", "adjective"]
+          - ["baja", "short / low (feminine)", "adjective"]
+      - q: "delgado / delgada"
+        a: "thin / slim"
+        rel:
+          - ["delgado", "slim / thin (masculine)", "adjective"]
+      - q: "gordo / gorda"
+        a: "fat / overweight"
+        rel:
+          - ["gordo", "fat / overweight (masculine)", "adjective"]
+      - q: "guapo / guapa"
+        a: "handsome / beautiful"
+        rel:
+          - ["guapo", "handsome / attractive (masculine)", "adjective"]
+      - q: "simpático / simpática"
+        a: "nice / friendly"
+        rel:
+          - ["simpático", "nice / likeable (masculine)", "adjective"]
+  - title: "Relationships"
+    explanation: |
+      **Relationships** in Spanish are often used with the article.
+      With possessive pronouns the article is dropped.
+      Example: "mi amigo" (my friend), but "el amigo de María".
+    examples:
+      - q: "el amigo / la amiga"
+        a: "the (male) friend / the (female) friend"
+        rel:
+          - ["amigo", "friend (male)", "noun, masculine"]
+          - ["amiga", "friend (female)", "noun, feminine"]
+      - q: "el novio / la novia"
+        a: "the boyfriend / the girlfriend"
+        rel:
+          - ["novio", "boyfriend / fiancé", "noun, masculine"]
+          - ["novia", "girlfriend / fiancée", "noun, feminine"]
+      - q: "el marido"
+        a: "the husband"
+        rel:
+          - ["marido", "husband", "noun, masculine"]
+      - q: "la mujer"
+        a: "the woman / the wife"
+        rel:
+          - ["mujer", "woman / wife", "noun, feminine"]
+      - q: "los padres"
+        a: "the parents"
+        rel:
+          - ["padres", "parents / fathers", "noun, masculine plural"]
+      - q: "los hijos"
+        a: "the children (sons and daughters)"
+        rel:
+          - ["hijos", "children / sons", "noun, masculine plural"]
