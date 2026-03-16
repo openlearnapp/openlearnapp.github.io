@@ -309,7 +309,7 @@ const emit = defineEmits(['update-title'])
 
 const { loadAllLessonsForWorkshop } = useLessons()
 const { settings } = useSettings()
-const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress } = useProgress()
+const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress, setLastVisited } = useProgress()
 const { isLoadingAudio, isPlaying, isPaused, playbackFinished, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
 const { getAnswer, saveAnswer, validateAnswer } = useAssessments()
 const { setLessonFooter, clearLessonFooter } = useFooter()
@@ -685,6 +685,9 @@ onMounted(async () => {
 
   if (lesson.value) {
     emit('update-title', `${t('results.lessonLabel')} ${lesson.value.number}`)
+
+    // Track last visited lesson for profile "continue" feature
+    setLastVisited(currentLearning, currentWorkshop, lesson.value.number)
 
     // Set footer navigation data
     setLessonFooter(currentLearning, currentWorkshop, nextLessonNumber.value)

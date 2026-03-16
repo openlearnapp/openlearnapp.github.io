@@ -9,6 +9,7 @@ import Coach from '../views/Coach.vue'
 import Settings from '../views/Settings.vue'
 import AddSource from '../views/AddSource.vue'
 import Creators from '../views/Creators.vue'
+import Profile from '../views/Profile.vue'
 
 const routes = [
   {
@@ -73,6 +74,12 @@ const routes = [
     path: '/creators',
     name: 'creators',
     component: Creators,
+    meta: { title: null }
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: Profile,
     meta: { title: null }
   }
 ]

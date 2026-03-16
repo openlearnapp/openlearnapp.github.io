@@ -12,7 +12,19 @@
     "coach": "Coach",
     "learningItems": "Lernelemente",
     "settings": "Einstellungen",
-    "done": "Fertig"
+    "done": "Fertig",
+    "profile": "Profil",
+    "loading": "Lädt..."
+  },
+  "profile": {
+    "title": "Mein Profil",
+    "signIn": "Anmelden",
+    "signInDesc": "Melde dich an, um deinen Fortschritt geräteübergreifend zu synchronisieren.",
+    "memberSince": "Mitglied seit",
+    "itemsLearned": "Elemente gelernt",
+    "activeWorkshops": "Aktive Workshops",
+    "continue": "Lektion fortsetzen",
+    "noWorkshopsYet": "Starte einen Workshop, um deinen Fortschritt hier zu sehen."
   },
   "home": {
     "title": "Lerne alles. Kostenlos. In deinem Tempo.",
@@ -154,7 +166,9 @@
     "importSuccess": "Daten erfolgreich importiert.",
     "readError": "Datei konnte nicht gelesen werden.",
     "loginSuccess": "Angemeldet und synchronisiert.",
-    "registerSuccess": "Registriert und synchronisiert."
+    "registerSuccess": "Registriert und synchronisiert.",
+    "manageAccount": "Anmelden / Registrieren",
+    "viewProfile": "Profil anzeigen"
   },
   "lesson": {
     "typeAnswer": "Deine Antwort eingeben...",

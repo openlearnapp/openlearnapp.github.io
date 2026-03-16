@@ -5,6 +5,9 @@ import { useGun } from './useGun'
 // Structure: { "learning:workshop": { "itemId": true, ... } }
 const progress = ref({})
 
+// Last visited lesson per workshop: { "learning:workshop": "lesson-number" }
+const lastVisited = ref({})
+
 let isInitialized = false
 
 // Get the storage key for a specific workshop
@@ -32,6 +35,25 @@ function loadProgress() {
       progress.value = {}
     }
   }
+  const savedVisited = localStorage.getItem('lastVisited')
+  if (savedVisited) {
+    try {
+      lastVisited.value = JSON.parse(savedVisited)
+    } catch {
+      lastVisited.value = {}
+    }
+  }
+}
+
+// Track the last visited lesson for a workshop
+function setLastVisited(learning, workshop, number) {
+  const key = getWorkshopKey(learning, workshop)
+  lastVisited.value[key] = String(number)
+  localStorage.setItem('lastVisited', JSON.stringify(lastVisited.value))
+}
+
+function getLastVisited(learning, workshop) {
+  return lastVisited.value[getWorkshopKey(learning, workshop)] || null
 }
 
 // Check if an item is learned
@@ -110,11 +132,14 @@ export function useProgress() {
 
   return {
     progress,
+    lastVisited,
     loadProgress,
     isItemLearned,
     toggleItemLearned,
     areAllItemsLearned,
     getProgress,
-    mergeProgress
+    mergeProgress,
+    setLastVisited,
+    getLastVisited
   }
 }

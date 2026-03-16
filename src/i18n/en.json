@@ -12,7 +12,19 @@
     "coach": "Coach",
     "learningItems": "Learning items",
     "settings": "Settings",
-    "done": "Done"
+    "done": "Done",
+    "profile": "Profile",
+    "loading": "Loading..."
+  },
+  "profile": {
+    "title": "My Profile",
+    "signIn": "Sign In",
+    "signInDesc": "Sign in to sync your progress across devices and access your profile.",
+    "memberSince": "Member since",
+    "itemsLearned": "items learned",
+    "activeWorkshops": "Active Workshops",
+    "continue": "Continue lesson",
+    "noWorkshopsYet": "Start a workshop to track your progress here."
   },
   "home": {
     "title": "Learn anything. For free. On your terms.",
@@ -154,7 +166,9 @@
     "importSuccess": "Data imported successfully.",
     "readError": "Could not read file.",
     "loginSuccess": "Logged in and synced.",
-    "registerSuccess": "Registered and synced."
+    "registerSuccess": "Registered and synced.",
+    "manageAccount": "Sign in / Register",
+    "viewProfile": "View Profile"
   },
   "lesson": {
     "typeAnswer": "Type your answer...",
