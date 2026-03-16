@@ -1,0 +1,66 @@
+<svg width="1280" height="800" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a3a6b"/>
+      <stop offset="100%" style="stop-color:#2563c8"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.15)"/>
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.04)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="800" fill="url(#bg)"/>
+
+  <!-- Subtle grid pattern -->
+  <line x1="0" y1="200" x2="1280" y2="200" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="0" y1="400" x2="1280" y2="400" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="0" y1="600" x2="1280" y2="600" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="320" y1="0" x2="320" y2="800" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="640" y1="0" x2="640" y2="800" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="960" y1="0" x2="960" y2="800" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+
+  <!-- Center card -->
+  <rect x="290" y="140" width="700" height="520" rx="28" fill="url(#card)" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+
+  <!-- Book icon (open book made from shapes) -->
+  <!-- Left page -->
+  <path d="M570 240 L570 370 Q570 380 580 382 L640 390 L640 260 Q640 248 628 244 Z"
+        fill="rgba(255,255,255,0.9)"/>
+  <!-- Right page -->
+  <path d="M710 240 L710 370 Q710 380 700 382 L640 390 L640 260 Q640 248 652 244 Z"
+        fill="rgba(255,255,255,0.75)"/>
+  <!-- Spine -->
+  <rect x="637" y="248" width="6" height="142" rx="3" fill="rgba(255,255,255,0.5)"/>
+  <!-- Lines on left page -->
+  <line x1="588" y1="285" x2="632" y2="283" stroke="rgba(30,80,180,0.4)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="588" y1="305" x2="632" y2="303" stroke="rgba(30,80,180,0.3)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="588" y1="325" x2="632" y2="323" stroke="rgba(30,80,180,0.3)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="588" y1="345" x2="632" y2="343" stroke="rgba(30,80,180,0.2)" stroke-width="3" stroke-linecap="round"/>
+  <!-- Lines on right page -->
+  <line x1="648" y1="283" x2="692" y2="285" stroke="rgba(30,80,180,0.35)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="648" y1="303" x2="692" y2="305" stroke="rgba(30,80,180,0.25)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="648" y1="323" x2="692" y2="325" stroke="rgba(30,80,180,0.25)" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Graduation cap above book -->
+  <rect x="608" y="205" width="64" height="8" rx="2" fill="rgba(255,255,255,0.85)"/>
+  <path d="M640 195 L608 213 L640 228 L672 213 Z" fill="rgba(255,255,255,0.9)"/>
+  <line x1="672" y1="213" x2="672" y2="235" stroke="rgba(255,255,255,0.7)" stroke-width="3"/>
+  <circle cx="672" cy="238" r="5" fill="rgba(255,255,255,0.8)"/>
+
+  <!-- Main title -->
+  <text x="640" y="460" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="bold"
+        text-anchor="middle" fill="white" letter-spacing="2">Open Learn</text>
+
+  <!-- Subtitle DE -->
+  <text x="640" y="520" font-family="Arial, Helvetica, sans-serif" font-size="32"
+        text-anchor="middle" fill="rgba(255,255,255,0.8)" letter-spacing="2">Anleitung</text>
+
+  <!-- Divider -->
+  <rect x="540" y="548" width="200" height="2" rx="1" fill="rgba(255,255,255,0.35)"/>
+
+  <!-- Label -->
+  <text x="640" y="588" font-family="Arial, Helvetica, sans-serif" font-size="22"
+        text-anchor="middle" fill="rgba(255,255,255,0.55)" letter-spacing="3">PLATFORM GUIDE</text>
+</svg>
