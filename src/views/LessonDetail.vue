@@ -267,9 +267,9 @@
       <div v-if="currentItem" class="truncate">{{ currentItem.text.substring(0, 30) }}...</div>
     </div>
 
-    <!-- Floating play/pause button for mobile -->
+    <!-- Floating play/pause button for mobile — only shown when audio is available -->
     <Button
-      v-if="lesson"
+      v-if="lesson && (isLoadingAudio || hasAudio)"
       size="icon"
       @click="togglePlayPause"
       :disabled="isLoadingAudio"
@@ -310,7 +310,7 @@ const emit = defineEmits(['update-title'])
 const { loadAllLessonsForWorkshop } = useLessons()
 const { settings } = useSettings()
 const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress } = useProgress()
-const { isLoadingAudio, isPlaying, isPaused, playbackFinished, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
+const { isLoadingAudio, isPlaying, isPaused, playbackFinished, hasAudio, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
 const { getAnswer, saveAnswer, validateAnswer } = useAssessments()
 const { setLessonFooter, clearLessonFooter } = useFooter()
 
