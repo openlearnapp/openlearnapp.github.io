@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-8">
-    <!-- Gun Account Section -->
+    <!-- Account Section -->
     <Card>
       <CardHeader>
         <CardTitle class="text-2xl">{{ $t('settings.accountSync') }}</CardTitle>
@@ -10,42 +10,17 @@
           <p class="text-sm text-muted-foreground mb-4">
             {{ $t('settings.accountSyncDesc') }}
           </p>
-          <div class="space-y-3">
-            <div>
-              <Label class="text-sm font-medium mb-1 block">{{ $t('settings.username') }}</Label>
-              <Input v-model="gunUsername" :placeholder="$t('settings.username')" />
-            </div>
-            <div>
-              <Label class="text-sm font-medium mb-1 block">{{ $t('settings.password') }}</Label>
-              <Input v-model="gunPassword" type="password" :placeholder="$t('settings.password')" />
-            </div>
-            <div class="flex gap-3">
-              <Button @click="handleLogin" :disabled="!gunUsername || !gunPassword || isAuthLoading">
-                {{ isAuthLoading ? $t('settings.loggingIn') : $t('settings.login') }}
-              </Button>
-              <Button variant="secondary" @click="handleRegister" :disabled="!gunUsername || !gunPassword || isAuthLoading">
-                {{ isAuthLoading ? $t('settings.registering') : $t('settings.register') }}
-              </Button>
-            </div>
-          </div>
+          <Button @click="goToProfile">{{ $t('settings.manageAccount') }}</Button>
         </template>
-
         <template v-else>
           <p class="text-sm text-muted-foreground mb-4">
             {{ $t('settings.signedInAs') }} <span class="font-semibold text-foreground">{{ gunUser }}</span>
             <span v-if="isSyncing" class="ml-2 text-xs text-muted-foreground">({{ $t('settings.syncing') }})</span>
           </p>
           <div class="flex gap-3">
-            <Button variant="secondary" @click="handleLogout">{{ $t('settings.logout') }}</Button>
+            <Button variant="secondary" @click="goToProfile">{{ $t('settings.viewProfile') }}</Button>
           </div>
         </template>
-
-        <div v-if="authError" class="mt-3 text-sm text-red-500">
-          {{ authError }}
-        </div>
-        <div v-if="syncMessage" class="mt-3 text-sm text-green-600 dark:text-green-400">
-          {{ syncMessage }}
-        </div>
       </CardContent>
     </Card>
 
@@ -200,6 +175,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { useSettings } from '../composables/useSettings'
 import { useProgress } from '../composables/useProgress'
 import { useAssessments } from '../composables/useAssessments'
@@ -212,63 +188,18 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 
 const { t } = useI18n()
+const router = useRouter()
 const { settings } = useSettings()
 const { progress, getProgress, mergeProgress } = useProgress()
 const { assessments, getAssessments, mergeAssessments } = useAssessments()
-const { isLoggedIn, username: gunUser, authError, isSyncing, login, register, logout, loadFromGun } = useGun()
+const { isLoggedIn, username: gunUser, isSyncing } = useGun()
 
 const importMessage = ref('')
 const importMessageError = ref(false)
 const selectedWorkshop = ref('')
 
-const gunUsername = ref('')
-const gunPassword = ref('')
-const syncMessage = ref('')
-const isAuthLoading = ref(false)
-
-async function handleLogin() {
-  if (isAuthLoading.value) return
-  isAuthLoading.value = true
-  syncMessage.value = ''
-  try {
-    const ok = await login(gunUsername.value, gunPassword.value)
-    if (ok) {
-      gunUsername.value = ''
-      gunPassword.value = ''
-      const remote = await loadFromGun()
-      if (remote) {
-        if (remote.progress) mergeProgress(remote.progress)
-        if (remote.assessments) mergeAssessments(remote.assessments)
-        if (remote.settings) {
-          Object.assign(settings, remote.settings)
-        }
-      }
-      syncMessage.value = t('settings.loginSuccess')
-    }
-  } finally {
-    isAuthLoading.value = false
-  }
-}
-
-async function handleRegister() {
-  if (isAuthLoading.value) return
-  isAuthLoading.value = true
-  syncMessage.value = ''
-  try {
-    const ok = await register(gunUsername.value, gunPassword.value)
-    if (ok) {
-      gunUsername.value = ''
-      gunPassword.value = ''
-      syncMessage.value = t('settings.registerSuccess')
-    }
-  } finally {
-    isAuthLoading.value = false
-  }
-}
-
-function handleLogout() {
-  logout()
-  syncMessage.value = ''
+function goToProfile() {
+  router.push({ name: 'profile' })
 }
 
 const availableWorkshops = computed(() => {

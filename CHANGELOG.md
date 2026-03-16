@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-03-16
+
+### Features
+
+#### User Profile — Phase 1 (PR #58, Issue #48)
+- Add `/profile` route with a dedicated login/register page and profile view
+- Profile shows identicon avatar (generated from username), display name, join date, and total items learned
+- Active workshops listed with progress bars and "Continue" button that resumes the last visited lesson
+- Track last visited lesson per workshop in localStorage via `useProgress`
+- Avatar button appears in the navigation bar when logged in — taps to open the profile
+- Moved login/register from Settings to the new Profile page; Settings now shows a link to the Profile page
+
 ## 2026-03-15
 
 ### Features

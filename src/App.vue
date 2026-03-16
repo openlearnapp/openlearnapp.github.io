@@ -123,6 +123,20 @@
             <span v-else>📚</span>
           </Button>
 
+          <!-- Profile avatar (visible when logged in, hidden on profile page) -->
+          <button
+            v-if="!isHomePage && isGunLoggedIn && route.name !== 'profile'"
+            @click="goToProfile"
+            class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 border-white/60 hover:border-white transition"
+            :title="$t('nav.profile')"
+            :aria-label="$t('nav.profile')">
+            <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+              <rect width="40" height="40" :fill="`hsl(${avatarHue}, 30%, 85%)`" />
+              <text x="20" y="27" text-anchor="middle" font-size="18" font-weight="bold"
+                :fill="`hsl(${avatarHue}, 65%, 35%)`" font-family="Arial, sans-serif">{{ avatarInitial }}</text>
+            </svg>
+          </button>
+
           <!-- Settings button (hidden on home and settings pages) -->
           <Button
             v-if="!isHomePage && route.name !== 'settings'"
@@ -204,6 +218,7 @@ import { useSettings } from './composables/useSettings'
 import { useLessons } from './composables/useLessons'
 import { useLanguage } from './composables/useLanguage'
 import { useFooter } from './composables/useFooter'
+import { useGun } from './composables/useGun'
 import { isRtlLocale } from './i18n'
 import { formatLangName } from './utils/formatters'
 import { Button } from '@/components/ui/button'
@@ -220,8 +235,18 @@ const { settings } = useSettings()
 const { availableContent, getWorkshopMeta, workshopMeta, loadAvailableContent, loadWorkshopsForLanguage } = useLessons()
 const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 const { nextLessonNumber: footerNextLesson, lessonLearning, lessonWorkshop } = useFooter()
+const { isLoggedIn: isGunLoggedIn, username: gunUsername } = useGun()
 
 const isRtl = computed(() => isRtlLocale(locale.value))
+
+// Avatar for logged-in user (initial letter)
+const avatarInitial = computed(() => (gunUsername.value ? gunUsername.value[0].toUpperCase() : ''))
+function simpleHash(str) {
+  let h = 5381
+  for (let i = 0; i < str.length; i++) { h = ((h << 5) + h) + str.charCodeAt(i); h = h & 0xffffffff }
+  return Math.abs(h)
+}
+const avatarHue = computed(() => simpleHash(gunUsername.value || '') % 360)
 
 // Deduplicated list of available languages
 const learningLanguages = computed(() => {
@@ -408,6 +433,12 @@ function goBack() {
 function goToSettings() {
   if (route.name !== 'settings') {
     router.push({ name: 'settings' })
+  }
+}
+
+function goToProfile() {
+  if (route.name !== 'profile') {
+    router.push({ name: 'profile' })
   }
 }
 
