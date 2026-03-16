@@ -1,0 +1,59 @@
+<svg width="1280" height="800" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d4a2a"/>
+      <stop offset="100%" style="stop-color:#1a8a4a"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.15)"/>
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.04)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="800" fill="url(#bg)"/>
+
+  <!-- Subtle dots pattern -->
+  <circle cx="200" cy="150" r="3" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="400" cy="100" r="3" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="900" cy="150" r="3" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="1100" cy="100" r="3" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="150" cy="650" r="3" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="1150" cy="680" r="3" fill="rgba(255,255,255,0.06)"/>
+
+  <!-- Center card -->
+  <rect x="290" y="140" width="700" height="520" rx="28" fill="url(#card)" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+
+  <!-- Speech bubble icon -->
+  <!-- Main bubble -->
+  <rect x="540" y="200" width="200" height="130" rx="20" fill="rgba(255,255,255,0.92)"/>
+  <!-- Bubble tail -->
+  <path d="M580 330 L560 365 L610 330 Z" fill="rgba(255,255,255,0.92)"/>
+
+  <!-- Lines inside bubble (like text) -->
+  <rect x="562" y="228" width="156" height="12" rx="6" fill="rgba(20,100,55,0.35)"/>
+  <rect x="562" y="252" width="120" height="12" rx="6" fill="rgba(20,100,55,0.25)"/>
+  <rect x="562" y="276" width="140" height="12" rx="6" fill="rgba(20,100,55,0.25)"/>
+
+  <!-- Second smaller bubble (reply) -->
+  <rect x="580" y="375" width="160" height="95" rx="16" fill="rgba(255,255,255,0.55)"/>
+  <path d="M710 375 L730 345 L720 375 Z" fill="rgba(255,255,255,0.55)"/>
+  <!-- Lines inside second bubble -->
+  <rect x="598" y="398" width="124" height="10" rx="5" fill="rgba(20,100,55,0.3)"/>
+  <rect x="598" y="418" width="90" height="10" rx="5" fill="rgba(20,100,55,0.2)"/>
+  <rect x="598" y="438" width="106" height="10" rx="5" fill="rgba(20,100,55,0.2)"/>
+
+  <!-- Stars (rating) -->
+  <text x="555" y="500" font-size="32" fill="rgba(255,220,50,0.9)">★★★★★</text>
+
+  <!-- Main title -->
+  <text x="640" y="570" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="bold"
+        text-anchor="middle" fill="white" letter-spacing="2">Feedback</text>
+
+  <!-- Divider -->
+  <rect x="540" y="592" width="200" height="2" rx="1" fill="rgba(255,255,255,0.35)"/>
+
+  <!-- Label -->
+  <text x="640" y="632" font-family="Arial, Helvetica, sans-serif" font-size="22"
+        text-anchor="middle" fill="rgba(255,255,255,0.55)" letter-spacing="3">OPEN LEARN</text>
+</svg>
