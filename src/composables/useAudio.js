@@ -25,7 +25,7 @@ const lessonMetadata = ref({ learning: '', workshop: '', number: '' })
 function getAudioBase(lesson, learning, workshop) {
   const baseUrl = import.meta.env.BASE_URL
   const lessonFilename = lesson._filename || `${String(lesson.number).padStart(2, '0')}-lesson`
-  const resolvedWorkshop = resolveWorkshopKey(workshop)
+  const resolvedWorkshop = resolveWorkshopKey(learning, workshop)
 
   if (lesson._source && lesson._source.type === 'url') {
     return `${lesson._source.path}/audio`

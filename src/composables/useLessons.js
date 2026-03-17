@@ -32,7 +32,7 @@ function parseSource(source) {
 let defaultContentSources = []
 
 // Module-level singleton state (shared across all useLessons() calls)
-const workshopSlugMap = ref({}) // slug → URL mapping for remote workshops
+const workshopSlugMap = ref({}) // lang → { slug → URL } mapping for remote workshops
 
 async function loadDefaultSources() {
   if (defaultContentSources.length > 0) return defaultContentSources
@@ -101,20 +101,20 @@ export function useLessons() {
   }
 
   // Check if a workshop key is from a remote content source
-  function isRemoteWorkshop(workshopKey) {
-    return workshopKey in workshopSlugMap.value
+  function isRemoteWorkshop(lang, workshopKey) {
+    return !!(workshopSlugMap.value[lang]?.[workshopKey])
   }
 
   // Resolve a workshop key: if it's a slug, return the URL; otherwise return as-is
-  function resolveWorkshopKey(workshopKey) {
-    return workshopSlugMap.value[workshopKey] || workshopKey
+  function resolveWorkshopKey(lang, workshopKey) {
+    return workshopSlugMap.value[lang]?.[workshopKey] || workshopKey
   }
 
   // Get the source URL for a remote workshop slug (for removing sources)
-  function getSourceForSlug(slug) {
-    const url = workshopSlugMap.value[slug]
+  function getSourceForSlug(lang, slug) {
+    const url = workshopSlugMap.value[lang]?.[slug]
     if (!url) return null
-    const sources = getContentSources()
+    const sources = getAllContentSources()
     // Sources include index.yaml filename, strip it for prefix matching
     return sources.find(s => {
       const base = s.replace(/\/[^/]+\.yaml$/, '')
@@ -128,8 +128,8 @@ export function useLessons() {
   }
 
   // Get share URL for a remote workshop
-  function getShareUrl(workshopSlug) {
-    const sourceUrl = getSourceForSlug(workshopSlug)
+  function getShareUrl(lang, workshopSlug) {
+    const sourceUrl = getSourceForSlug(lang, workshopSlug)
     if (!sourceUrl) return null
     return `https://open-learn.app/#/add?source=${encodeURIComponent(sourceUrl)}`
   }
@@ -203,8 +203,11 @@ export function useLessons() {
             const workshopUrl = `${baseUrl}/${langKey}/${workshopSource.path}`
             content[langKey][slug] = []
 
-            // Map slug → full URL for resolving later
-            workshopSlugMap.value[slug] = workshopUrl
+            // Map slug → full URL for resolving later (scoped by language)
+            if (!workshopSlugMap.value[langKey]) {
+              workshopSlugMap.value[langKey] = {}
+            }
+            workshopSlugMap.value[langKey][slug] = workshopUrl
 
             // Store workshop code and metadata
             if (!workshopCodes.value[langKey]) {
@@ -375,7 +378,7 @@ export function useLessons() {
       }
 
       // Resolve slug to URL if needed
-      const resolvedWorkshop = resolveWorkshopKey(workshop)
+      const resolvedWorkshop = resolveWorkshopKey(lang, workshop)
 
       // Construct lessons.yaml URL
       let lessonsUrl
@@ -422,7 +425,7 @@ export function useLessons() {
       }
 
       // Resolve slug to URL if needed
-      const resolvedWorkshop = resolveWorkshopKey(workshop)
+      const resolvedWorkshop = resolveWorkshopKey(lang, workshop)
 
       // Construct content.yaml URL
       let lessonPath

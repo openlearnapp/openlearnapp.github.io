@@ -84,13 +84,13 @@ const copied = ref(false)
 const learning = computed(() => route.params.learning)
 const workshop = computed(() => route.params.workshop)
 
-const isRemote = computed(() => isRemoteWorkshop(workshop.value))
+const isRemote = computed(() => isRemoteWorkshop(learning.value, workshop.value))
 const workshopDescription = computed(() => {
   const meta = getWorkshopMeta(learning.value, workshop.value)
   return meta.description || null
 })
 const sourceLabel = computed(() => {
-  const url = getSourceForSlug(workshop.value)
+  const url = getSourceForSlug(learning.value, workshop.value)
   if (!url) return ''
   try {
     const u = new URL(url)
@@ -99,7 +99,7 @@ const sourceLabel = computed(() => {
   } catch { return '' }
 })
 const sourceUrl = computed(() => {
-  const url = getSourceForSlug(workshop.value)
+  const url = getSourceForSlug(learning.value, workshop.value)
   if (!url) return '#'
   try {
     const u = new URL(url)
