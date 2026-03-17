@@ -218,13 +218,17 @@ export function useLessons() {
             if (!workshopMeta.value[langKey]) {
               workshopMeta.value[langKey] = {}
             }
+            // Resolve relative image path to full URL using the lang folder as base
+            const imageUrl = workshopSource.image
+              ? `${baseUrl}/${langKey}/${workshopSource.image}`
+              : null
             workshopMeta.value[langKey][slug] = {
               title: workshopSource.title || null,
               description: workshopSource.description || null,
               coach: workshopSource.coach || null,
               color: workshopSource.color || null,
               primaryColor: workshopSource.primaryColor || null,
-              image: workshopSource.image || null
+              image: imageUrl
             }
 
             console.log(`  ✓ Remote workshop: ${slug} → ${workshopUrl} (${workshopSource.code || 'no code'})`)
