@@ -1,8 +1,10 @@
 # Building an AI Coaching Agent
 
+**Status: Draft** — The setup process depends on the Service Agent (SA) architecture which is still being defined. This spec focuses on the requirements an agent must fulfill. The concrete setup guide will follow once the SA integration is proven.
+
 ## Purpose
 
-This spec describes how a workshop creator builds and deploys an AI coaching agent for their workshop. The goal is to make it as simple as possible — ideally a reusable standard agent that works with any Open Learn workshop out of the box.
+This spec describes the requirements for an AI coaching agent and how a workshop creator can build and deploy one. The goal is to make it as simple as possible — ideally a reusable standard agent that works with any Open Learn workshop out of the box.
 
 ## The Service Agent Approach
 
@@ -58,9 +60,21 @@ The workshop creator pays for the AI model usage (API calls to Claude, OpenAI, e
 
 A workshop creator can offset costs by offering coaching as a paid add-on to their workshop. The pricing model is entirely up to the creator.
 
+## Agent Requirements
+
+An AI coaching agent must:
+
+1. **Accept the platform's API contract** — receive JSON payloads with a `type` field and return the expected response format per request type
+2. **Ingest full workshop content on initialization** — lessons, sections, examples, answer keys, labels, vocabulary, objectives
+3. **Handle at least assessment feedback** — this is the minimum viable capability
+4. **Return generated lessons in platform-compatible structure** — so the platform can render them natively (if the agent supports lesson generation)
+5. **Be stateless or manage its own state** — the platform does not store agent-side session data
+6. **Respect the learner's language** — respond in the interface language, use workshop language for examples
+
 ## Open Questions
 
 - What is the minimal viable standard agent? (Feedback-only? Or feedback + lesson generation?)
 - Should the standard agent be part of the openlearnapp GitHub org?
 - How should the agent handle rate limiting and abuse prevention?
 - Should there be a registry of available coaching agents that workshop creators can choose from?
+- **Could the platform offer a single centralized coaching agent that works across all workshops?** This would mean workshop creators don't need to provide anything — the platform's own agent ingests any workshop's content and coaches learners automatically. This could be a platform-level feature (free or paid) rather than a per-creator responsibility. Trade-offs: simpler for creators, but the platform bears the AI costs and loses creator-specific customization.
