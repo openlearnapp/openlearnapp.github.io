@@ -52,15 +52,15 @@ describe('useLessons', () => {
 
   describe('workshop resolution', () => {
     it('returns workshop key as-is when not remote', () => {
-      expect(lessons.resolveWorkshopKey('portugiesisch')).toBe('portugiesisch')
+      expect(lessons.resolveWorkshopKey('deutsch', 'portugiesisch')).toBe('portugiesisch')
     })
 
     it('returns false for non-remote workshops', () => {
-      expect(lessons.isRemoteWorkshop('portugiesisch')).toBe(false)
+      expect(lessons.isRemoteWorkshop('deutsch', 'portugiesisch')).toBe(false)
     })
 
     it('returns null for unknown slug', () => {
-      expect(lessons.getSourceForSlug('unknown')).toBeNull()
+      expect(lessons.getSourceForSlug('deutsch', 'unknown')).toBeNull()
     })
   })
 
