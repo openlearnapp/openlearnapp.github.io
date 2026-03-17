@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-03-17
+
+### Fixes
+
+#### External workshop language routing (Issue #59)
+- Fix external workshops showing wrong language (e.g. Farsi showing English content when German interface selected)
+- `workshopSlugMap` is now scoped by language — each language keeps its own `slug → URL` mapping so same-named workshops in different language variants no longer overwrite each other
+- Audio path resolution also fixed: `resolveWorkshopKey` now receives the interface language
+
 ## 2026-03-16
 
 ### Features

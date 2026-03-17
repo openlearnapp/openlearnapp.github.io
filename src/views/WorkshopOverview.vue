@@ -82,7 +82,7 @@
               {{ getWorkshopDescription(ws) }}
             </p>
 
-            <div v-if="isRemoteWorkshop(ws)" class="flex items-center justify-between">
+            <div v-if="isRemoteWorkshop(learning, ws)" class="flex items-center justify-between">
               <a
                 :href="getWorkshopSourceUrl(ws)"
                 target="_blank"
@@ -249,7 +249,7 @@ function getWorkshopDescription(workshop) {
 }
 
 function getWorkshopSourceLabel(workshop) {
-  const sourceUrl = getSourceForSlug(workshop)
+  const sourceUrl = getSourceForSlug(learning.value, workshop)
   if (!sourceUrl) return ''
   try {
     const url = new URL(sourceUrl)
@@ -261,12 +261,12 @@ function getWorkshopSourceLabel(workshop) {
 }
 
 function isDefaultWorkshop(workshop) {
-  const sourceUrl = getSourceForSlug(workshop)
+  const sourceUrl = getSourceForSlug(learning.value, workshop)
   return sourceUrl ? isDefaultSource(sourceUrl) : false
 }
 
 function getWorkshopSourceUrl(workshop) {
-  const sourceUrl = getSourceForSlug(workshop)
+  const sourceUrl = getSourceForSlug(learning.value, workshop)
   if (!sourceUrl) return '#'
   try {
     const url = new URL(sourceUrl)
@@ -330,7 +330,7 @@ function openWorkshop(workshop) {
 }
 
 async function removeSource(workshopSlug) {
-  const sourceUrl = getSourceForSlug(workshopSlug)
+  const sourceUrl = getSourceForSlug(learning.value, workshopSlug)
   if (sourceUrl) {
     removeContentSource(sourceUrl)
   }
