@@ -147,7 +147,7 @@ pnpm test:e2e
 - `Settings.vue` - Settings page (route: `/settings`)
 - `AddSource.vue` - Add external workshop (route: `/add?source=URL`)
 
-**Composables** (Reusable logic, all use singleton pattern — see `docs/adr/005`):
+**Composables** (Reusable logic, all use singleton pattern — see `specs/adr/005`):
 - `useLessons()` - Lesson loading with js-yaml parser
   - `loadAvailableContent()` - Load main lesson index + default + user content sources
   - `loadWorkshopsForLanguage(lang)` - Load workshops for a language
@@ -355,7 +355,7 @@ Examples can have a `type` field for interactive assessments (default is `qa` wh
 
 **Coach integration**: If `lesson.coach` is defined and user has `coachConsent`, answers are queued and batch-sent to the coach API.
 
-See `docs/features.md` for the complete feature inventory and `docs/adr/` for architectural decisions.
+See `docs/features.md` for the complete feature inventory and `specs/adr/` for architectural decisions.
 
 ## Testing
 
@@ -395,6 +395,26 @@ See `docs/features.md` for the complete feature inventory and `docs/adr/` for ar
 - Composables pattern for shared logic (useLessons, useSettings, useProgress, useAssessments, useAudio)
 - Navigation state is managed by Vue Router - no manual view switching
 - Dynamic page titles based on route and content
+
+## Spec-Driven Development
+
+This project follows a spec-driven process. See `docs/development-process.md` for the full workflow.
+
+### Folder Separation
+
+| Folder | Purpose | Contents |
+|--------|---------|----------|
+| `specs/` | **Product truth** — what should be | One Markdown file per feature describing the product behavior, regardless of implementation status |
+| `specs/adr/` | **Architecture decisions** — why we chose | Numbered records (`001-`, `002-`, ...) for fundamental technical decisions that constrain the project |
+| `docs/` | **Developer documentation** — how to use/develop | Guides, schemas, process docs, development plans |
+
+### Rules
+
+- Every feature PR must include or reference a spec in `specs/`
+- Specs describe the **what and why** from a product perspective — no code
+- ADRs are for architectural choices that affect the whole project and rarely change
+- `docs/` is for practical how-to guides (dev setup, workshop creation, audio generation)
+- Small bugfixes don't need a spec, but do need their own PR
 
 ## Changelog
 
