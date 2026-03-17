@@ -12,11 +12,14 @@ The AI coach is provided and hosted by the workshop creator. The Open Learn plat
 
 ### Assessment Feedback (Priority 1)
 
-After completing assessments, the learner can request feedback from the AI coach. The coach receives the learner's answers together with the expected answers, analyzes patterns (weak areas, recurring mistakes, confused concepts), and returns:
+After completing assessments, the learner can request feedback from the AI coach. The coach receives structured assessment data — the learner's answers alongside the expected answers, per question — and analyzes patterns (weak areas, recurring mistakes, confused concepts).
 
-- Specific explanations for incorrect answers
+The feedback is shown **per answer inline** on the assessment results page, not just as a summary. Each incorrect answer gets a specific explanation referencing the lesson material. The coach returns:
+
+- Specific explanations for incorrect answers, inline per question
 - Praise for correct answers and progress
 - Suggestions for which lessons or sections to revisit
+- Pattern analysis ("You're mixing up 'must' and 'should' — here's the difference...")
 
 This is the highest-value feature — it turns passive exercises into active learning with immediate, personalized guidance.
 
@@ -48,6 +51,20 @@ Learners can ask the coach short questions about lesson content ("Why 'ser' and 
 
 This is useful but lower priority than automated feedback and lesson generation. A simple chat interface is sufficient — no complex conversation flows needed.
 
+### Creator Feedback Loop
+
+The AI coach acts as a bridge between learners and workshop creators. By aggregating data across learners, the coach can surface insights that help creators improve their workshops:
+
+- **Content hotspots**: "80% of learners struggle with lesson 3, section 2"
+- **Content suggestions**: "Consider adding more examples for modal verbs"
+- **Error reports**: "Example in lesson 5 has an incorrect answer"
+
+These insights can be delivered automatically as GitHub issues in the workshop repository, labeled for easy triage. This turns the coach into a continuous improvement engine for workshop content.
+
+### Spaced Repetition (Future)
+
+The coach can schedule review sessions based on forgetting curves — reminding learners to revisit material at optimal intervals. This could be integrated with the learning path or offered as standalone review lessons.
+
 ## Platform Integration
 
 ### What the Platform Provides
@@ -67,7 +84,18 @@ This is useful but lower priority than automated feedback and lesson generation.
 
 ### Initialization
 
-When a learner first connects to the coach, the platform sends the full workshop context: all lessons, sections, examples, answer keys, labels, objectives, and the learner's current progress. This gives the agent complete curriculum awareness before the first interaction.
+When a learner first connects to the coach, the platform sends the full workshop context as a structured payload: all lessons, sections, examples, answer keys, labels, vocabulary items (rel), objectives, and the learner's current progress (learned items, completed assessments, active lesson). This gives the agent complete curriculum awareness before the first interaction.
+
+Each coaching session gets a unique session ID scoped to the workshop, allowing the agent to maintain conversational context across multiple interactions within the same session.
+
+### Coach UI States
+
+The coaching interface adapts based on configuration:
+
+- **No coach configured**: no coaching UI shown
+- **Email coach only**: contact link, "Send Results" via email
+- **API/AI coach configured but no consent**: informative placeholder explaining what the coach can do and how to enable it
+- **API/AI coach with consent**: full coaching interface (feedback, generated lessons, optional chat)
 
 ## Workshop Creator Configuration
 
