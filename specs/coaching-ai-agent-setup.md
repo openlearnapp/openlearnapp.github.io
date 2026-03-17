@@ -44,9 +44,21 @@ A workshop creator who wants custom behavior can fork the standard agent and mod
 
 ## API Contract
 
-The agent exposes a single endpoint that accepts JSON payloads. The payload includes a `type` field indicating the request type and the relevant context data. The response format depends on the request type.
+The agent exposes a single endpoint that accepts JSON payloads. Every request includes a `type` field, a `session_id`, learner context, and the request-specific payload.
 
-The same API contract works for human coaches, AI agents, and hybrid setups. The platform does not need to know what is behind the endpoint.
+**Request types and responses:**
+
+| Type | Payload | Response |
+|------|---------|----------|
+| `init` | Full workshop content (lessons, sections, examples, answer keys, labels, rel items, objectives) | Acknowledgment |
+| `assessment` | Learner's answers with expected answers, per question | Per-answer feedback, pattern analysis, suggestions |
+| `generate_lesson` | Focus areas, weak items, desired difficulty | Lesson content in platform-compatible YAML structure |
+| `learning_path` | Current progress, completed lessons, assessment results | Ordered list of recommended lessons with branching options |
+| `chat` | User message, conversation history | Text response |
+
+Every request includes learner context: optional identifier (name), current progress (learned items, completed assessments), and the active lesson.
+
+The same API contract works for human coaches, AI agents, and hybrid setups. The platform does not need to know what is behind the endpoint. A human coach dashboard, a Claude-based agent, or a hybrid where AI drafts and a human reviews — all use the same contract.
 
 ## Deployment Options
 
