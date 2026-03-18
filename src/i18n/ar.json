@@ -114,6 +114,31 @@
       "uploadsDesc": "ارفع ملفات PDF ونصوص ووثائق أخرى كمواد تعليمية."
     }
   },
+  "profile": {
+    "title": "ملفي الشخصي",
+    "signIn": "تسجيل الدخول",
+    "signInDesc": "سجّل الدخول لمزامنة تقدمك بين الأجهزة والوصول إلى ملفك الشخصي.",
+    "memberSince": "عضو منذ",
+    "itemsLearned": "عنصر متعلم",
+    "activeWorkshops": "ورش العمل النشطة",
+    "continue": "متابعة",
+    "noWorkshopsYet": "ابدأ ورشة عمل لتتبع تقدمك هنا.",
+    "editProfile": "تعديل الملف الشخصي",
+    "saveProfile": "حفظ",
+    "cancelEdit": "إلغاء",
+    "profileSaved": "تم حفظ الملف الشخصي!",
+    "displayName": "الاسم المعروض",
+    "displayNamePlaceholder": "اسمك الكامل",
+    "nativeLanguage": "اللغة الأم",
+    "nativeLanguagePlaceholder": "مثل: العربية، الألمانية...",
+    "learningGoal": "هدف التعلم",
+    "learningGoalPlaceholder": "لماذا تتعلم؟ ماذا تريد أن تحقق؟",
+    "workshopsButton": "الذهاب إلى ورش العمل",
+    "statsTitle": "إحصائياتك",
+    "totalAssessments": "تقييم تمت الإجابة عليه",
+    "workshopsStarted": "ورش عمل بدأت",
+    "streak": "يوم متتالي"
+  },
   "settings": {
     "accountSync": "الحساب والمزامنة",
     "accountSyncDesc": "سجّل الدخول لمزامنة تقدمك بين الأجهزة في نفس الشبكة. بدون حاجة لخادم.",

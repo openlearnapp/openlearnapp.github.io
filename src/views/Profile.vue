@@ -38,7 +38,7 @@
     <!-- Logged in: show profile -->
     <template v-else>
 
-      <!-- Hero: Avatar + name + stats -->
+      <!-- Hero: Avatar + name -->
       <Card class="overflow-hidden">
         <!-- Colored banner -->
         <div class="h-20 w-full" :style="{ background: `linear-gradient(135deg, hsl(${avatarHue}, 60%, 55%), hsl(${(avatarHue + 40) % 360}, 55%, 65%))` }"></div>
@@ -68,9 +68,6 @@
           <div class="flex flex-wrap gap-2 text-sm">
             <span v-if="profileData.nativeLanguage" class="inline-flex items-center gap-1.5 bg-muted rounded-full px-3 py-1">
               🌍 {{ profileData.nativeLanguage }}
-            </span>
-            <span v-if="profileData.email" class="inline-flex items-center gap-1.5 bg-muted rounded-full px-3 py-1">
-              ✉️ {{ profileData.email }}
             </span>
             <span class="inline-flex items-center gap-1.5 bg-muted rounded-full px-3 py-1 text-muted-foreground">
               📅 {{ $t('profile.memberSince') }} {{ joinDate }}
@@ -115,9 +112,7 @@
       <!-- Edit profile form -->
       <Card>
         <CardHeader class="pb-3">
-          <div class="flex items-center justify-between">
-            <CardTitle class="text-base">{{ $t('profile.editProfile') }}</CardTitle>
-          </div>
+          <CardTitle class="text-base">{{ $t('profile.editProfile') }}</CardTitle>
         </CardHeader>
         <CardContent>
           <template v-if="!isEditing">
@@ -130,10 +125,6 @@
               <div>
                 <Label class="text-sm font-medium mb-1.5 block">{{ $t('profile.displayName') }}</Label>
                 <Input v-model="editForm.displayName" :placeholder="$t('profile.displayNamePlaceholder')" />
-              </div>
-              <div>
-                <Label class="text-sm font-medium mb-1.5 block">{{ $t('profile.email') }}</Label>
-                <Input v-model="editForm.email" type="email" :placeholder="$t('profile.emailPlaceholder')" />
               </div>
               <div>
                 <Label class="text-sm font-medium mb-1.5 block">{{ $t('profile.nativeLanguage') }}</Label>
@@ -153,39 +144,25 @@
         </CardContent>
       </Card>
 
-      <!-- Go to workshops button -->
-      <Button @click="goToWorkshops" class="w-full" size="lg">
-        🎓 {{ $t('profile.workshopsButton') }}
-      </Button>
-
       <!-- Active workshops -->
       <Card v-if="activeWorkshops.length > 0">
         <CardHeader>
           <CardTitle class="text-base">{{ $t('profile.activeWorkshops') }}</CardTitle>
         </CardHeader>
-        <CardContent class="space-y-4">
+        <CardContent class="space-y-3">
           <div
             v-for="ws in activeWorkshops"
             :key="ws.key"
-            class="border rounded-xl p-4 space-y-3 hover:border-primary/50 transition-colors">
-            <div class="flex items-center justify-between gap-3">
-              <div class="min-w-0">
-                <p class="font-semibold truncate">{{ ws.displayName }}</p>
-                <p class="text-xs text-muted-foreground mt-0.5">
-                  {{ ws.learnedCount }} {{ $t('profile.itemsLearned') }}
-                </p>
-              </div>
-              <Button size="sm" @click="continueWorkshop(ws)">
-                {{ $t('profile.continue') }} →
-              </Button>
+            class="border rounded-xl p-4 flex items-center justify-between gap-3 hover:border-primary/50 transition-colors">
+            <div class="min-w-0">
+              <p class="font-semibold truncate">{{ ws.displayName }}</p>
+              <p class="text-xs text-muted-foreground mt-0.5">
+                {{ ws.learnedCount }} {{ $t('profile.itemsLearned') }}
+              </p>
             </div>
-            <!-- Progress bar -->
-            <div class="w-full bg-muted rounded-full h-2">
-              <div
-                class="bg-primary rounded-full h-2 transition-all duration-500"
-                :style="{ width: ws.progressPercent + '%' }">
-              </div>
-            </div>
+            <Button size="sm" @click="continueWorkshop(ws)">
+              {{ $t('profile.continue') }} →
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -212,6 +189,11 @@ import { useProgress } from '../composables/useProgress'
 import { useAssessments } from '../composables/useAssessments'
 import { useLanguage } from '../composables/useLanguage'
 import { formatLangName } from '../utils/formatters'
+import {
+  PROFILE_KEY, STREAK_KEY, STREAK_LAST_KEY,
+  loadProfileData, simpleHash, computeStreak,
+  calcTotalLearned, calcTotalAssessments
+} from '../utils/profile'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -235,20 +217,8 @@ const isAuthLoading = ref(false)
 const isEditing = ref(false)
 const saveMessage = ref('')
 
-// --- Profile data (localStorage) ---
-const PROFILE_KEY = 'profileData'
-
+// --- Profile data ---
 const profileData = ref(loadProfileData())
-
-function loadProfileData() {
-  try {
-    const stored = localStorage.getItem(PROFILE_KEY)
-    return stored ? JSON.parse(stored) : { displayName: '', email: '', nativeLanguage: '', learningGoal: '' }
-  } catch {
-    return { displayName: '', email: '', nativeLanguage: '', learningGoal: '' }
-  }
-}
-
 const editForm = ref({ ...profileData.value })
 
 function startEdit() {
@@ -271,17 +241,7 @@ function cancelEdit() {
 }
 
 // --- Avatar ---
-function simpleHash(str) {
-  let h = 5381
-  for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) + h) + str.charCodeAt(i)
-    h = h & 0xffffffff
-  }
-  return Math.abs(h)
-}
-
 const avatarHue = computed(() => simpleHash(username.value || '') % 360)
-
 const avatarColor = computed(() => `hsl(${avatarHue.value}, 65%, 50%)`)
 const avatarBg = computed(() => `hsl(${avatarHue.value}, 30%, 92%)`)
 
@@ -299,28 +259,18 @@ const avatarCells = computed(() => {
   return cells
 })
 
-// --- Learning streak ---
-const STREAK_KEY = 'profileStreak'
-const STREAK_LAST_KEY = 'profileStreakLastDate'
-
-const learningStreak = computed(() => {
-  if (!isLoggedIn.value) return 0
-  const stored = localStorage.getItem(STREAK_KEY)
-  return stored ? parseInt(stored, 10) : 0
-})
+// --- Learning streak (ref so UI updates immediately on write) ---
+const learningStreak = ref(isLoggedIn.value ? parseInt(localStorage.getItem(STREAK_KEY) || '0', 10) : 0)
 
 function recordTodayActivity() {
   const today = new Date().toISOString().slice(0, 10)
-  const last = localStorage.getItem(STREAK_LAST_KEY)
-  if (last === today) return
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
-  const current = parseInt(localStorage.getItem(STREAK_KEY) || '0', 10)
-  const newStreak = last === yesterday ? current + 1 : 1
+  if (localStorage.getItem(STREAK_LAST_KEY) === today) return
+  const newStreak = computeStreak(today)
   localStorage.setItem(STREAK_KEY, String(newStreak))
   localStorage.setItem(STREAK_LAST_KEY, today)
+  learningStreak.value = newStreak
 }
 
-// Record activity when profile is opened (user is active today)
 if (isLoggedIn.value) recordTodayActivity()
 
 // --- Join date ---
@@ -337,48 +287,27 @@ const joinDate = computed(() => {
 })
 
 // --- Stats ---
-const totalLearned = computed(() => {
-  let count = 0
-  for (const items of Object.values(progress.value)) {
-    count += Object.values(items).filter(v => v === true).length
-  }
-  return count
-})
-
-const totalAssessments = computed(() => {
-  let count = 0
-  for (const lesson of Object.values(assessments.value)) {
-    count += Object.keys(lesson).length
-  }
-  return count
-})
+const totalLearned = computed(() => calcTotalLearned(progress.value))
+const totalAssessments = computed(() => calcTotalAssessments(assessments.value))
 
 // --- Active workshops ---
 const activeWorkshops = computed(() => {
   const seen = new Set()
   const result = []
-
   for (const key of Object.keys(progress.value)) {
     const items = progress.value[key]
     if (Object.keys(items).length === 0) continue
     if (seen.has(key)) continue
     seen.add(key)
-
     const [learning, workshop] = key.split(':')
     const learnedCount = Object.values(items).filter(v => v === true).length
-    const lastLesson = lastVisited.value[key] || null
-
     result.push({
-      key,
-      learning,
-      workshop,
+      key, learning, workshop,
       displayName: formatLangName(workshop),
       learnedCount,
-      lastLesson,
-      progressPercent: Math.min(100, learnedCount * 2)
+      lastLesson: lastVisited.value[key] || null
     })
   }
-
   return result.sort((a, b) => b.learnedCount - a.learnedCount)
 })
 
