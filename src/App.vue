@@ -399,10 +399,10 @@ function handleClickOutside(e) {
   }
 }
 
-// Spacebar to pause/resume audio (global — works in normal and story mode)
+// Spacebar to pause/resume audio (normal mode only — story mode handles its own)
 function handleKeydown(e) {
   if (e.code !== 'Space') return
-  // Don't intercept if user is typing in an input/textarea
+  if (isStoryMode.value) return
   const tag = e.target.tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return
 
