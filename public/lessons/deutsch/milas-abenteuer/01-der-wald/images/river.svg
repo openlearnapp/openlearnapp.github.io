@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#2d5a2d"/>
+  <path d="M0,150 Q100,100 200,150 Q300,200 400,150 L400,300 L0,300 Z" fill="#3388cc"/>
+  <path d="M0,160 Q100,110 200,160 Q300,210 400,160" fill="none" stroke="white" stroke-width="2" opacity="0.4"/>
+  <text x="200" y="80" text-anchor="middle" fill="white" font-size="24" font-family="sans-serif">Zum Fluss</text>
+</svg>

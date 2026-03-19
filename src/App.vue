@@ -1,7 +1,7 @@
 <template>
   <div class="w-full md:max-w-6xl md:mx-auto bg-primary md:rounded-xl md:shadow-2xl">
     <!-- Header with unified navigation - sticky on desktop -->
-    <header v-if="!isHomePage" class="bg-primary text-white py-4 px-4 relative sticky top-0 z-50">
+    <header v-if="!isHomePage && !isStoryMode" class="bg-primary text-white py-4 px-4 relative sticky top-0 z-50">
       <div class="flex items-center justify-between gap-2">
         <!-- Left side: language dropdown + nav buttons -->
         <div class="flex items-center gap-2 min-w-fit">
@@ -186,7 +186,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="border-t border-border px-8 py-4 md:rounded-b-xl" :class="contentBgClass">
+    <footer v-if="!isStoryMode" class="border-t border-border px-8 py-4 md:rounded-b-xl" :class="contentBgClass">
       <div class="flex items-center gap-4 text-sm">
         <a href="#/" class="text-primary hover:underline whitespace-nowrap">Home</a>
         <a
@@ -266,6 +266,7 @@ const learningLanguages = computed(() => {
 })
 
 const isHomePage = computed(() => route.name === 'home')
+const isStoryMode = computed(() => route.meta?.storyMode === true)
 const isWorkshopOverview = computed(() => route.name === 'workshop-overview')
 const isWorkshopSubpage = computed(() =>
   ['lesson-detail', 'lessons-overview', 'learning-items', 'assessment-results', 'coach'].includes(route.name)

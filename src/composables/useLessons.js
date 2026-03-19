@@ -19,10 +19,10 @@ function parseSource(source) {
   }
   if (typeof source === 'object') {
     if (source.folder) {
-      return { type: 'folder', path: source.folder, code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null }
+      return { type: 'folder', path: source.folder, code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null, mode: source.mode || null }
     }
     if (source.url) {
-      return { type: 'url', path: resolveUrl(source.url), code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null }
+      return { type: 'url', path: resolveUrl(source.url), code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null, mode: source.mode || null }
     }
   }
   return null
@@ -228,7 +228,8 @@ export function useLessons() {
               coach: workshopSource.coach || null,
               color: workshopSource.color || null,
               primaryColor: workshopSource.primaryColor || null,
-              image: imageUrl
+              image: imageUrl,
+              mode: workshopSource.mode || null
             }
 
             console.log(`  ✓ Remote workshop: ${slug} → ${workshopUrl} (${workshopSource.code || 'no code'})`)
@@ -355,7 +356,8 @@ export function useLessons() {
           coach: source.coach || null,
           color: source.color || null,
           primaryColor: source.primaryColor || null,
-          image: source.image || null
+          image: source.image || null,
+          mode: source.mode || null
         }
 
         console.log(`  ✓ Workshop: ${key} (${source.type}) (${source.code || 'no code'})`)

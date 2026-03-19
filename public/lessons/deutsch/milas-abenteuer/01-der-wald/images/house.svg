@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#2d5a2d"/>
+  <rect x="130" y="120" width="140" height="130" fill="#8B6914"/>
+  <polygon points="120,120 200,50 280,120" fill="#cc4444"/>
+  <rect x="175" y="180" width="50" height="70" fill="#5a3a0a"/>
+  <rect x="145" y="140" width="40" height="40" fill="#ffe066" opacity="0.8"/>
+  <rect x="215" y="140" width="40" height="40" fill="#ffe066" opacity="0.8"/>
+  <text x="200" y="280" text-anchor="middle" fill="white" font-size="24" font-family="sans-serif">Zum alten Haus</text>
+</svg>

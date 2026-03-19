@@ -6,6 +6,7 @@ import LessonDetail from '../views/LessonDetail.vue'
 import LearningItems from '../views/LearningItems.vue'
 import AssessmentResults from '../views/AssessmentResults.vue'
 import Coach from '../views/Coach.vue'
+import StoryView from '../views/StoryView.vue'
 import Settings from '../views/Settings.vue'
 import AddSource from '../views/AddSource.vue'
 import Creators from '../views/Creators.vue'
@@ -39,6 +40,12 @@ const routes = [
     name: 'lesson-detail',
     component: LessonDetail,
     meta: { title: null } // Will be set dynamically
+  },
+  {
+    path: '/:learning/:workshop/story/:number',
+    name: 'story-view',
+    component: StoryView,
+    meta: { title: null, storyMode: true }
   },
   {
     path: '/:learning/:workshop/items/:number?',

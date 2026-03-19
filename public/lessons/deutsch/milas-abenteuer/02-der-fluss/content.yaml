@@ -1,0 +1,18 @@
+number: 2
+title: "Am Fluss"
+description: "Mila folgt dem Geraeusch zum Fluss."
+image: "images/river.svg"
+sections:
+  - title: "Der Fluss"
+    image: "images/river.svg"
+    examples:
+      - q: "Mila folgte dem Pfad durch den Wald bis sie einen glitzernden Fluss erreichte."
+        voice: narrator
+      - q: "Am Ufer sass ein kleiner Frosch, der sie anschaute."
+        voice: narrator
+      - q: "'Hallo! Ich bin Fridolin,' sagte der Frosch."
+        voice: fridolin
+      - q: "'Wenn du mir hilfst, zeige ich dir etwas Wunderbares!'"
+        voice: fridolin
+      - q: "Mila laechelte. Sie hatte einen neuen Freund gefunden."
+        voice: narrator
