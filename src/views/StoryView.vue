@@ -367,6 +367,7 @@ function showCurrentExample() {
     // Show text input (with answers array + goto_wrong support)
     state.value = 'input'
     clearAutoAdvance()
+    if (!paused.value) playCurrentAudio()
     nextTick(() => { inputRef.value?.focus() })
     return
   }
