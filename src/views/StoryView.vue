@@ -367,6 +367,7 @@ function showCurrentExample() {
     // Show text input (with answers array + goto_wrong support)
     state.value = 'input'
     clearAutoAdvance()
+    if (!paused.value) playCurrentAudio()
     nextTick(() => { inputRef.value?.focus() })
     return
   }
@@ -374,6 +375,7 @@ function showCurrentExample() {
   if (example.type === 'select' || example.type === 'multiple-choice') {
     state.value = 'choosing'
     clearAutoAdvance()
+    if (!paused.value) playCurrentAudio()
     return
   }
 
@@ -391,11 +393,20 @@ function advanceExample() {
 
 // Tap left side to go back, right side to advance — works while paused too
 function handleTap(e) {
-  if (state.value !== 'narrating') return
-
   const rect = e.currentTarget.getBoundingClientRect()
   const clickX = e.clientX - rect.left
   const isLeftSide = clickX < rect.width / 2
+
+  // In assessment states, only allow going back via left tap
+  if (state.value === 'choosing' || state.value === 'input') {
+    if (isLeftSide && currentExampleIndex.value > 0) {
+      currentExampleIndex.value--
+      showCurrentExample()
+    }
+    return
+  }
+
+  if (state.value !== 'narrating') return
 
   clearAutoAdvance()
 
