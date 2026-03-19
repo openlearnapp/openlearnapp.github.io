@@ -745,6 +745,7 @@ export function useAudio() {
     jumpToExample,
     skipToNext,
     skipToPrevious,
+    playSingleItem,
     cleanup
   }
 }
