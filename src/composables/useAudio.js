@@ -668,6 +668,7 @@ async function playSingleItem(index, settings, onEnded) {
 
   } catch (error) {
     console.error('❌ Error playing single item:', error)
+    throw error
   }
 }
 
