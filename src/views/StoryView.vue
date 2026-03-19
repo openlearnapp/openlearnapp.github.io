@@ -111,9 +111,13 @@
           </div>
         </div>
 
-        <!-- Narration text overlay (bottom) -->
-        <div v-if="state === 'narrating'" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 pb-10 pt-16">
-          <p class="text-white text-xl md:text-2xl leading-relaxed">{{ currentNarrationText }}</p>
+        <!-- Narration text overlay -->
+        <div v-if="state === 'narrating'"
+          class="absolute left-0 right-0 p-6"
+          :class="currentSectionImage
+            ? 'bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent pb-10 pt-16'
+            : 'inset-0 flex items-center justify-center'">
+          <p class="text-white text-xl md:text-2xl leading-relaxed" :class="!currentSectionImage && 'text-center'">{{ currentNarrationText }}</p>
         </div>
       </div>
     </template>
