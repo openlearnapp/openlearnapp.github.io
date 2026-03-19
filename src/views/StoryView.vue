@@ -12,11 +12,28 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
       </svg>
-      <!-- Ring progress indicator -->
       <svg v-if="exitProgress > 0" class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 56 56">
         <circle cx="28" cy="28" r="24" fill="none" stroke="white" stroke-width="3"
           :stroke-dasharray="`${exitProgress * 150.8} 150.8`"
           stroke-linecap="round" />
+      </svg>
+    </button>
+
+    <!-- Play/Pause button (top-right on desktop, right-center on mobile) -->
+    <button
+      v-if="state === 'narrating'"
+      @click.stop="togglePause"
+      class="absolute z-[110] w-14 h-14 rounded-full bg-black/50 text-white flex items-center justify-center transition-all hover:bg-black/70 top-4 right-4 md:top-4 md:right-4"
+      :class="paused ? 'ring-2 ring-white/60' : ''"
+      :title="paused ? 'Play' : 'Pause'"
+      :aria-label="paused ? 'Play' : 'Pause'">
+      <!-- Pause icon -->
+      <svg v-if="!paused" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+        <rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" />
+      </svg>
+      <!-- Play icon -->
+      <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+        <polygon points="6,4 20,12 6,20" />
       </svg>
     </button>
 
@@ -61,11 +78,16 @@
           </div>
         </div>
 
+        <!-- Paused overlay -->
+        <div v-if="paused" class="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+          <div class="text-white/60 text-lg">Paused</div>
+        </div>
+
         <!-- Narration text overlay (bottom) -->
         <div v-if="state === 'narrating'" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 pt-16">
           <p v-if="currentVoice" class="text-white/60 text-sm mb-1 uppercase tracking-wider">{{ currentVoice }}</p>
           <p class="text-white text-xl md:text-2xl leading-relaxed">{{ currentNarrationText }}</p>
-          <p class="text-white/40 text-sm mt-3">Tap to continue</p>
+          <p v-if="!paused" class="text-white/40 text-sm mt-3">Tap to skip</p>
         </div>
       </div>
     </template>
@@ -84,11 +106,14 @@ const route = useRoute()
 const emit = defineEmits(['update-title'])
 
 const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
-const { initializeAudio, cleanup, hasAudio, playSingleItem, readingQueue } = useAudio()
+const { initializeAudio, cleanup, hasAudio, playSingleItem, readingQueue, pause: audioPause, isPlaying, currentAudio } = useAudio()
 const { settings } = useSettings()
 
 // State machine
 const state = ref('loading') // loading | narrating | choosing
+
+// Pause state (independent from audio isPlaying — controls story advancement)
+const paused = ref(false)
 
 // Lesson data
 const lessons = ref([])
@@ -159,18 +184,47 @@ function resolveOptionImage(imagePath) {
   return resolveSectionImage(imagePath)
 }
 
-// Play audio for the current example (fire-and-forget, no auto-advance)
+// Play audio for current example, auto-advance when done
 function playCurrentAudio() {
-  if (!audioReady.value) return
+  if (!audioReady.value) {
+    // No audio — auto-advance after a short delay
+    scheduleAutoAdvance(2000)
+    return
+  }
 
-  // Find the queue item matching current section/example
   const idx = readingQueue.value.findIndex(
     item => item.sectionIdx === currentSectionIndex.value &&
             item.exampleIdx === currentExampleIndex.value &&
             item.type === 'question'
   )
   if (idx !== -1) {
-    playSingleItem(idx, audioSettings.value)
+    playSingleItem(idx, audioSettings.value, () => {
+      // Audio finished — auto-advance after a brief pause
+      if (!paused.value) {
+        scheduleAutoAdvance(800)
+      }
+    })
+  } else {
+    // No audio for this item — auto-advance after delay
+    scheduleAutoAdvance(2000)
+  }
+}
+
+let autoAdvanceTimer = null
+
+function scheduleAutoAdvance(delay) {
+  clearAutoAdvance()
+  autoAdvanceTimer = setTimeout(() => {
+    if (!paused.value && state.value === 'narrating') {
+      advanceExample()
+    }
+  }, delay)
+}
+
+function clearAutoAdvance() {
+  if (autoAdvanceTimer) {
+    clearTimeout(autoAdvanceTimer)
+    autoAdvanceTimer = null
   }
 }
 
@@ -179,16 +233,14 @@ async function loadAndStart() {
   state.value = 'loading'
   imageLoaded.value = false
   audioReady.value = false
+  paused.value = false
 
-  // Load all lessons for the workshop
   if (lessons.value.length === 0) {
     lessons.value = await loadAllLessonsForWorkshop(learning.value, workshop.value)
   }
 
-  // Find the requested lesson
   const lesson = lessons.value.find(l => l.number === lessonNumber.value)
   if (!lesson) {
-    console.error('Lesson not found:', lessonNumber.value)
     goToOverview()
     return
   }
@@ -199,48 +251,76 @@ async function loadAndStart() {
 
   emit('update-title', lesson.title || '')
 
-  // Initialize audio (preload files, but don't auto-play)
   cleanup()
   await initializeAudio(lesson, learning.value, workshop.value, audioSettings.value)
   audioReady.value = hasAudio.value
 
-  // Show first narration item and play its audio
   showCurrentExample()
 }
 
 function showCurrentExample() {
   const example = currentExample.value
   if (!example) {
-    // No more examples in this section, try next section
     advanceSection()
     return
   }
 
-  // Skip input type examples
   if (example.type === 'input') {
     currentExampleIndex.value++
     showCurrentExample()
     return
   }
 
-  // Check if this is a choice point
   if (example.type === 'select' || example.type === 'multiple-choice') {
     state.value = 'choosing'
+    clearAutoAdvance()
     return
   }
 
-  // Regular narration — show text and play this item's audio
   state.value = 'narrating'
-  playCurrentAudio()
+  if (!paused.value) {
+    playCurrentAudio()
+  }
 }
 
-// Tap to advance to next example
-function handleTap() {
-  if (state.value !== 'narrating') return
-
+// Advance to next example
+function advanceExample() {
   currentExampleIndex.value++
   showCurrentExample()
 }
+
+// Tap to skip ahead
+function handleTap() {
+  if (state.value !== 'narrating') return
+  if (paused.value) return
+
+  clearAutoAdvance()
+  advanceExample()
+}
+
+// Toggle pause
+function togglePause() {
+  paused.value = !paused.value
+  if (paused.value) {
+    // Pause: stop audio and cancel auto-advance
+    clearAutoAdvance()
+    if (currentAudio.value) {
+      currentAudio.value.pause()
+    }
+  } else {
+    // Resume: play current example's audio
+    playCurrentAudio()
+  }
+}
+
+// Listen for spacebar pause from App.vue — sync our paused state
+watch(isPlaying, (playing) => {
+  // If App.vue paused via spacebar while we were playing, sync
+  if (!playing && !paused.value && state.value === 'narrating') {
+    paused.value = true
+    clearAutoAdvance()
+  }
+})
 
 function advanceSection() {
   if (!currentLesson.value?.sections) return
@@ -252,7 +332,6 @@ function advanceSection() {
     imageLoaded.value = false
     showCurrentExample()
   } else {
-    // End of lesson — try next lesson
     advanceLesson()
   }
 }
@@ -269,12 +348,12 @@ function advanceLesson() {
       }
     })
   } else {
-    // Story complete
     goToOverview()
   }
 }
 
 function selectChoice(option) {
+  clearAutoAdvance()
   if (option.goto) {
     const targetLesson = option.goto.lesson
     const targetSection = option.goto.section || 0
@@ -295,8 +374,7 @@ function selectChoice(option) {
       showCurrentExample()
     }
   } else {
-    currentExampleIndex.value++
-    showCurrentExample()
+    advanceExample()
   }
 }
 
@@ -337,6 +415,7 @@ function cancelExit() {
 }
 
 function goToOverview() {
+  clearAutoAdvance()
   cleanup()
   router.push({
     name: 'lessons-overview',
@@ -352,6 +431,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  clearAutoAdvance()
   cancelExit()
   cleanup()
 })
