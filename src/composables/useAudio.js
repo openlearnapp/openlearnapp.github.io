@@ -617,7 +617,8 @@ function skipToPrevious(settings) {
 }
 
 // Play a single item (for clicking on examples)
-async function playSingleItem(index, settings) {
+// Optional onEnded callback for when audio finishes
+async function playSingleItem(index, settings, onEnded) {
   console.log('👆 Clicked on example, playing single item at index:', index)
 
   const item = readingQueue.value[index]
@@ -654,6 +655,7 @@ async function playSingleItem(index, settings) {
     // Set up event handlers
     audio.onended = () => {
       console.log('⏹️ Single item audio ended')
+      if (onEnded) onEnded()
     }
 
     audio.onerror = (e) => {
@@ -746,6 +748,7 @@ export function useAudio() {
     skipToNext,
     skipToPrevious,
     playSingleItem,
+    currentAudio,
     cleanup
   }
 }
