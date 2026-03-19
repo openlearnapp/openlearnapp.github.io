@@ -106,7 +106,7 @@ const route = useRoute()
 const emit = defineEmits(['update-title'])
 
 const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
-const { initializeAudio, cleanup, hasAudio, playSingleItem, readingQueue, pause: audioPause, isPlaying, currentAudio } = useAudio()
+const { initializeAudio, cleanup, hasAudio, playSingleItem, readingQueue, currentAudio } = useAudio()
 const { settings } = useSettings()
 
 // State machine
@@ -313,14 +313,16 @@ function togglePause() {
   }
 }
 
-// Listen for spacebar pause from App.vue — sync our paused state
-watch(isPlaying, (playing) => {
-  // If App.vue paused via spacebar while we were playing, sync
-  if (!playing && !paused.value && state.value === 'narrating') {
-    paused.value = true
-    clearAutoAdvance()
+// Spacebar to toggle pause in story mode
+function handleKeydown(e) {
+  if (e.code !== 'Space') return
+  const tag = e.target.tagName
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return
+  e.preventDefault()
+  if (state.value === 'narrating') {
+    togglePause()
   }
-})
+}
 
 function advanceSection() {
   if (!currentLesson.value?.sections) return
@@ -427,10 +429,12 @@ function goToOverview() {
 }
 
 onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
   loadAndStart()
 })
 
 onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
   clearAutoAdvance()
   cancelExit()
   cleanup()
