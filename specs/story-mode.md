@@ -32,16 +32,46 @@ examples:
         goto: { lesson: 3, section: 0 }
 ```
 
-All new fields (`voice`, `goto`, `image` on options) are ignored by the existing `LessonDetail.vue`. Any workshop opened in normal mode renders as regular Q&A regardless of these fields.
+All new fields (`voice`, `goto`, `goto_correct`, `goto_wrong`, `answers`, `image` on options) are ignored by the existing `LessonDetail.vue`. Any workshop opened in normal mode renders as regular Q&A regardless of these fields.
+
+### Assessment Branching
+
+All assessment types support `goto_correct` and `goto_wrong` for branching based on correctness:
+
+**Select/multiple-choice with correct/wrong branching:**
+```yaml
+- q: "Wie heisst der Frosch?"
+  type: select
+  goto_correct: { lesson: 2, section: 1 }
+  goto_wrong: { lesson: 2, section: 0 }
+  options:
+    - text: "Fridolin"
+      correct: true
+    - text: "Ferdinand"
+```
+
+**Input with multiple accepted answers:**
+```yaml
+- q: "Was hatte die alte Frau?"
+  type: input
+  answers:
+    - text: "ein Buch"
+      goto: { lesson: 3, section: 1 }
+    - text: "Buch"
+      goto: { lesson: 3, section: 1 }
+  goto_wrong: { lesson: 3, section: 0 }
+```
+
+**Priority for select options:** per-option `goto` > `goto_correct`/`goto_wrong` > advance.
 
 ### Assessment Mapping in Story Mode
 
 | Type | Story behavior |
 |------|---------------|
 | `qa` (default) | Narration -- play q audio, auto-advance |
-| `select` | Image choice cards with branching via `goto` |
+| `select` | Image choice cards with branching via `goto` or `goto_correct`/`goto_wrong` |
 | `multiple-choice` | Same as select in story mode |
-| `input` | Skipped (not rendered) |
+| `input` | Text input with `answers` matching and `goto_wrong` fallback |
 
 ## User Flow
 
@@ -49,9 +79,9 @@ All new fields (`voice`, `goto`, `image` on options) are ignored by the existing
 2. User presses the story mode button (book icon) in the top navigation
 3. Fullscreen view appears: black background, chapter image, narration text overlay
 4. Audio plays automatically, narration text updates with each example
-5. When a `select` example is reached, choices appear as image cards
-6. Tapping a choice branches to the target lesson/section
-7. Press-and-hold exit button (3 seconds) returns to lessons overview
+5. When an assessment is reached, choices or text input appear
+6. Correct/wrong answers branch to different story paths
+7. Press-and-hold exit button (2 seconds) returns to lessons overview
 
 ## View Design
 

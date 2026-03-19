@@ -14,5 +14,22 @@ sections:
         voice: grandma
       - q: "Drinnen sass eine alte Frau mit einem grossen Buch voller Geschichten."
         voice: narrator
+      - q: "Was hatte die alte Frau?"
+        type: input
+        answers:
+          - text: "ein Buch"
+            goto: { lesson: 3, section: 1 }
+          - text: "Buch"
+            goto: { lesson: 3, section: 1 }
+          - text: "ein grosses Buch"
+            goto: { lesson: 3, section: 1 }
+        goto_wrong: { lesson: 3, section: 0 }
+  - title: "Die Geschichten"
+    image: "images/house.svg"
+    examples:
       - q: "'Jede Geschichte fuehrt in eine neue Welt,' sagte sie laechelnd."
         voice: grandma
+      - q: "Mila setzte sich neben die alte Frau und begann zu lesen."
+        voice: narrator
+      - q: "Und so begann ein neues Abenteuer..."
+        voice: narrator

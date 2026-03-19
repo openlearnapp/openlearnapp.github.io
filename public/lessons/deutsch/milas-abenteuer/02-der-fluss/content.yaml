@@ -14,5 +14,33 @@ sections:
         voice: fridolin
       - q: "'Wenn du mir hilfst, zeige ich dir etwas Wunderbares!'"
         voice: fridolin
+      - q: "Wie heisst der Frosch?"
+        type: select
+        goto_correct: { lesson: 2, section: 1 }
+        goto_wrong: { lesson: 2, section: 0 }
+        options:
+          - text: "Fridolin"
+            correct: true
+          - text: "Ferdinand"
+          - text: "Friedrich"
+  - title: "Was weisst du?"
+    image: "images/river.svg"
+    examples:
+      - q: "Was hat Mila am Fluss gesehen?"
+        type: multiple-choice
+        goto_correct: { lesson: 2, section: 2 }
+        goto_wrong: { lesson: 2, section: 1 }
+        options:
+          - text: "Einen Frosch"
+            correct: true
+          - text: "Einen Drachen"
+          - text: "Einen Fluss"
+            correct: true
+          - text: "Ein Einhorn"
+  - title: "Ein neuer Freund"
+    image: "images/river.svg"
+    examples:
       - q: "Mila laechelte. Sie hatte einen neuen Freund gefunden."
+        voice: narrator
+      - q: "Zusammen machten sie sich auf den Weg tiefer in den Wald."
         voice: narrator
