@@ -20,6 +20,7 @@ workshops:
     description: "Eine interaktive Geschichte zum Entdecken — wohin wird Mila gehen?"
     color: "270 40% 92%"
     primaryColor: "270 60% 50%"
+    image: "lessons/deutsch/milas-abenteuer/thumbnail.svg"
   - folder: open-learn-feedback
     code: de-DE
     title: "Open Learn Feedback"
