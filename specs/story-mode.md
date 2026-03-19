@@ -8,17 +8,13 @@ Story Mode transforms Open Learn workshops into interactive, narrated stories. L
 
 ## How It Works
 
-A workshop with `mode: story` in its metadata triggers a fullscreen, immersive view instead of the standard lesson detail. The child sees a chapter image filling the screen, hears narration, and makes choices by tapping illustrated cards that branch to different chapters.
+Story Mode is a frontend view toggle -- any workshop can be viewed in story mode by pressing the story button in the top navigation. No schema changes are required at the workshop level. The user chooses the layout; the content stays the same.
 
-### Schema Extensions
+Entering story mode opens a fullscreen, immersive view. The child sees a chapter image filling the screen, hears narration, and makes choices by tapping illustrated cards that branch to different chapters. Exiting requires a long press (3 seconds) on the exit button to prevent accidental exits.
 
-**Workshop level** (`workshops.yaml`):
-```yaml
-- folder: milas-abenteuer
-  code: de-DE
-  title: "Milas Abenteuer"
-  mode: story              # triggers story view
-```
+### Content Extensions
+
+The following optional fields on examples and options enhance the story experience but are ignored in normal mode:
 
 **Example level** (`content.yaml`):
 ```yaml
@@ -36,7 +32,7 @@ examples:
         goto: { lesson: 3, section: 0 }
 ```
 
-All new fields (`mode`, `voice`, `goto`, `image` on options) are ignored by the existing `LessonDetail.vue`. A story workshop opened without story mode renders as regular Q&A.
+All new fields (`voice`, `goto`, `image` on options) are ignored by the existing `LessonDetail.vue`. Any workshop opened in normal mode renders as regular Q&A regardless of these fields.
 
 ### Assessment Mapping in Story Mode
 
@@ -49,8 +45,8 @@ All new fields (`mode`, `voice`, `goto`, `image` on options) are ignored by the 
 
 ## User Flow
 
-1. User opens a story workshop from `LessonsOverview`
-2. If `mode === 'story'`, navigation redirects to the story route
+1. User opens any workshop from `LessonsOverview`
+2. User presses the story mode button (book icon) in the top navigation
 3. Fullscreen view appears: black background, chapter image, narration text overlay
 4. Audio plays automatically, narration text updates with each example
 5. When a `select` example is reached, choices appear as image cards
@@ -81,14 +77,14 @@ Reuses the existing `useAudio()` singleton with `readAnswers: false` (narrate on
 
 ## Normal Mode Compatibility
 
-- Story workshops opened via `lesson/:number` route render as standard Q&A
-- Non-story workshops are completely unaffected
-- All new schema fields are optional and ignored by existing views
+- Any workshop can be viewed in story mode or normal mode -- user's choice
+- Content fields (`voice`, `goto`, `image` on options) are optional and ignored in normal mode
+- Story mode is entered via navigation button, exited via long-press (3s)
 
 ## Phased Approach
 
 1. **Spec** -- this document
-2. **Schema + routing** -- `mode` field in useLessons, story route, App.vue chrome hiding
+2. **Routing + nav toggle** -- story route, App.vue story button + chrome hiding
 3. **StoryView core** -- fullscreen narration with auto-play audio
 4. **Choices + branching** -- image-based select cards, `goto` navigation
 5. **Exit + polish** -- press-and-hold exit, transitions, mobile handling

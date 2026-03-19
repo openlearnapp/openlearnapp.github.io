@@ -18,7 +18,6 @@ workshops:
     code: de-DE
     title: "Milas Abenteuer"
     description: "Eine interaktive Geschichte zum Entdecken — wohin wird Mila gehen?"
-    mode: story
     color: "270 40% 92%"
     primaryColor: "270 60% 50%"
   - folder: open-learn-feedback

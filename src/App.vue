@@ -83,6 +83,18 @@
             <span v-else>{{ isPlaying ? '⏸' : '▶️' }}</span>
           </Button>
 
+          <!-- Story mode button (visible on lesson/overview pages) -->
+          <Button
+            v-if="canEnterStoryMode"
+            variant="ghost"
+            size="icon"
+            @click="enterStoryMode"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
+            title="Story Mode"
+            aria-label="Story Mode">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </Button>
+
           <!-- Results / Lesson# toggle button -->
           <Button
             v-if="canShowResultsButton"
@@ -338,6 +350,10 @@ const contentBgClass = computed(() => {
   return workshopColors.value?.background ? 'bg-card' : 'bg-background'
 })
 
+const canEnterStoryMode = computed(() => {
+  return route.name === 'lesson-detail' || route.name === 'lessons-overview'
+})
+
 const canShowResultsButton = computed(() => {
   return route.name === 'lesson-detail' ||
          route.name === 'lessons-overview' ||
@@ -410,6 +426,18 @@ function goToWorkshopOverview() {
     router.push({ name: 'workshop-overview', params: { learning } })
   } else {
     router.push({ name: 'home' })
+  }
+}
+
+function enterStoryMode() {
+  const learning = route.params.learning
+  const workshop = route.params.workshop
+  const number = route.params.number || 1
+  if (learning && workshop) {
+    router.push({
+      name: 'story-view',
+      params: { learning, workshop, number }
+    })
   }
 }
 

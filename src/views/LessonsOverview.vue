@@ -132,10 +132,8 @@ function resolveLessonImage(lesson) {
 }
 
 function openLesson(number) {
-  const meta = getWorkshopMeta(learning.value, workshop.value)
-  const routeName = meta.mode === 'story' ? 'story-view' : 'lesson-detail'
   router.push({
-    name: routeName,
+    name: 'lesson-detail',
     params: {
       learning: learning.value,
       workshop: workshop.value,
