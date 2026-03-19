@@ -43,12 +43,12 @@
     <!-- Story content -->
     <template v-else>
       <div class="flex-1 relative overflow-hidden" @click="handleTap">
-        <!-- Section image -->
+        <!-- Section image (contained with padding so narration text fits) -->
         <img
           v-if="currentSectionImage"
           :src="currentSectionImage"
           :alt="currentSection?.title || ''"
-          class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+          class="absolute inset-0 w-full h-full object-contain p-4 pb-40 transition-opacity duration-700"
           :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
           @load="imageLoaded = true" />
         <div v-else class="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
@@ -65,6 +65,8 @@
                 v-for="(option, idx) in choiceOptions"
                 :key="idx"
                 @click.stop="selectChoice(option, idx)"
+                @pointerenter="speakOption(option)"
+                @pointerleave="stopSpeaking"
                 :disabled="multiSelected.has(idx) || optionFeedback !== null"
                 class="group relative rounded-2xl overflow-hidden border-2 transition-all active:scale-95"
                 :class="getOptionClass(option, idx)">
@@ -226,6 +228,22 @@ function resolveOptionImage(imagePath) {
   return resolveSectionImage(imagePath)
 }
 
+// Speak option text on hover using SpeechSynthesis
+function speakOption(option) {
+  if (!option.text || !('speechSynthesis' in window)) return
+  stopSpeaking()
+  const utterance = new SpeechSynthesisUtterance(option.text)
+  utterance.lang = 'de-DE'
+  utterance.rate = 0.9
+  speechSynthesis.speak(utterance)
+}
+
+function stopSpeaking() {
+  if ('speechSynthesis' in window) {
+    speechSynthesis.cancel()
+  }
+}
+
 // Navigate to a goto target
 function navigateGoto(goto) {
   if (!goto) {
@@ -332,6 +350,8 @@ function showCurrentExample() {
     advanceSection()
     return
   }
+
+  stopSpeaking()
 
   // Reset assessment state
   optionFeedback.value = null
@@ -571,6 +591,7 @@ function cancelExit() {
 
 function goToOverview() {
   clearAutoAdvance()
+  stopSpeaking()
   cleanup()
   router.push({
     name: 'lessons-overview',
