@@ -672,7 +672,14 @@ watch(
   { deep: true }
 )
 
+function handleKeydown(e) {
+  if (e.code === 'Escape') {
+    router.push({ name: 'lessons-overview', params: { learning: learning.value, workshop: workshop.value } })
+  }
+}
+
 onMounted(async () => {
+  document.addEventListener('keydown', handleKeydown)
   window.scrollTo(0, 0)
   const currentLearning = route.params.learning
   const currentWorkshop = route.params.workshop
@@ -710,6 +717,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleKeydown)
   cleanup()
   clearLessonFooter()
   closeLightbox()
