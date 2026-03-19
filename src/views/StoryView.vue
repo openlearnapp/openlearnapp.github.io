@@ -271,7 +271,7 @@ function navigateGoto(goto) {
 }
 
 // Play audio for current example, auto-advance when done
-function playCurrentAudio() {
+async function playCurrentAudio() {
   if (!audioReady.value) {
     scheduleAutoAdvance(2000)
     return
@@ -283,11 +283,16 @@ function playCurrentAudio() {
             item.type === 'question'
   )
   if (idx !== -1) {
-    playSingleItem(idx, audioSettings.value, () => {
-      if (!paused.value) {
-        scheduleAutoAdvance(800)
-      }
-    })
+    try {
+      await playSingleItem(idx, audioSettings.value, () => {
+        if (!paused.value) {
+          scheduleAutoAdvance(800)
+        }
+      })
+    } catch {
+      // Browser blocked autoplay (e.g. after reload) — show play button
+      paused.value = true
+    }
   } else {
     scheduleAutoAdvance(2000)
   }
