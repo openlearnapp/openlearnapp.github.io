@@ -1,0 +1,18 @@
+number: 3
+title: "Das alte Haus"
+description: "Mila entdeckt ein geheimnisvolles Haus."
+image: "images/house.svg"
+sections:
+  - title: "Das Haus im Wald"
+    image: "images/house.svg"
+    examples:
+      - q: "Mila ging den schmalen Weg entlang und entdeckte ein altes Haus."
+        voice: narrator
+      - q: "Die Tuer stand offen und warmes Licht schien heraus."
+        voice: narrator
+      - q: "'Komm herein, kleines Maedchen,' sagte eine freundliche Stimme."
+        voice: grandma
+      - q: "Drinnen sass eine alte Frau mit einem grossen Buch voller Geschichten."
+        voice: narrator
+      - q: "'Jede Geschichte fuehrt in eine neue Welt,' sagte sie laechelnd."
+        voice: grandma

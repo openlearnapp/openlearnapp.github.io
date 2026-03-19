@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-03-19
+
+### Features
+
+#### Story Mode — interactive narrated workshops (Issue #6)
+- Add story mode as a frontend view toggle — any workshop can be viewed in fullscreen immersive narration
+- Add story mode button (book icon) in top navigation on lesson/overview pages
+- Add `StoryView.vue` — fullscreen view with section images, narration text overlay, and branching choices
+- Add `voice` field on examples for character/narrator labels
+- Add `goto` and `image` fields on select options for branching navigation and visual choice cards
+- Add story route (`/:learning/:workshop/story/:number`) with header/footer hidden
+- Add press-and-hold exit button (3 seconds) with ring animation to return to normal mode
+- Add sample workshop "Milas Abenteuer" — a 3-chapter branching story with SVG illustrations
+- Add `specs/story-mode.md` product spec
+
 ## 2026-03-17
 
 ### Features

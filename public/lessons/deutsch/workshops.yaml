@@ -14,6 +14,12 @@ workshops:
     color: "35 90% 93%"
     primaryColor: "35 90% 45%"
     image: "lessons/deutsch/spanisch/thumbnail.svg"
+  - folder: milas-abenteuer
+    code: de-DE
+    title: "Milas Abenteuer"
+    description: "Eine interaktive Geschichte zum Entdecken — wohin wird Mila gehen?"
+    color: "270 40% 92%"
+    primaryColor: "270 60% 50%"
   - folder: open-learn-feedback
     code: de-DE
     title: "Open Learn Feedback"

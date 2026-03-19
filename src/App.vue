@@ -1,7 +1,7 @@
 <template>
   <div class="w-full md:max-w-6xl md:mx-auto bg-primary md:rounded-xl md:shadow-2xl">
     <!-- Header with unified navigation - sticky on desktop -->
-    <header v-if="!isHomePage" class="bg-primary text-white py-4 px-4 relative sticky top-0 z-50">
+    <header v-if="!isHomePage && !isStoryMode" class="bg-primary text-white py-4 px-4 relative sticky top-0 z-50">
       <div class="flex items-center justify-between gap-2">
         <!-- Left side: language dropdown + nav buttons -->
         <div class="flex items-center gap-2 min-w-fit">
@@ -81,6 +81,18 @@
             :aria-label="isLoadingAudio ? $t('nav.loadingAudio') : (isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio'))">
             <span v-if="isLoadingAudio" class="animate-spin">⏳</span>
             <span v-else>{{ isPlaying ? '⏸' : '▶️' }}</span>
+          </Button>
+
+          <!-- Story mode button (visible on lesson/overview pages) -->
+          <Button
+            v-if="canEnterStoryMode"
+            variant="ghost"
+            size="icon"
+            @click="enterStoryMode"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
+            title="Story Mode"
+            aria-label="Story Mode">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </Button>
 
           <!-- Results / Lesson# toggle button -->
@@ -186,7 +198,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="border-t border-border px-8 py-4 md:rounded-b-xl" :class="contentBgClass">
+    <footer v-if="!isStoryMode" class="border-t border-border px-8 py-4 md:rounded-b-xl" :class="contentBgClass">
       <div class="flex items-center gap-4 text-sm">
         <a href="#/" class="text-primary hover:underline whitespace-nowrap">Home</a>
         <a
@@ -266,6 +278,7 @@ const learningLanguages = computed(() => {
 })
 
 const isHomePage = computed(() => route.name === 'home')
+const isStoryMode = computed(() => route.meta?.storyMode === true)
 const isWorkshopOverview = computed(() => route.name === 'workshop-overview')
 const isWorkshopSubpage = computed(() =>
   ['lesson-detail', 'lessons-overview', 'learning-items', 'assessment-results', 'coach'].includes(route.name)
@@ -335,6 +348,10 @@ const workshopColors = computed(() => {
 
 const contentBgClass = computed(() => {
   return workshopColors.value?.background ? 'bg-card' : 'bg-background'
+})
+
+const canEnterStoryMode = computed(() => {
+  return route.name === 'lesson-detail' || route.name === 'lessons-overview'
 })
 
 const canShowResultsButton = computed(() => {
@@ -409,6 +426,18 @@ function goToWorkshopOverview() {
     router.push({ name: 'workshop-overview', params: { learning } })
   } else {
     router.push({ name: 'home' })
+  }
+}
+
+function enterStoryMode() {
+  const learning = route.params.learning
+  const workshop = route.params.workshop
+  const number = route.params.number || 1
+  if (learning && workshop) {
+    router.push({
+      name: 'story-view',
+      params: { learning, workshop, number }
+    })
   }
 }
 
