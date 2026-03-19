@@ -1,6 +1,6 @@
 <template>
   <div class="fixed inset-0 z-[100] bg-black flex flex-col" style="height: 100dvh">
-    <!-- Exit button (top-left, press-and-hold 3s) -->
+    <!-- Exit button (top-left, press-and-hold 2s) -->
     <button
       class="absolute top-4 left-4 z-[110] w-14 h-14 rounded-full bg-black/50 text-white flex items-center justify-center transition-all"
       :class="{ 'ring-4 ring-white': exitProgress > 0 }"
@@ -84,7 +84,7 @@ const route = useRoute()
 const emit = defineEmits(['update-title'])
 
 const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
-const { initializeAudio, play, cleanup, currentItem, playbackFinished, hasAudio, isPlaying, jumpToExample } = useAudio()
+const { initializeAudio, cleanup, hasAudio, playSingleItem, readingQueue } = useAudio()
 const { settings } = useSettings()
 
 // State machine
@@ -136,6 +136,12 @@ const choiceOptions = computed(() => {
   return currentExample.value.options || []
 })
 
+const audioSettings = computed(() => ({
+  ...settings.value,
+  readAnswers: false,
+  hideLearnedExamples: false
+}))
+
 function resolveSectionImage(imagePath) {
   if (!imagePath) return null
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('/')) {
@@ -151,6 +157,21 @@ function resolveSectionImage(imagePath) {
 
 function resolveOptionImage(imagePath) {
   return resolveSectionImage(imagePath)
+}
+
+// Play audio for the current example (fire-and-forget, no auto-advance)
+function playCurrentAudio() {
+  if (!audioReady.value) return
+
+  // Find the queue item matching current section/example
+  const idx = readingQueue.value.findIndex(
+    item => item.sectionIdx === currentSectionIndex.value &&
+            item.exampleIdx === currentExampleIndex.value &&
+            item.type === 'question'
+  )
+  if (idx !== -1) {
+    playSingleItem(idx, audioSettings.value)
+  }
 }
 
 // Load lesson and start narration
@@ -178,16 +199,12 @@ async function loadAndStart() {
 
   emit('update-title', lesson.title || '')
 
-  // Initialize audio with readAnswers: false (narrate only q fields)
+  // Initialize audio (preload files, but don't auto-play)
   cleanup()
-  await initializeAudio(lesson, learning.value, workshop.value, {
-    ...settings.value,
-    readAnswers: false,
-    hideLearnedExamples: false
-  })
+  await initializeAudio(lesson, learning.value, workshop.value, audioSettings.value)
   audioReady.value = hasAudio.value
 
-  // Show first narration item
+  // Show first narration item and play its audio
   showCurrentExample()
 }
 
@@ -212,16 +229,9 @@ function showCurrentExample() {
     return
   }
 
-  // Regular narration — show text, play audio if available
+  // Regular narration — show text and play this item's audio
   state.value = 'narrating'
-
-  if (audioReady.value && !isPlaying.value) {
-    play({
-      ...settings.value,
-      readAnswers: false,
-      hideLearnedExamples: false
-    })
-  }
+  playCurrentAudio()
 }
 
 // Tap to advance to next example
@@ -230,12 +240,6 @@ function handleTap() {
 
   currentExampleIndex.value++
   showCurrentExample()
-
-  // Sync audio to the new position
-  if (audioReady.value && state.value === 'narrating') {
-    const audioSettings = { ...settings.value, readAnswers: false, hideLearnedExamples: false }
-    jumpToExample(currentSectionIndex.value, currentExampleIndex.value, audioSettings)
-  }
 }
 
 function advanceSection() {
@@ -272,12 +276,10 @@ function advanceLesson() {
 
 function selectChoice(option) {
   if (option.goto) {
-    // Branch to target lesson/section
     const targetLesson = option.goto.lesson
     const targetSection = option.goto.section || 0
 
     if (targetLesson && targetLesson !== lessonNumber.value) {
-      // Navigate to different lesson
       router.replace({
         name: 'story-view',
         params: {
@@ -287,46 +289,16 @@ function selectChoice(option) {
         }
       })
     } else {
-      // Same lesson, different section
       currentSectionIndex.value = targetSection
       currentExampleIndex.value = 0
       imageLoaded.value = false
       showCurrentExample()
     }
   } else {
-    // No goto — just advance
     currentExampleIndex.value++
     showCurrentExample()
   }
 }
-
-// Watch audio currentItem to sync narration text when audio is driving
-watch(currentItem, (item) => {
-  if (!item || !audioReady.value || state.value === 'choosing') return
-
-  if (item.sectionIdx >= 0 && item.exampleIdx >= 0) {
-    if (item.sectionIdx !== currentSectionIndex.value) {
-      currentSectionIndex.value = item.sectionIdx
-      imageLoaded.value = false
-    }
-    currentExampleIndex.value = item.exampleIdx
-
-    // Check if the current example is a choice point
-    const example = currentSection.value?.examples?.[item.exampleIdx]
-    if (example && (example.type === 'select' || example.type === 'multiple-choice')) {
-      state.value = 'choosing'
-    } else {
-      state.value = 'narrating'
-    }
-  }
-})
-
-// Watch playback finished to auto-advance
-watch(playbackFinished, (finished) => {
-  if (finished && state.value === 'narrating') {
-    advanceSection()
-  }
-})
 
 // Watch route changes to reload lesson
 watch(() => route.params.number, (newNumber, oldNumber) => {
@@ -335,10 +307,10 @@ watch(() => route.params.number, (newNumber, oldNumber) => {
   }
 })
 
-// Exit: press-and-hold
+// Exit: press-and-hold 2s
 function startExit() {
   exitProgress.value = 0
-  const duration = 3000 // 3 seconds
+  const duration = 2000
   const interval = 50
 
   exitInterval = setInterval(() => {
