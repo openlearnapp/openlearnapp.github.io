@@ -399,8 +399,20 @@ function handleClickOutside(e) {
   }
 }
 
+// Spacebar to pause/resume audio (global — works in normal and story mode)
+function handleKeydown(e) {
+  if (e.code !== 'Space') return
+  // Don't intercept if user is typing in an input/textarea
+  const tag = e.target.tagName
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return
+
+  e.preventDefault()
+  togglePlayPause()
+}
+
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleKeydown)
   await loadAvailableContent()
   // Load workshops for route language or stored language
   const routeLang = route.params.learning
@@ -414,6 +426,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleKeydown)
 })
 
 function goHome() {
