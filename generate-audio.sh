@@ -80,6 +80,9 @@ get_language_code() {
   # Try to find the code for this folder
   local code=$(yq eval ".languages[] | select(.folder == \"$folder_name\") | .code" "$yaml_file" 2>/dev/null)
   if [[ -z "$code" || "$code" == "null" ]]; then
+    code=$(yq eval ".workshops[] | select(.folder == \"$folder_name\") | .code" "$yaml_file" 2>/dev/null)
+  fi
+  if [[ -z "$code" || "$code" == "null" ]]; then
     code=$(yq eval ".topics[] | select(.folder == \"$folder_name\") | .code" "$yaml_file" 2>/dev/null)
   fi
 
@@ -92,9 +95,12 @@ get_voice() {
   local parent_dir="$2"
   local content_root="${3:-$LESSONS_DIR}"
 
-  # Try to get code from parent's topics.yaml or index.yaml
+  # Try to get code from parent's workshops.yaml, topics.yaml, or index.yaml
   local code=""
-  if [[ -f "$parent_dir/topics.yaml" ]]; then
+  if [[ -z "$code" || "$code" == "null" ]] && [[ -f "$parent_dir/workshops.yaml" ]]; then
+    code=$(get_language_code "$parent_dir/workshops.yaml" "$folder_name")
+  fi
+  if [[ -z "$code" || "$code" == "null" ]] && [[ -f "$parent_dir/topics.yaml" ]]; then
     code=$(get_language_code "$parent_dir/topics.yaml" "$folder_name")
   fi
   if [[ -z "$code" || "$code" == "null" ]] && [[ -f "$parent_dir/index.yaml" ]]; then
@@ -154,8 +160,9 @@ process_lesson() {
   local abs_folder=$(cd "$lesson_folder" && pwd)
 
   # Auto-detect content root if lesson is outside LESSONS_DIR
-  local effective_root="$LESSONS_DIR"
-  if [[ ! "$abs_folder" == "$(cd "$LESSONS_DIR" 2>/dev/null && pwd)"* ]]; then
+  local abs_lessons_dir="$(cd "$LESSONS_DIR" 2>/dev/null && pwd)"
+  local effective_root="$abs_lessons_dir"
+  if [[ -z "$abs_lessons_dir" ]] || [[ ! "$abs_folder" == "$abs_lessons_dir"* ]]; then
     local detected_root=$(find_content_root "$abs_folder")
     if [[ -n "$detected_root" ]]; then
       effective_root="$detected_root"

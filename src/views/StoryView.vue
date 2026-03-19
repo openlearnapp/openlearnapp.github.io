@@ -84,7 +84,7 @@ const route = useRoute()
 const emit = defineEmits(['update-title'])
 
 const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
-const { initializeAudio, play, cleanup, currentItem, playbackFinished, hasAudio, isPlaying } = useAudio()
+const { initializeAudio, play, cleanup, currentItem, playbackFinished, hasAudio, isPlaying, jumpToExample } = useAudio()
 const { settings } = useSettings()
 
 // State machine
@@ -230,6 +230,12 @@ function handleTap() {
 
   currentExampleIndex.value++
   showCurrentExample()
+
+  // Sync audio to the new position
+  if (audioReady.value && state.value === 'narrating') {
+    const audioSettings = { ...settings.value, readAnswers: false, hideLearnedExamples: false }
+    jumpToExample(currentSectionIndex.value, currentExampleIndex.value, audioSettings)
+  }
 }
 
 function advanceSection() {
