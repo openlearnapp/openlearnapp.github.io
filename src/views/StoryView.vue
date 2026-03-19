@@ -58,17 +58,16 @@
           <div class="flex flex-col items-center gap-6 max-w-2xl w-full">
             <!-- Question text -->
             <p class="text-white text-xl md:text-2xl text-center leading-relaxed">{{ currentNarrationText }}</p>
+            <p v-if="isMultiChoice" class="text-white/50 text-sm">Select all correct answers</p>
             <!-- Options -->
             <div class="grid gap-4 w-full" :class="choiceOptions.length <= 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3'">
               <button
                 v-for="(option, idx) in choiceOptions"
                 :key="idx"
-                @click.stop="selectChoice(option)"
-                class="group relative rounded-2xl overflow-hidden border-2 transition-all hover:scale-105 active:scale-95"
-                :class="optionFeedback === null ? 'bg-white/10 border-white/30 hover:border-white' :
-                         optionFeedback === idx && lastChoiceCorrect ? 'bg-green-500/30 border-green-400' :
-                         optionFeedback === idx && !lastChoiceCorrect ? 'bg-red-500/30 border-red-400' :
-                         'bg-white/10 border-white/20 opacity-50'">
+                @click.stop="selectChoice(option, idx)"
+                :disabled="multiSelected.has(idx) || optionFeedback !== null"
+                class="group relative rounded-2xl overflow-hidden border-2 transition-all active:scale-95"
+                :class="getOptionClass(option, idx)">
                 <img
                   v-if="option.image"
                   :src="resolveOptionImage(option.image)"
@@ -154,8 +153,10 @@ const imageLoaded = ref(false)
 const audioReady = ref(false)
 
 // Assessment state
-const optionFeedback = ref(null) // index of last clicked option, or null
+const optionFeedback = ref(null) // index of last clicked option (single select), or null
 const lastChoiceCorrect = ref(false)
+const multiSelected = ref(new Set()) // indices selected in multi-choice
+const multiWrong = ref(null) // index of wrong pick in multi-choice
 const inputAnswer = ref('')
 const inputFeedback = ref(null) // null = no feedback, true = correct, false = wrong
 const inputRef = ref(null)
@@ -196,6 +197,10 @@ const choiceOptions = computed(() => {
   if (!currentExample.value) return []
   if (currentExample.value.type !== 'select' && currentExample.value.type !== 'multiple-choice') return []
   return currentExample.value.options || []
+})
+
+const isMultiChoice = computed(() => {
+  return currentExample.value?.type === 'multiple-choice'
 })
 
 const audioSettings = computed(() => ({
@@ -331,6 +336,8 @@ function showCurrentExample() {
   // Reset assessment state
   optionFeedback.value = null
   lastChoiceCorrect.value = false
+  multiSelected.value = new Set()
+  multiWrong.value = null
   inputAnswer.value = ''
   inputFeedback.value = null
 
@@ -392,13 +399,26 @@ function handleKeydown(e) {
   }
 }
 
-// Select choice handler — supports per-option goto AND goto_correct/goto_wrong
-function selectChoice(option) {
-  if (optionFeedback.value !== null) return // already processing feedback
-  clearAutoAdvance()
+// Get CSS class for an option button
+function getOptionClass(option, idx) {
+  // Multi-choice: show selected correct in green, wrong in red
+  if (isMultiChoice.value) {
+    if (multiWrong.value === idx) return 'bg-red-500/30 border-red-400'
+    if (multiSelected.value.has(idx)) return 'bg-green-500/30 border-green-400'
+    if (multiWrong.value !== null) return 'bg-white/10 border-white/20 opacity-50'
+    return 'bg-white/10 border-white/30 hover:border-white hover:scale-105'
+  }
+  // Single select
+  if (optionFeedback.value === null) return 'bg-white/10 border-white/30 hover:border-white hover:scale-105'
+  if (optionFeedback.value === idx && lastChoiceCorrect.value) return 'bg-green-500/30 border-green-400'
+  if (optionFeedback.value === idx && !lastChoiceCorrect.value) return 'bg-red-500/30 border-red-400'
+  return 'bg-white/10 border-white/20 opacity-50'
+}
 
+// Select choice handler
+function selectChoice(option, idx) {
+  clearAutoAdvance()
   const example = currentExample.value
-  const idx = choiceOptions.value.indexOf(option)
 
   // If option has its own goto (pure branching, no correct/wrong)
   if (option.goto && !example.goto_correct && !example.goto_wrong) {
@@ -406,16 +426,42 @@ function selectChoice(option) {
     return
   }
 
-  // Assessment mode: check correct/wrong
+  // Multiple-choice: accumulate correct picks, fail on wrong
+  if (isMultiChoice.value) {
+    if (multiSelected.value.has(idx) || multiWrong.value !== null) return
+
+    if (option.correct) {
+      const newSet = new Set(multiSelected.value)
+      newSet.add(idx)
+      multiSelected.value = newSet
+
+      // Check if all correct options have been selected
+      const totalCorrect = choiceOptions.value.filter(o => o.correct).length
+      if (newSet.size >= totalCorrect) {
+        // All correct selected — navigate after brief delay
+        setTimeout(() => {
+          navigateGoto(example.goto_correct)
+        }, 800)
+      }
+    } else {
+      // Wrong pick — show red, then navigate to goto_wrong
+      multiWrong.value = idx
+      setTimeout(() => {
+        navigateGoto(example.goto_wrong)
+      }, 1200)
+    }
+    return
+  }
+
+  // Single select: check correct/wrong
+  if (optionFeedback.value !== null) return
   const isCorrect = !!option.correct
   optionFeedback.value = idx
   lastChoiceCorrect.value = isCorrect
 
-  // Show feedback briefly, then navigate
   setTimeout(() => {
     optionFeedback.value = null
     if (isCorrect) {
-      // Option's own goto takes priority, then example's goto_correct, then advance
       navigateGoto(option.goto || example.goto_correct)
     } else {
       navigateGoto(option.goto || example.goto_wrong)
