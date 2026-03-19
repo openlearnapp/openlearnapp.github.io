@@ -4,12 +4,11 @@
     <button
       class="absolute top-4 left-4 z-[110] w-14 h-14 rounded-full bg-black/50 text-white flex items-center justify-center transition-all"
       :class="{ 'ring-4 ring-white': exitProgress > 0 }"
-      :style="exitProgress > 0 ? `--ring-progress: ${exitProgress}` : ''"
       @pointerdown="startExit"
       @pointerup="cancelExit"
       @pointerleave="cancelExit"
-      :title="'Hold to exit'"
-      :aria-label="'Hold to exit'">
+      title="Hold to exit"
+      aria-label="Hold to exit">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
       </svg>
@@ -28,8 +27,8 @@
 
     <!-- Story content -->
     <template v-else>
-      <!-- Section image (fills screen) -->
-      <div class="flex-1 relative overflow-hidden">
+      <!-- Section image (fills screen), tap to advance -->
+      <div class="flex-1 relative overflow-hidden" @click="handleTap">
         <img
           v-if="currentSectionImage"
           :src="currentSectionImage"
@@ -45,7 +44,7 @@
             <button
               v-for="(option, idx) in choiceOptions"
               :key="idx"
-              @click="selectChoice(option)"
+              @click.stop="selectChoice(option)"
               class="group relative rounded-2xl overflow-hidden bg-white/10 border-2 border-white/30 hover:border-white transition-all hover:scale-105 active:scale-95">
               <img
                 v-if="option.image"
@@ -63,9 +62,10 @@
         </div>
 
         <!-- Narration text overlay (bottom) -->
-        <div v-if="state === 'narrating' || state === 'auto-advancing'" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 pt-16">
+        <div v-if="state === 'narrating'" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 pt-16">
           <p v-if="currentVoice" class="text-white/60 text-sm mb-1 uppercase tracking-wider">{{ currentVoice }}</p>
           <p class="text-white text-xl md:text-2xl leading-relaxed">{{ currentNarrationText }}</p>
+          <p class="text-white/40 text-sm mt-3">Tap to continue</p>
         </div>
       </div>
     </template>
@@ -83,12 +83,12 @@ const router = useRouter()
 const route = useRoute()
 const emit = defineEmits(['update-title'])
 
-const { loadAllLessonsForWorkshop, loadLesson, getWorkshopMeta, resolveWorkshopKey } = useLessons()
-const { initializeAudio, play, cleanup, currentItem, playbackFinished, isPlaying } = useAudio()
+const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
+const { initializeAudio, play, cleanup, currentItem, playbackFinished, hasAudio, isPlaying } = useAudio()
 const { settings } = useSettings()
 
 // State machine
-const state = ref('loading') // loading | narrating | choosing | auto-advancing
+const state = ref('loading') // loading | narrating | choosing
 
 // Lesson data
 const lessons = ref([])
@@ -96,6 +96,7 @@ const currentLesson = ref(null)
 const currentSectionIndex = ref(0)
 const currentExampleIndex = ref(0)
 const imageLoaded = ref(false)
+const audioReady = ref(false)
 
 // Exit button
 const exitProgress = ref(0)
@@ -156,6 +157,7 @@ function resolveOptionImage(imagePath) {
 async function loadAndStart() {
   state.value = 'loading'
   imageLoaded.value = false
+  audioReady.value = false
 
   // Load all lessons for the workshop
   if (lessons.value.length === 0) {
@@ -183,16 +185,24 @@ async function loadAndStart() {
     readAnswers: false,
     hideLearnedExamples: false
   })
+  audioReady.value = hasAudio.value
 
-  // Start narrating
-  startNarration()
+  // Show first narration item
+  showCurrentExample()
 }
 
-function startNarration() {
+function showCurrentExample() {
   const example = currentExample.value
   if (!example) {
     // No more examples in this section, try next section
     advanceSection()
+    return
+  }
+
+  // Skip input type examples
+  if (example.type === 'input') {
+    currentExampleIndex.value++
+    showCurrentExample()
     return
   }
 
@@ -202,24 +212,24 @@ function startNarration() {
     return
   }
 
-  // Skip input type examples
-  if (example.type === 'input') {
-    currentExampleIndex.value++
-    startNarration()
-    return
-  }
-
-  // Regular narration
+  // Regular narration — show text, play audio if available
   state.value = 'narrating'
 
-  // Start audio playback if not already playing
-  if (!isPlaying.value) {
+  if (audioReady.value && !isPlaying.value) {
     play({
       ...settings.value,
       readAnswers: false,
       hideLearnedExamples: false
     })
   }
+}
+
+// Tap to advance to next example
+function handleTap() {
+  if (state.value !== 'narrating') return
+
+  currentExampleIndex.value++
+  showCurrentExample()
 }
 
 function advanceSection() {
@@ -230,7 +240,7 @@ function advanceSection() {
     currentSectionIndex.value = nextSectionIdx
     currentExampleIndex.value = 0
     imageLoaded.value = false
-    startNarration()
+    showCurrentExample()
   } else {
     // End of lesson — try next lesson
     advanceLesson()
@@ -275,20 +285,19 @@ function selectChoice(option) {
       currentSectionIndex.value = targetSection
       currentExampleIndex.value = 0
       imageLoaded.value = false
-      startNarration()
+      showCurrentExample()
     }
   } else {
     // No goto — just advance
     currentExampleIndex.value++
-    startNarration()
+    showCurrentExample()
   }
 }
 
-// Watch audio currentItem to advance narration text
+// Watch audio currentItem to sync narration text when audio is driving
 watch(currentItem, (item) => {
-  if (!item || state.value === 'choosing') return
+  if (!item || !audioReady.value || state.value === 'choosing') return
 
-  // Find matching example by section/example index
   if (item.sectionIdx >= 0 && item.exampleIdx >= 0) {
     if (item.sectionIdx !== currentSectionIndex.value) {
       currentSectionIndex.value = item.sectionIdx
@@ -300,6 +309,8 @@ watch(currentItem, (item) => {
     const example = currentSection.value?.examples?.[item.exampleIdx]
     if (example && (example.type === 'select' || example.type === 'multiple-choice')) {
       state.value = 'choosing'
+    } else {
+      state.value = 'narrating'
     }
   }
 })
@@ -307,8 +318,6 @@ watch(currentItem, (item) => {
 // Watch playback finished to auto-advance
 watch(playbackFinished, (finished) => {
   if (finished && state.value === 'narrating') {
-    state.value = 'auto-advancing'
-    // Check if we need to advance to next section/lesson
     advanceSection()
   }
 })
