@@ -424,14 +424,25 @@ function togglePause() {
   }
 }
 
-// Spacebar
+// Keyboard controls
 function handleKeydown(e) {
+  if (e.code === 'Escape' && !e.repeat) {
+    e.preventDefault()
+    startExit()
+    return
+  }
   if (e.code !== 'Space') return
   const tag = e.target.tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return
   e.preventDefault()
   if (state.value === 'narrating') {
     togglePause()
+  }
+}
+
+function handleKeyup(e) {
+  if (e.code === 'Escape') {
+    cancelExit()
   }
 }
 
@@ -617,11 +628,13 @@ function goToOverview() {
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
+  document.addEventListener('keyup', handleKeyup)
   loadAndStart()
 })
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
+  document.removeEventListener('keyup', handleKeyup)
   clearAutoAdvance()
   cancelExit()
   cleanup()
