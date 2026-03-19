@@ -160,6 +160,18 @@
             :aria-label="$t('nav.done')">
             ✓
           </Button>
+
+          <!-- Workshops button (visible on profile page) -->
+          <Button
+            v-if="route.name === 'profile'"
+            variant="ghost"
+            size="icon"
+            @click="goToWorkshopOverview"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
+            :title="$t('home.workshops')"
+            :aria-label="$t('home.workshops')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+          </Button>
         </div>
       </div>
     </header>

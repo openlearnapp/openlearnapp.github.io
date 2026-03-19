@@ -2,6 +2,22 @@
 
 ## 2026-03-17
 
+### Features
+
+#### User Profile — Phase 2: personal info, streak, navigation (PR #60, Issue #48)
+- Add editable profile fields: display name, email, native language, learning goal (stored in localStorage)
+- Add 4-stat grid: items learned, assessments answered, learning streak (days in a row 🔥), workshops started
+- Add color gradient banner in profile hero section (generated from username hash)
+- Add "Go to Workshops" button directly on profile page
+- Add workshops grid-icon button in App.vue header when on profile page — no more footer scrolling to navigate back
+
+### Docs & CI
+
+#### Spec-driven development process (PR #52)
+- Add `docs/development-process.md` describing the 5-step workflow: Issue → Spec → Review → Implement → Code Review
+- Move ADRs from `docs/adr/` to `specs/adr/`
+- Add product specs in `specs/` for all major features
+
 ### Fixes
 
 #### External workshop language routing (Issue #59)

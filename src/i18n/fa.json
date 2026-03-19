@@ -114,6 +114,31 @@
       "uploadsDesc": "PDF‌ها، اسکریپت‌ها و سایر اسناد را به عنوان مواد یادگیری آپلود کنید."
     }
   },
+  "profile": {
+    "title": "پروفایل من",
+    "signIn": "ورود",
+    "signInDesc": "برای همگام‌سازی پیشرفت خود بین دستگاه‌ها و دسترسی به پروفایل وارد شوید.",
+    "memberSince": "عضو از",
+    "itemsLearned": "مورد یادگرفته شده",
+    "activeWorkshops": "کارگاه‌های فعال",
+    "continue": "ادامه",
+    "noWorkshopsYet": "یک کارگاه را شروع کنید تا پیشرفت خود را اینجا ببینید.",
+    "editProfile": "ویرایش پروفایل",
+    "saveProfile": "ذخیره",
+    "cancelEdit": "لغو",
+    "profileSaved": "پروفایل ذخیره شد!",
+    "displayName": "نام نمایشی",
+    "displayNamePlaceholder": "نام کامل شما",
+    "nativeLanguage": "زبان مادری",
+    "nativeLanguagePlaceholder": "مثلاً: فارسی، آلمانی...",
+    "learningGoal": "هدف یادگیری",
+    "learningGoalPlaceholder": "چرا یاد می‌گیری؟ به چه چیزی می‌خواهی برسی؟",
+    "workshopsButton": "رفتن به کارگاه‌ها",
+    "statsTitle": "آمار شما",
+    "totalAssessments": "ارزیابی پاسخ داده شده",
+    "workshopsStarted": "کارگاه شروع شده",
+    "streak": "روز متوالی"
+  },
   "settings": {
     "accountSync": "حساب کاربری و همگام‌سازی",
     "accountSyncDesc": "برای همگام‌سازی پیشرفت خود بین دستگاه‌ها در همان شبکه وارد شوید. بدون نیاز به سرور.",
