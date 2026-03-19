@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useLessons } from '../composables/useLessons'
 import { formatLangName } from '../utils/formatters'
@@ -157,4 +157,18 @@ async function loadLessons() {
 watch([learning, workshop], () => {
   loadLessons()
 }, { immediate: true })
+
+function handleKeydown(e) {
+  if (e.code === 'Escape') {
+    router.push({ name: 'workshop-overview', params: { learning: learning.value } })
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+})
 </script>
