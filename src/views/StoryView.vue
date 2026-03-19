@@ -42,13 +42,13 @@
 
     <!-- Story content -->
     <template v-else>
-      <div class="flex-1 relative overflow-hidden" @click="handleTap">
+      <div class="flex-1 relative overflow-hidden" @click="handleTap($event)">
         <!-- Section image (contained with padding so narration text fits) -->
         <img
           v-if="currentSectionImage"
           :src="currentSectionImage"
           :alt="currentSection?.title || ''"
-          class="absolute inset-0 w-full h-full object-contain p-4 pb-40 transition-opacity duration-700"
+          class="absolute inset-0 w-full h-full object-contain p-4 pb-44 transition-opacity duration-700"
           :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
           @load="imageLoaded = true" />
         <div v-else class="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
@@ -111,16 +111,9 @@
           </div>
         </div>
 
-        <!-- Paused overlay -->
-        <div v-if="paused" class="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
-          <div class="text-white/60 text-lg">Paused</div>
-        </div>
-
         <!-- Narration text overlay (bottom) -->
-        <div v-if="state === 'narrating'" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 pt-16">
-          <p v-if="currentVoice" class="text-white/60 text-sm mb-1 uppercase tracking-wider">{{ currentVoice }}</p>
+        <div v-if="state === 'narrating'" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 pb-10 pt-16">
           <p class="text-white text-xl md:text-2xl leading-relaxed">{{ currentNarrationText }}</p>
-          <p v-if="!paused" class="text-white/40 text-sm mt-3">Tap to skip</p>
         </div>
       </div>
     </template>
@@ -387,12 +380,26 @@ function advanceExample() {
   showCurrentExample()
 }
 
-// Tap to skip narration
-function handleTap() {
+// Tap left side to go back, right side to advance — works while paused too
+function handleTap(e) {
   if (state.value !== 'narrating') return
-  if (paused.value) return
+
+  const rect = e.currentTarget.getBoundingClientRect()
+  const clickX = e.clientX - rect.left
+  const isLeftSide = clickX < rect.width / 2
+
   clearAutoAdvance()
-  advanceExample()
+
+  if (isLeftSide) {
+    // Go back
+    if (currentExampleIndex.value > 0) {
+      currentExampleIndex.value--
+      showCurrentExample()
+    }
+  } else {
+    // Advance
+    advanceExample()
+  }
 }
 
 // Toggle pause
