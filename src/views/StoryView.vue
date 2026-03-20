@@ -1,7 +1,8 @@
 <template>
   <div class="fixed inset-0 z-[100] bg-black flex flex-col" style="height: 100dvh">
-    <!-- Exit button (top-left, press-and-hold 2s) -->
+    <!-- Exit button (top-left, press-and-hold 2s) — hidden in standalone/PWA mode -->
     <button
+      v-if="!isStandalone"
       class="absolute top-4 left-4 z-[110] w-14 h-14 rounded-full bg-black/50 text-white flex items-center justify-center transition-all"
       :class="{ 'ring-4 ring-white': exitProgress > 0 }"
       @pointerdown="startExit"
@@ -134,6 +135,10 @@ import { useSettings } from '../composables/useSettings'
 const router = useRouter()
 const route = useRoute()
 const emit = defineEmits(['update-title'])
+
+const isStandalone = computed(() =>
+  window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+)
 
 const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
 const { initializeAudio, cleanup, hasAudio, playSingleItem, readingQueue, currentAudio } = useAudio()
