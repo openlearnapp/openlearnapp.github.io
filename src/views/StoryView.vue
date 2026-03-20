@@ -280,23 +280,69 @@ function resolveLessonImage(imagePath) {
   return `${import.meta.env.BASE_URL}lessons/${learning.value}/${workshop.value}/${lessonFilename}/${imagePath}`
 }
 
+function getAudioBase() {
+  const lesson = currentLesson.value
+  if (!lesson) return ''
+  const lessonFilename = lesson._filename || `${String(lessonNumber.value).padStart(2, '0')}-lesson`
+  if (lesson._source?.type === 'url') {
+    return `${lesson._source.path}/audio`
+  }
+  const resolvedWorkshop = resolveWorkshopKey(learning.value, workshop.value)
+  if (resolvedWorkshop?.startsWith('http')) {
+    return `${resolvedWorkshop}/${lessonFilename}/audio`
+  }
+  return `${import.meta.env.BASE_URL}lessons/${learning.value}/${workshop.value}/${lessonFilename}/audio`
+}
+
 function resolveOptionImage(imagePath) {
   return resolveSectionImage(imagePath)
 }
 
-// Speak option text on hover using SpeechSynthesis
+// Speak option text on hover — try pre-recorded audio, fallback to SpeechSynthesis
 function speakOption(option) {
-  if (!option.text || !('speechSynthesis' in window)) return
+  if (!option.text) return
   stopSpeaking()
-  const utterance = new SpeechSynthesisUtterance(option.text)
+
+  // Try pre-recorded option audio
+  const example = currentExample.value
+  if (example && audioReady.value) {
+    const optIdx = (example.options || []).indexOf(option)
+    if (optIdx !== -1) {
+      const audioBase = getAudioBase()
+      const audioUrl = `${audioBase}/${currentSectionIndex.value}-${currentExampleIndex.value}-opt${optIdx}.mp3`
+      const audio = new Audio(audioUrl)
+      audio.playbackRate = audioSettings.value.audioSpeed || 1.0
+      audio.play().then(() => {
+        currentOptionAudio = audio
+        return
+      }).catch(() => {
+        // Fall through to TTS
+        speakWithTTS(option.text)
+      })
+      return
+    }
+  }
+
+  speakWithTTS(option.text)
+}
+
+function speakWithTTS(text) {
+  if (!('speechSynthesis' in window)) return
+  const utterance = new SpeechSynthesisUtterance(text)
   utterance.lang = 'de-DE'
   utterance.rate = 0.9
   speechSynthesis.speak(utterance)
 }
 
+let currentOptionAudio = null
+
 function stopSpeaking() {
   if ('speechSynthesis' in window) {
     speechSynthesis.cancel()
+  }
+  if (currentOptionAudio) {
+    currentOptionAudio.pause()
+    currentOptionAudio = null
   }
 }
 
@@ -414,9 +460,9 @@ async function playIntroSequence() {
   showingIntro.value = true
   state.value = 'narrating'
 
-  // Use SpeechSynthesis for titles (no pre-recorded audio for titles)
-  if ('speechSynthesis' in window && lesson.title) {
-    await speakText(lesson.title)
+  // Read lesson title (pre-recorded audio with TTS fallback)
+  if (lesson.title) {
+    await playAudioWithFallback('lesson-title', lesson.title)
     await delay(500)
   }
 
@@ -425,9 +471,9 @@ async function playIntroSequence() {
   imageLoaded.value = false
 
   const section = currentSection.value
-  if (section?.title && 'speechSynthesis' in window) {
+  if (section?.title) {
     await delay(300)
-    await speakText(section.title)
+    await playAudioWithFallback('section-title', section.title)
     await delay(400)
   }
 
@@ -435,7 +481,31 @@ async function playIntroSequence() {
   showCurrentExample()
 }
 
+// Play pre-recorded audio from the reading queue, fall back to SpeechSynthesis
+async function playAudioWithFallback(type, text) {
+  if (!text) return
+
+  // Try pre-recorded audio first
+  if (audioReady.value) {
+    const idx = readingQueue.value.findIndex(item => item.type === type && item.text === text)
+    if (idx !== -1) {
+      try {
+        await new Promise((resolve, reject) => {
+          playSingleItem(idx, audioSettings.value, resolve).catch(reject)
+        })
+        return
+      } catch {
+        // Fall through to TTS
+      }
+    }
+  }
+
+  // Fallback: SpeechSynthesis
+  await speakText(text)
+}
+
 function speakText(text) {
+  if (!('speechSynthesis' in window)) return Promise.resolve()
   return new Promise((resolve) => {
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.lang = 'de-DE'
