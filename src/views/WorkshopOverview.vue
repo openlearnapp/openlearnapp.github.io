@@ -68,6 +68,14 @@
                 <svg v-if="copiedWorkshop !== ws" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                 <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
+              <button
+                v-if="!isStandalone"
+                @click.stop="installWorkshop(ws)"
+                class="p-1.5 rounded-md hover:bg-accent transition flex-shrink-0"
+                :style="getWorkshopTitleStyle(ws)"
+                :title="isDE ? 'Als App installieren' : 'Install as app'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
             </div>
 
             <div v-if="isActive(ws)" class="mb-2">
@@ -132,11 +140,35 @@
       </div>
 
     </div>
+
+    <!-- iOS install instructions modal -->
+    <div v-if="showIOSInstall" class="fixed inset-0 z-50 bg-black/60 flex items-end justify-center p-4" @click.self="showIOSInstall = false">
+      <div class="bg-background rounded-2xl p-6 max-w-sm w-full mb-8 shadow-xl">
+        <h3 class="font-semibold text-lg text-foreground mb-3">
+          {{ isDE ? 'Als App installieren' : 'Install as App' }}
+        </h3>
+        <p class="text-muted-foreground text-sm mb-4">
+          {{ isDE
+            ? `Um "${getWorkshopTitle(iosInstallWorkshop)}" als App zu installieren:`
+            : `To install "${getWorkshopTitle(iosInstallWorkshop)}" as an app:` }}
+        </p>
+        <ol class="text-sm text-foreground space-y-2 mb-5">
+          <li>1. {{ isDE ? 'Tippe auf' : 'Tap the' }} <span class="inline-block align-middle"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span> {{ isDE ? '(Teilen-Button)' : '(Share button)' }}</li>
+          <li>2. {{ isDE ? 'Wähle "Zum Home-Bildschirm"' : 'Choose "Add to Home Screen"' }}</li>
+          <li>3. {{ isDE ? 'Tippe "Hinzufügen"' : 'Tap "Add"' }}</li>
+        </ol>
+        <button
+          @click="showIOSInstall = false"
+          class="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition">
+          {{ isDE ? 'Verstanden' : 'Got it' }}
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useLessons } from '../composables/useLessons'
 import { useLanguage } from '../composables/useLanguage'
@@ -153,6 +185,14 @@ const { selectedLanguage, setLanguage } = useLanguage()
 
 const copiedWorkshop = ref(null)
 const addedNotice = ref(null)
+const showIOSInstall = ref(false)
+const iosInstallWorkshop = ref(null)
+let deferredInstallPrompt = null
+
+const isStandalone = computed(() =>
+  window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+)
+const isIOS = computed(() => /iPad|iPhone|iPod/.test(navigator.userAgent))
 const favorites = ref(JSON.parse(localStorage.getItem('workshopFavorites') || '[]'))
 const activeWorkshops = ref(JSON.parse(localStorage.getItem('activeWorkshops') || '[]'))
 
@@ -304,6 +344,48 @@ function toggleFavorite(workshop) {
   localStorage.setItem('workshopFavorites', JSON.stringify(favorites.value))
 }
 
+function setWorkshopManifest(workshop) {
+  const title = getWorkshopTitle(workshop)
+  const manifest = {
+    name: title,
+    short_name: title,
+    start_url: `/#/${learning.value}/${workshop}/story/1`,
+    display: 'standalone',
+    background_color: '#000000',
+    theme_color: '#000000',
+    icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }]
+  }
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.querySelector('link[rel="manifest"]')
+  if (link) link.href = url
+}
+
+async function installWorkshop(workshop) {
+  setWorkshopManifest(workshop)
+
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt()
+    await deferredInstallPrompt.userChoice
+    deferredInstallPrompt = null
+    return
+  }
+
+  if (isIOS.value) {
+    iosInstallWorkshop.value = workshop
+    showIOSInstall.value = true
+    return
+  }
+
+  // Fallback: open story URL directly so user can bookmark/install manually
+  window.open(`/#/${learning.value}/${workshop}/story/1`, '_blank')
+}
+
+function handleBeforeInstallPrompt(e) {
+  e.preventDefault()
+  deferredInstallPrompt = e
+}
+
 async function copyWorkshopLink(workshop) {
   const base = window.location.href.replace(/#.*$/, '')
   const url = `${base}#/${learning.value}/${workshop}/lessons`
@@ -352,6 +434,7 @@ function cleanupLegacySources() {
 }
 
 onMounted(async () => {
+  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   cleanupLegacySources()
   // Show notification if redirected from add source with language mismatch
   if (route.query.added && route.query.availableIn) {
@@ -376,5 +459,9 @@ onMounted(async () => {
     console.log(`🎨 [WorkshopOverview] ${ws}: color="${meta.color}", primaryColor="${meta.primaryColor}"`)
   }
   emit('update-title', 'Workshops')
+})
+
+onUnmounted(() => {
+  window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 })
 </script>
