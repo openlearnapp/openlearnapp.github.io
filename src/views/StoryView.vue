@@ -35,12 +35,14 @@
       </svg>
     </button>
 
-    <!-- Scroll hint arrows (top center) -->
-    <div v-if="state === 'narrating'" class="absolute top-5 left-1/2 -translate-x-1/2 z-[110] flex flex-col items-center gap-0.5 pointer-events-none">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        :class="paused ? 'opacity-60' : 'opacity-20'"><polyline points="18 15 12 9 6 15"/></svg>
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        :class="paused ? 'opacity-20' : 'opacity-60'"><polyline points="6 9 12 15 18 9"/></svg>
+    <!-- Scroll hint: up arrow at top (when playing, scroll up to pause) -->
+    <div v-if="state === 'narrating' && !paused" class="absolute top-2 left-1/2 -translate-x-1/2 z-[110] pointer-events-none">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-30"><polyline points="18 15 12 9 6 15"/></svg>
+    </div>
+
+    <!-- Scroll hint: down arrow at bottom (when paused, scroll down to play) -->
+    <div v-if="state === 'narrating' && paused" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[110] pointer-events-none animate-bounce">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-50"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
 
     <!-- Lesson title header -->
@@ -280,23 +282,71 @@ function resolveLessonImage(imagePath) {
   return `${import.meta.env.BASE_URL}lessons/${learning.value}/${workshop.value}/${lessonFilename}/${imagePath}`
 }
 
+function getAudioBase() {
+  const lesson = currentLesson.value
+  if (!lesson) return ''
+  const lessonFilename = lesson._filename || `${String(lessonNumber.value).padStart(2, '0')}-lesson`
+  if (lesson._source?.type === 'url') {
+    return `${lesson._source.path}/audio`
+  }
+  const resolvedWorkshop = resolveWorkshopKey(learning.value, workshop.value)
+  if (resolvedWorkshop?.startsWith('http')) {
+    return `${resolvedWorkshop}/${lessonFilename}/audio`
+  }
+  return `${import.meta.env.BASE_URL}lessons/${learning.value}/${workshop.value}/${lessonFilename}/audio`
+}
+
 function resolveOptionImage(imagePath) {
   return resolveSectionImage(imagePath)
 }
 
-// Speak option text on hover using SpeechSynthesis
+// Speak option text on hover — try pre-recorded audio, fallback to SpeechSynthesis
 function speakOption(option) {
-  if (!option.text || !('speechSynthesis' in window)) return
+  if (!option.text) return
+  // Don't play option audio while question audio is still playing
+  if (currentAudio.value && !currentAudio.value.paused) return
   stopSpeaking()
-  const utterance = new SpeechSynthesisUtterance(option.text)
+
+  // Try pre-recorded option audio
+  const example = currentExample.value
+  if (example && audioReady.value) {
+    const optIdx = (example.options || []).indexOf(option)
+    if (optIdx !== -1) {
+      const audioBase = getAudioBase()
+      const audioUrl = `${audioBase}/${currentSectionIndex.value}-${currentExampleIndex.value}-opt${optIdx}.mp3`
+      const audio = new Audio(audioUrl)
+      audio.playbackRate = audioSettings.value.audioSpeed || 1.0
+      audio.play().then(() => {
+        currentOptionAudio = audio
+        return
+      }).catch(() => {
+        // Fall through to TTS
+        speakWithTTS(option.text)
+      })
+      return
+    }
+  }
+
+  speakWithTTS(option.text)
+}
+
+function speakWithTTS(text) {
+  if (!('speechSynthesis' in window)) return
+  const utterance = new SpeechSynthesisUtterance(text)
   utterance.lang = 'de-DE'
   utterance.rate = 0.9
   speechSynthesis.speak(utterance)
 }
 
+let currentOptionAudio = null
+
 function stopSpeaking() {
   if ('speechSynthesis' in window) {
     speechSynthesis.cancel()
+  }
+  if (currentOptionAudio) {
+    currentOptionAudio.pause()
+    currentOptionAudio = null
   }
 }
 
@@ -414,20 +464,24 @@ async function playIntroSequence() {
   showingIntro.value = true
   state.value = 'narrating'
 
-  // Use SpeechSynthesis for titles (no pre-recorded audio for titles)
-  if ('speechSynthesis' in window && lesson.title) {
-    await speakText(lesson.title)
+  // Read lesson title (pre-recorded audio with TTS fallback)
+  if (lesson.title) {
+    await playAudioWithFallback('lesson-title', lesson.title)
     await delay(500)
   }
 
   // Transition to section image and read section title
+  const introImage = displayImage.value
   showingIntro.value = false
-  imageLoaded.value = false
+  // Only reset imageLoaded if the image URL actually changed
+  if (displayImage.value !== introImage) {
+    imageLoaded.value = false
+  }
 
   const section = currentSection.value
-  if (section?.title && 'speechSynthesis' in window) {
+  if (section?.title) {
     await delay(300)
-    await speakText(section.title)
+    await playAudioWithFallback('section-title', section.title)
     await delay(400)
   }
 
@@ -435,7 +489,31 @@ async function playIntroSequence() {
   showCurrentExample()
 }
 
+// Play pre-recorded audio from the reading queue, fall back to SpeechSynthesis
+async function playAudioWithFallback(type, text) {
+  if (!text) return
+
+  // Try pre-recorded audio first
+  if (audioReady.value) {
+    const idx = readingQueue.value.findIndex(item => item.type === type && item.text === text)
+    if (idx !== -1) {
+      try {
+        await new Promise((resolve, reject) => {
+          playSingleItem(idx, audioSettings.value, resolve).catch(reject)
+        })
+        return
+      } catch {
+        // Fall through to TTS
+      }
+    }
+  }
+
+  // Fallback: SpeechSynthesis
+  await speakText(text)
+}
+
 function speakText(text) {
+  if (!('speechSynthesis' in window)) return Promise.resolve()
   return new Promise((resolve) => {
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.lang = 'de-DE'
@@ -549,25 +627,24 @@ function syncScrollToState() {
   setTimeout(() => { isAutoScrolling = false }, 400)
 }
 
-// Scroll-based play/pause: scroll down = play, scroll up = pause
+// Scroll-based play/pause: two states only — top (paused) / bottom (playing)
+const SCROLL_THRESHOLD = 30
 let lastScrollY = 0
+let scrollDebounce = null
 function handleScroll() {
   if (isAutoScrolling) return
+  if (state.value !== 'narrating') return
 
-  const scrollY = window.scrollY
-  if (state.value !== 'narrating') {
-    lastScrollY = scrollY
-    return
-  }
-
-  if (scrollY > lastScrollY && paused.value) {
-    // Scrolling down — play
-    togglePause()
-  } else if (scrollY < lastScrollY && !paused.value) {
-    // Scrolling up — pause
-    togglePause()
-  }
-  lastScrollY = scrollY
+  // Debounce: snap to state after scroll settles
+  if (scrollDebounce) clearTimeout(scrollDebounce)
+  scrollDebounce = setTimeout(() => {
+    const scrollY = window.scrollY
+    if (scrollY > SCROLL_THRESHOLD && paused.value) {
+      togglePause()
+    } else if (scrollY <= SCROLL_THRESHOLD && !paused.value) {
+      togglePause()
+    }
+  }, 100)
 }
 
 // Enable body scroll for iOS URL bar collapse

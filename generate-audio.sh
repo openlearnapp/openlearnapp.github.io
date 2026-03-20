@@ -268,6 +268,30 @@ process_lesson() {
         fi
       fi
 
+      # Generate assessment option audio (select/multiple-choice)
+      local option_count=$(yq eval ".sections[$s].examples[$e].options | length" "$lesson_file" 2>/dev/null)
+      if [[ "$option_count" != "null" && "$option_count" -gt 0 ]] 2>/dev/null; then
+        for ((o=0; o<option_count; o++)); do
+          local option_text=$(yq eval ".sections[$s].examples[$e].options[$o].text" "$lesson_file")
+          if [[ "$option_text" != "null" && -n "$option_text" ]]; then
+            local final_opt="$audio_dir/$s-$e-opt$o.mp3"
+
+            if [[ "$FORCE_REGENERATE" == true ]] || [[ ! -f "$final_opt" ]]; then
+              local temp_opt="$audio_dir/$s-$e-opt$o.aiff"
+              say -v "$teaching_voice" "$option_text" -o "$temp_opt" 2>/dev/null
+
+              if [[ "$HAS_FFMPEG" == true ]]; then
+                ffmpeg -i "$temp_opt" -codec:a libmp3lame -qscale:a 2 "$final_opt" -y 2>/dev/null
+                rm "$temp_opt"
+              fi
+              ((files_generated++))
+            else
+              ((files_skipped++))
+            fi
+          fi
+        done
+      fi
+
       if [[ "$answer" != "null" && -n "$answer" ]]; then
         # Generate answer audio (in learning language)
         local final_a="$audio_dir/$s-$e-a.mp3"
