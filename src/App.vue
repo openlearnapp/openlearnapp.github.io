@@ -37,9 +37,9 @@
             </div>
           </div>
 
-          <!-- Back to workshop overview (on lessons overview) -->
+          <!-- Back to workshop overview (on lessons overview, hidden in PWA) -->
           <Button
-            v-if="route.name === 'lessons-overview'"
+            v-if="route.name === 'lessons-overview' && !isStandalone"
             variant="ghost"
             size="icon"
             @click="goToWorkshopOverview"
@@ -95,13 +95,27 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </Button>
 
+          <!-- Mobile: single toggle button cycling lesson → items → results -->
+          <Button
+            v-if="canShowToggleButton"
+            variant="ghost"
+            size="icon"
+            @click="cycleView"
+            class="md:hidden bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 flex-shrink-0"
+            :class="toggleButtonTextClass"
+            :title="toggleButtonTitle"
+            :aria-label="toggleButtonTitle">
+            <span>{{ toggleButtonIcon }}</span>
+          </Button>
+
+          <!-- Desktop: individual buttons (hidden on mobile) -->
           <!-- Results / Lesson# toggle button -->
           <Button
             v-if="canShowResultsButton"
             variant="ghost"
             size="icon"
             @click="isOnResultsPage ? goBackToLesson() : goToResults()"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 flex-shrink-0"
+            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 flex-shrink-0"
             :class="isOnResultsPage && fromLessonNumber ? 'text-lg font-bold' : 'text-2xl'"
             :title="isOnResultsPage ? $t('nav.backToLessons') : $t('nav.assessmentResults')"
             :aria-label="isOnResultsPage ? $t('nav.backToLessons') : $t('nav.assessmentResults')">
@@ -109,13 +123,13 @@
             <span v-else>📋</span>
           </Button>
 
-          <!-- Coach button (visible when coach API is configured for workshop) -->
+          <!-- Coach button -->
           <Button
             v-if="hasCoach"
             variant="ghost"
             size="icon"
             @click="goToCoach"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
+            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
             :title="$t('nav.coach')"
             :aria-label="$t('nav.coach')">
             🤖
@@ -127,7 +141,7 @@
             variant="ghost"
             size="icon"
             @click="isOnItemsPage ? goBackToLesson() : goToItems()"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 flex-shrink-0"
+            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 flex-shrink-0"
             :class="isOnItemsPage && fromLessonNumber ? 'text-lg font-bold' : 'text-2xl'"
             :title="isOnItemsPage ? $t('nav.backToLessons') : $t('nav.learningItems')"
             :aria-label="isOnItemsPage ? $t('nav.backToLessons') : $t('nav.learningItems')">
@@ -135,11 +149,11 @@
             <span v-else>📚</span>
           </Button>
 
-          <!-- Profile avatar (visible when logged in, hidden on profile page) -->
+          <!-- Profile avatar (hidden on mobile, visible on desktop when logged in) -->
           <button
             v-if="!isHomePage && isGunLoggedIn && route.name !== 'profile'"
             @click="goToProfile"
-            class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 border-white/60 hover:border-white transition"
+            class="hidden md:flex flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 border-white/60 hover:border-white transition"
             :title="$t('nav.profile')"
             :aria-label="$t('nav.profile')">
             <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -280,6 +294,9 @@ const learningLanguages = computed(() => {
 const isHomePage = computed(() => route.name === 'home')
 const isStoryMode = computed(() => route.meta?.storyMode === true)
 const isWorkshopOverview = computed(() => route.name === 'workshop-overview')
+const isStandalone = computed(() =>
+  window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+)
 const isWorkshopSubpage = computed(() =>
   ['lesson-detail', 'lessons-overview', 'learning-items', 'assessment-results', 'coach'].includes(route.name)
 )
@@ -378,6 +395,28 @@ const canShowItemsButton = computed(() => {
 
 const fromLessonNumber = computed(() => {
   return route.params.number || route.query.fromLesson || null
+})
+
+// Mobile toggle button: cycles lesson → items → results → lesson
+const canShowToggleButton = computed(() => {
+  return ['lesson-detail', 'lessons-overview', 'learning-items', 'assessment-results'].includes(route.name)
+})
+
+const toggleButtonIcon = computed(() => {
+  if (route.name === 'learning-items') return '📋'
+  if (route.name === 'assessment-results') return fromLessonNumber.value || '📚'
+  return '📚' // on lesson-detail or lessons-overview, next is items
+})
+
+const toggleButtonTitle = computed(() => {
+  if (route.name === 'learning-items') return 'Results'
+  if (route.name === 'assessment-results') return 'Lesson'
+  return 'Items'
+})
+
+const toggleButtonTextClass = computed(() => {
+  if (route.name === 'assessment-results' && fromLessonNumber.value) return 'text-lg font-bold'
+  return 'text-2xl'
 })
 
 function toggleLanguageMenu() {
@@ -547,6 +586,17 @@ function goToItems() {
         query
       })
     }
+  }
+}
+
+function cycleView() {
+  if (route.name === 'learning-items') {
+    goToResults()
+  } else if (route.name === 'assessment-results') {
+    goBackToLesson()
+  } else {
+    // lesson-detail or lessons-overview → items
+    goToItems()
   }
 }
 

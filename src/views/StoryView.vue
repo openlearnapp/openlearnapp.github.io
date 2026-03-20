@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 z-[100] bg-black flex flex-col" style="height: 100dvh">
+  <div class="fixed inset-0 z-[100] bg-black flex flex-col" style="height: 100svh">
     <!-- Exit button (top-left, press-and-hold 2s) -->
     <button
       class="absolute top-4 left-4 z-[110] w-14 h-14 rounded-full bg-black/50 text-white flex items-center justify-center transition-all"
