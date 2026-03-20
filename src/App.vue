@@ -37,9 +37,9 @@
             </div>
           </div>
 
-          <!-- Back to workshop overview (on lessons overview) -->
+          <!-- Back to workshop overview (on lessons overview, hidden in PWA) -->
           <Button
-            v-if="route.name === 'lessons-overview'"
+            v-if="route.name === 'lessons-overview' && !isStandalone"
             variant="ghost"
             size="icon"
             @click="goToWorkshopOverview"
@@ -280,6 +280,9 @@ const learningLanguages = computed(() => {
 const isHomePage = computed(() => route.name === 'home')
 const isStoryMode = computed(() => route.meta?.storyMode === true)
 const isWorkshopOverview = computed(() => route.name === 'workshop-overview')
+const isStandalone = computed(() =>
+  window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+)
 const isWorkshopSubpage = computed(() =>
   ['lesson-detail', 'lessons-overview', 'learning-items', 'assessment-results', 'coach'].includes(route.name)
 )
