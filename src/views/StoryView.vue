@@ -453,14 +453,26 @@ function togglePause() {
     if (currentAudio.value) {
       currentAudio.value.pause()
     }
+    syncScrollToState()
   } else {
     playCurrentAudio()
+    syncScrollToState()
   }
+}
+
+// Sync scroll position to play/pause state
+let isAutoScrolling = false
+function syncScrollToState() {
+  isAutoScrolling = true
+  window.scrollTo({ top: paused.value ? 0 : 100, behavior: 'smooth' })
+  setTimeout(() => { isAutoScrolling = false }, 400)
 }
 
 // Scroll-based play/pause: scroll down = play, scroll up = pause
 let lastScrollY = 0
 function handleScroll() {
+  if (isAutoScrolling) return
+
   const scrollY = window.scrollY
   if (state.value !== 'narrating') {
     lastScrollY = scrollY
@@ -483,7 +495,7 @@ function enableBodyScroll() {
   savedBodyHeight = document.body.style.height
   document.body.style.overflow = 'auto'
   document.body.style.height = '200lvh'
-  // Start scrolled down so URL bar is collapsed and story is playing
+  // Start scrolled down slightly
   nextTick(() => {
     window.scrollTo(0, 1)
     lastScrollY = 1
