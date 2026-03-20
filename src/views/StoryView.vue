@@ -43,6 +43,11 @@
         :class="paused ? 'opacity-20' : 'opacity-60'"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
 
+    <!-- Lesson title header -->
+    <div v-if="state !== 'loading'" class="absolute top-0 left-0 right-0 z-[105] text-center pt-2 pointer-events-none">
+      <p class="text-white/40 text-xs font-medium tracking-wide truncate px-20">{{ currentLesson?.title }}</p>
+    </div>
+
     <!-- Loading state -->
     <div v-if="state === 'loading'" class="flex-1 flex items-center justify-center">
       <div class="text-white text-2xl animate-pulse">Loading story...</div>
@@ -54,19 +59,19 @@
         <!-- Background -->
         <div v-if="isAssessmentState" class="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
         <template v-else>
-          <!-- Section image -->
+          <!-- Display image (lesson intro image or section image) -->
           <img
-            v-if="currentSectionImage"
-            :src="currentSectionImage"
+            v-if="displayImage"
+            :src="displayImage"
             :alt="currentSection?.title || ''"
-            class="absolute inset-0 w-full h-full object-contain p-4 pb-44 pt-20 transition-opacity duration-700"
+            class="absolute inset-0 w-full h-full object-contain p-4 pb-32 pt-16 transition-opacity duration-700"
             :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
             @load="imageLoaded = true" />
           <div v-else class="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
 
-          <!-- Section title (below image area) -->
-          <div v-if="currentSection?.title && currentSectionImage" class="absolute bottom-36 left-0 right-0 text-center pointer-events-none">
-            <p class="text-white/50 text-sm uppercase tracking-wider">{{ currentSection.title }}</p>
+          <!-- Section title (left-aligned, directly below image) -->
+          <div v-if="currentSection?.title && displayImage && state === 'narrating'" class="absolute bottom-28 left-0 right-0 px-6 pointer-events-none">
+            <p class="text-white/50 text-sm tracking-wider">{{ currentSection.title }}</p>
           </div>
         </template>
 
@@ -129,12 +134,17 @@
         </div>
 
         <!-- Narration text overlay -->
-        <div v-if="state === 'narrating'"
+        <div v-if="state === 'narrating' && !showingIntro"
           class="absolute left-0 right-0 p-6"
           :class="currentSectionImage
             ? 'bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent pb-10 pt-16'
             : 'inset-0 flex items-center justify-center'">
           <p class="text-white text-xl md:text-2xl leading-relaxed" :class="!currentSectionImage && 'text-center'">{{ currentNarrationText }}</p>
+        </div>
+
+        <!-- Intro title overlay (centered) -->
+        <div v-if="showingIntro" class="absolute inset-0 flex items-center justify-center p-6 pointer-events-none">
+          <p class="text-white text-2xl md:text-3xl font-semibold text-center leading-relaxed">{{ currentLesson?.title }}</p>
         </div>
       </div>
     </template>
@@ -202,6 +212,19 @@ const currentSectionImage = computed(() => {
   return resolveSectionImage(currentSection.value.image)
 })
 
+// Lesson-level image for intro
+const currentLessonImage = computed(() => {
+  if (!currentLesson.value?.image) return null
+  return resolveLessonImage(currentLesson.value.image)
+})
+
+// Show lesson image during intro, section image otherwise
+const showingIntro = ref(false)
+const displayImage = computed(() => {
+  if (showingIntro.value && currentLessonImage.value) return currentLessonImage.value
+  return currentSectionImage.value
+})
+
 const currentExample = computed(() => {
   if (!currentSection.value?.examples) return null
   return currentSection.value.examples[currentExampleIndex.value] || null
@@ -241,6 +264,19 @@ function resolveSectionImage(imagePath) {
   if (resolvedWorkshop?.startsWith('http')) {
     return `${resolvedWorkshop}/${lessonFilename}/${imagePath}`
   }
+  return `${import.meta.env.BASE_URL}lessons/${learning.value}/${workshop.value}/${lessonFilename}/${imagePath}`
+}
+
+function resolveLessonImage(imagePath) {
+  if (!imagePath) return null
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('/')) {
+    return imagePath
+  }
+  const lesson = currentLesson.value
+  if (lesson?._source?.type === 'url') {
+    return `${lesson._source.path}/${imagePath}`
+  }
+  const lessonFilename = lesson?._filename || `${String(lessonNumber.value).padStart(2, '0')}-lesson`
   return `${import.meta.env.BASE_URL}lessons/${learning.value}/${workshop.value}/${lessonFilename}/${imagePath}`
 }
 
@@ -366,7 +402,52 @@ async function loadAndStart() {
   await initializeAudio(lesson, learning.value, workshop.value, audioSettings.value)
   audioReady.value = hasAudio.value
 
+  // Intro sequence: show lesson image, read lesson title, then section title, then examples
+  await playIntroSequence()
+}
+
+async function playIntroSequence() {
+  const lesson = currentLesson.value
+  if (!lesson) return
+
+  // Show lesson image during intro
+  showingIntro.value = true
+  state.value = 'narrating'
+
+  // Use SpeechSynthesis for titles (no pre-recorded audio for titles)
+  if ('speechSynthesis' in window && lesson.title) {
+    await speakText(lesson.title)
+    await delay(500)
+  }
+
+  // Transition to section image and read section title
+  showingIntro.value = false
+  imageLoaded.value = false
+
+  const section = currentSection.value
+  if (section?.title && 'speechSynthesis' in window) {
+    await delay(300)
+    await speakText(section.title)
+    await delay(400)
+  }
+
+  // Now start the normal example flow
   showCurrentExample()
+}
+
+function speakText(text) {
+  return new Promise((resolve) => {
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = 'de-DE'
+    utterance.rate = 0.9
+    utterance.onend = resolve
+    utterance.onerror = resolve
+    speechSynthesis.speak(utterance)
+  })
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 function showCurrentExample() {
