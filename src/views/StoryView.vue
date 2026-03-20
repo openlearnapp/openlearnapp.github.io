@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 z-[100] bg-black flex flex-col" style="height: 100svh">
+  <div class="fixed inset-0 z-[100] bg-black flex flex-col" style="height: 100lvh">
     <!-- Exit button (top-left, press-and-hold 2s) -->
     <button
       class="absolute top-4 left-4 z-[110] w-14 h-14 rounded-full bg-black/50 text-white flex items-center justify-center transition-all"
@@ -35,6 +35,14 @@
       </svg>
     </button>
 
+    <!-- Scroll hint arrows (top center) -->
+    <div v-if="state === 'narrating'" class="absolute top-5 left-1/2 -translate-x-1/2 z-[110] flex flex-col items-center gap-0.5 pointer-events-none">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        :class="paused ? 'opacity-60' : 'opacity-20'"><polyline points="18 15 12 9 6 15"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        :class="paused ? 'opacity-20' : 'opacity-60'"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+
     <!-- Loading state -->
     <div v-if="state === 'loading'" class="flex-1 flex items-center justify-center">
       <div class="text-white text-2xl animate-pulse">Loading story...</div>
@@ -43,18 +51,27 @@
     <!-- Story content -->
     <template v-else>
       <div class="flex-1 relative overflow-hidden" @click="handleTap($event)">
-        <!-- Section image (contained with padding so narration text fits) -->
-        <img
-          v-if="currentSectionImage"
-          :src="currentSectionImage"
-          :alt="currentSection?.title || ''"
-          class="absolute inset-0 w-full h-full object-contain p-4 pb-44 transition-opacity duration-700"
-          :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
-          @load="imageLoaded = true" />
-        <div v-else class="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
+        <!-- Background -->
+        <div v-if="isAssessmentState" class="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
+        <template v-else>
+          <!-- Section image -->
+          <img
+            v-if="currentSectionImage"
+            :src="currentSectionImage"
+            :alt="currentSection?.title || ''"
+            class="absolute inset-0 w-full h-full object-contain p-4 pb-44 pt-20 transition-opacity duration-700"
+            :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
+            @load="imageLoaded = true" />
+          <div v-else class="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
+
+          <!-- Section title (below image area) -->
+          <div v-if="currentSection?.title && currentSectionImage" class="absolute bottom-36 left-0 right-0 text-center pointer-events-none">
+            <p class="text-white/50 text-sm uppercase tracking-wider">{{ currentSection.title }}</p>
+          </div>
+        </template>
 
         <!-- Choice cards overlay (select/multiple-choice) -->
-        <div v-if="state === 'choosing'" class="absolute inset-0 bg-black/60 flex items-center justify-center p-6">
+        <div v-if="state === 'choosing'" class="absolute inset-0 bg-black/90 flex items-center justify-center p-6">
           <div class="flex flex-col items-center gap-6 max-w-2xl w-full">
             <!-- Question text -->
             <p class="text-white text-xl md:text-2xl text-center leading-relaxed">{{ currentNarrationText }}</p>
@@ -87,7 +104,7 @@
         </div>
 
         <!-- Text input overlay -->
-        <div v-if="state === 'input'" class="absolute inset-0 bg-black/60 flex items-center justify-center p-6" @click.stop>
+        <div v-if="state === 'input'" class="absolute inset-0 bg-black/90 flex items-center justify-center p-6" @click.stop>
           <div class="flex flex-col items-center gap-6 max-w-lg w-full">
             <p class="text-white text-xl md:text-2xl text-center leading-relaxed">{{ currentNarrationText }}</p>
             <div class="w-full relative">
@@ -165,9 +182,15 @@ const exitProgress = ref(0)
 let exitTimer = null
 let exitInterval = null
 
+// Scroll play/pause state
+let savedBodyOverflow = ''
+let savedBodyHeight = ''
+
 const learning = computed(() => route.params.learning)
 const workshop = computed(() => route.params.workshop)
 const lessonNumber = computed(() => parseInt(route.params.number))
+
+const isAssessmentState = computed(() => state.value === 'choosing' || state.value === 'input')
 
 const currentSection = computed(() => {
   if (!currentLesson.value?.sections) return null
@@ -435,6 +458,44 @@ function togglePause() {
   }
 }
 
+// Scroll-based play/pause: scroll down = play, scroll up = pause
+let lastScrollY = 0
+function handleScroll() {
+  const scrollY = window.scrollY
+  if (state.value !== 'narrating') {
+    lastScrollY = scrollY
+    return
+  }
+
+  if (scrollY > lastScrollY && paused.value) {
+    // Scrolling down — play
+    togglePause()
+  } else if (scrollY < lastScrollY && !paused.value) {
+    // Scrolling up — pause
+    togglePause()
+  }
+  lastScrollY = scrollY
+}
+
+// Enable body scroll for iOS URL bar collapse
+function enableBodyScroll() {
+  savedBodyOverflow = document.body.style.overflow
+  savedBodyHeight = document.body.style.height
+  document.body.style.overflow = 'auto'
+  document.body.style.height = '200lvh'
+  // Start scrolled down so URL bar is collapsed and story is playing
+  nextTick(() => {
+    window.scrollTo(0, 1)
+    lastScrollY = 1
+  })
+}
+
+function restoreBodyScroll() {
+  document.body.style.overflow = savedBodyOverflow
+  document.body.style.height = savedBodyHeight
+  window.scrollTo(0, 0)
+}
+
 // Keyboard controls
 function handleKeydown(e) {
   if (e.code === 'Escape' && !e.repeat) {
@@ -640,12 +701,16 @@ function goToOverview() {
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
   document.addEventListener('keyup', handleKeyup)
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  enableBodyScroll()
   loadAndStart()
 })
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
   document.removeEventListener('keyup', handleKeyup)
+  window.removeEventListener('scroll', handleScroll)
+  restoreBodyScroll()
   clearAutoAdvance()
   cancelExit()
   cleanup()
