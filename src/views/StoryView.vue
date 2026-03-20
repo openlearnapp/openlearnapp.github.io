@@ -45,11 +45,6 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-50"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
 
-    <!-- Lesson title header -->
-    <div v-if="state !== 'loading'" class="absolute top-0 left-0 right-0 z-[105] text-center pt-2 pointer-events-none">
-      <p class="text-white/40 text-xs font-medium tracking-wide truncate px-20">{{ currentLesson?.title }}</p>
-    </div>
-
     <!-- Loading state -->
     <div v-if="state === 'loading'" class="flex-1 flex items-center justify-center">
       <div class="text-white text-2xl animate-pulse">Loading story...</div>
@@ -107,6 +102,13 @@
                 </div>
               </button>
             </div>
+            <!-- Help button -->
+            <button
+              v-if="optionFeedback === null && multiWrong === null"
+              @click.stop="useHelp"
+              class="mt-2 px-5 py-2 rounded-full bg-white/10 border border-white/20 text-white/50 text-sm hover:bg-white/20 hover:text-white/80 transition-all">
+              💡
+            </button>
           </div>
         </div>
 
@@ -114,7 +116,7 @@
         <div v-if="state === 'input'" class="absolute inset-0 bg-black/90 flex items-center justify-center p-6" @click.stop>
           <div class="flex flex-col items-center gap-6 max-w-lg w-full">
             <p class="text-white text-xl md:text-2xl text-center leading-relaxed">{{ currentNarrationText }}</p>
-            <div class="w-full relative">
+            <div v-if="!showingHelp" class="w-full relative">
               <input
                 ref="inputRef"
                 v-model="inputAnswer"
@@ -126,11 +128,22 @@
                 placeholder="Antwort eingeben..."
                 autocomplete="off" />
             </div>
-            <button
-              @click.stop="submitInput"
-              class="px-8 py-3 rounded-full bg-white/20 border-2 border-white/40 text-white text-lg font-semibold hover:bg-white/30 transition-all active:scale-95">
-              OK
-            </button>
+            <!-- Show answer when help is used -->
+            <p v-if="showingHelp" class="text-yellow-300 text-xl md:text-2xl text-center leading-relaxed">{{ helpAnswer }}</p>
+            <div class="flex items-center gap-3">
+              <button
+                v-if="!showingHelp"
+                @click.stop="submitInput"
+                class="px-8 py-3 rounded-full bg-white/20 border-2 border-white/40 text-white text-lg font-semibold hover:bg-white/30 transition-all active:scale-95">
+                OK
+              </button>
+              <button
+                v-if="!showingHelp && inputFeedback === null"
+                @click.stop="useHelp"
+                class="px-5 py-3 rounded-full bg-white/10 border border-white/20 text-white/50 text-sm hover:bg-white/20 hover:text-white/80 transition-all">
+                💡
+              </button>
+            </div>
             <p v-if="inputFeedback === false" class="text-red-300 text-sm">Versuch es nochmal...</p>
           </div>
         </div>
@@ -159,6 +172,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useLessons } from '../composables/useLessons'
 import { useAudio } from '../composables/useAudio'
 import { useSettings } from '../composables/useSettings'
+import { useAssessments } from '../composables/useAssessments'
 
 const router = useRouter()
 const route = useRoute()
@@ -167,6 +181,7 @@ const emit = defineEmits(['update-title'])
 const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
 const { initializeAudio, cleanup, hasAudio, playSingleItem, readingQueue, currentAudio } = useAudio()
 const { settings } = useSettings()
+const { saveAnswer } = useAssessments()
 
 // State machine: loading | narrating | choosing | input
 const state = ref('loading')
@@ -188,6 +203,8 @@ const multiWrong = ref(null) // index of wrong pick in multi-choice
 const inputAnswer = ref('')
 const inputFeedback = ref(null) // null = no feedback, true = correct, false = wrong
 const inputRef = ref(null)
+const showingHelp = ref(false)
+const helpAnswer = ref('')
 
 // Exit button
 const exitProgress = ref(0)
@@ -544,6 +561,8 @@ function showCurrentExample() {
   multiWrong.value = null
   inputAnswer.value = ''
   inputFeedback.value = null
+  showingHelp.value = false
+  helpAnswer.value = ''
 
   if (example.type === 'input') {
     // Show text input (with answers array + goto_wrong support)
@@ -803,6 +822,44 @@ function submitInput() {
         }, 1500)
       }
     }
+  }
+}
+
+// Help button: show correct answer and advance
+function useHelp() {
+  const example = currentExample.value
+  if (!example) return
+
+  // Record as helped in stats
+  saveAnswer(learning.value, workshop.value, lessonNumber.value,
+    currentSectionIndex.value, currentExampleIndex.value,
+    { answer: '💡 help', correct: false, helped: true })
+
+  if (example.type === 'input') {
+    // Show the correct answer text
+    const answer = example.answers?.[0]?.text || example.a || ''
+    helpAnswer.value = answer
+    showingHelp.value = true
+
+    // Navigate after showing the answer
+    setTimeout(() => {
+      navigateGoto(example.goto_correct)
+    }, 2000)
+    return
+  }
+
+  if (example.type === 'select' || example.type === 'multiple-choice') {
+    // Highlight the correct option(s) and advance
+    const correctIdx = (example.options || []).findIndex(o => o.correct)
+    if (correctIdx !== -1) {
+      optionFeedback.value = correctIdx
+      lastChoiceCorrect.value = true
+    }
+
+    setTimeout(() => {
+      optionFeedback.value = null
+      navigateGoto(example.goto_correct)
+    }, 1500)
   }
 }
 
