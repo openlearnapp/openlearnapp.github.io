@@ -234,6 +234,9 @@ async function loadLessons() {
   lessons.value = await loadAllLessonsForWorkshop(learning.value, workshop.value)
   isLoading.value = false
 
+  // Update manifest so "Add to Home Screen" uses this workshop's name and URL
+  setWorkshopManifest()
+
   const meta = getWorkshopMeta(learning.value, workshop.value)
   console.log(`🎨 [LessonsOverview] ${workshop.value}: color="${meta.color}", primaryColor="${meta.primaryColor}"`)
   emit('update-title', meta.title || formatLangName(workshop.value))
