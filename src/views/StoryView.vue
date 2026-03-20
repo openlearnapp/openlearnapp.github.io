@@ -390,7 +390,7 @@ function showCurrentExample() {
     // Show text input (with answers array + goto_wrong support)
     state.value = 'input'
     clearAutoAdvance()
-    if (!paused.value) playCurrentAudio()
+    playCurrentAudio()
     nextTick(() => { inputRef.value?.focus() })
     return
   }
@@ -398,7 +398,7 @@ function showCurrentExample() {
   if (example.type === 'select' || example.type === 'multiple-choice') {
     state.value = 'choosing'
     clearAutoAdvance()
-    if (!paused.value) playCurrentAudio()
+    playCurrentAudio()
     return
   }
 
