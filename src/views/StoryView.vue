@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 z-[100] bg-black flex flex-col" style="height: 100dvh">
+  <div class="fixed inset-0 z-[100] bg-black flex flex-col" style="height: 100svh">
     <!-- Exit button (top-left, press-and-hold 2s) — hidden in standalone/PWA mode -->
     <button
       v-if="!isStandalone"
