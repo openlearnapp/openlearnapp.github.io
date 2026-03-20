@@ -45,11 +45,6 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-50"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
 
-    <!-- Lesson title header -->
-    <div v-if="state !== 'loading'" class="absolute top-0 left-0 right-0 z-[105] text-center pt-2 pointer-events-none">
-      <p class="text-white/40 text-xs font-medium tracking-wide truncate px-20">{{ currentLesson?.title }}</p>
-    </div>
-
     <!-- Loading state -->
     <div v-if="state === 'loading'" class="flex-1 flex items-center justify-center">
       <div class="text-white text-2xl animate-pulse">Loading story...</div>
