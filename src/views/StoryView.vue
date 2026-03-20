@@ -35,12 +35,14 @@
       </svg>
     </button>
 
-    <!-- Scroll hint arrows (top center) -->
-    <div v-if="state === 'narrating'" class="absolute top-5 left-1/2 -translate-x-1/2 z-[110] flex flex-col items-center gap-0.5 pointer-events-none">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        :class="paused ? 'opacity-60' : 'opacity-20'"><polyline points="18 15 12 9 6 15"/></svg>
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        :class="paused ? 'opacity-20' : 'opacity-60'"><polyline points="6 9 12 15 18 9"/></svg>
+    <!-- Scroll hint: up arrow at top (when playing, scroll up to pause) -->
+    <div v-if="state === 'narrating' && !paused" class="absolute top-2 left-1/2 -translate-x-1/2 z-[110] pointer-events-none">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-30"><polyline points="18 15 12 9 6 15"/></svg>
+    </div>
+
+    <!-- Scroll hint: down arrow at bottom (when paused, scroll down to play) -->
+    <div v-if="state === 'narrating' && paused" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[110] pointer-events-none animate-bounce">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-50"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
 
     <!-- Lesson title header -->
@@ -301,6 +303,8 @@ function resolveOptionImage(imagePath) {
 // Speak option text on hover — try pre-recorded audio, fallback to SpeechSynthesis
 function speakOption(option) {
   if (!option.text) return
+  // Don't play option audio while question audio is still playing
+  if (currentAudio.value && !currentAudio.value.paused) return
   stopSpeaking()
 
   // Try pre-recorded option audio
@@ -467,8 +471,12 @@ async function playIntroSequence() {
   }
 
   // Transition to section image and read section title
+  const introImage = displayImage.value
   showingIntro.value = false
-  imageLoaded.value = false
+  // Only reset imageLoaded if the image URL actually changed
+  if (displayImage.value !== introImage) {
+    imageLoaded.value = false
+  }
 
   const section = currentSection.value
   if (section?.title) {
@@ -619,25 +627,24 @@ function syncScrollToState() {
   setTimeout(() => { isAutoScrolling = false }, 400)
 }
 
-// Scroll-based play/pause: scroll down = play, scroll up = pause
+// Scroll-based play/pause: two states only — top (paused) / bottom (playing)
+const SCROLL_THRESHOLD = 30
 let lastScrollY = 0
+let scrollDebounce = null
 function handleScroll() {
   if (isAutoScrolling) return
+  if (state.value !== 'narrating') return
 
-  const scrollY = window.scrollY
-  if (state.value !== 'narrating') {
-    lastScrollY = scrollY
-    return
-  }
-
-  if (scrollY > lastScrollY && paused.value) {
-    // Scrolling down — play
-    togglePause()
-  } else if (scrollY < lastScrollY && !paused.value) {
-    // Scrolling up — pause
-    togglePause()
-  }
-  lastScrollY = scrollY
+  // Debounce: snap to state after scroll settles
+  if (scrollDebounce) clearTimeout(scrollDebounce)
+  scrollDebounce = setTimeout(() => {
+    const scrollY = window.scrollY
+    if (scrollY > SCROLL_THRESHOLD && paused.value) {
+      togglePause()
+    } else if (scrollY <= SCROLL_THRESHOLD && !paused.value) {
+      togglePause()
+    }
+  }, 100)
 }
 
 // Enable body scroll for iOS URL bar collapse
