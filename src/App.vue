@@ -403,9 +403,10 @@ const canShowToggleButton = computed(() => {
 })
 
 const toggleButtonIcon = computed(() => {
-  if (route.name === 'learning-items') return '📋'
-  if (route.name === 'assessment-results') return fromLessonNumber.value || '📚'
-  return '📚' // on lesson-detail or lessons-overview, next is items
+  // Show icon for the NEXT view in the cycle
+  if (route.name === 'learning-items') return '📋'       // next: results
+  if (route.name === 'assessment-results') return fromLessonNumber.value || '🔢' // next: lesson
+  return '🔤'                                            // next: items (vocab)
 })
 
 const toggleButtonTitle = computed(() => {
