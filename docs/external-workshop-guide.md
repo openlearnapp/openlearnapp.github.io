@@ -522,19 +522,39 @@ Instead of creating workshops manually, you can use the **Workshop Creator Plugi
 /install-plugin https://github.com/openlearnapp/plugin-workshop-creator
 ```
 
-### Usage
+### Workflow
+
+```
+/workshop-creator <topic>            Create workshop in one language
+        ↓
+/translate-workshop <name> --lang en Add more languages
+        ↓
+/extend-workshop <name> --lessons N  Add more lessons over time
+        ↓
+/publish-workshop <name>             Deploy to GitHub Pages
+```
+
+### Commands
 
 | Command | Description |
 |---------|-------------|
-| `/workshop-creator <topic>` | Generate a complete workshop with lessons, assessments, and thumbnails |
-| `/import-workshop [name]` | Import a finished workshop into GitHub and deploy via GitHub Pages |
-| `/check-workshops` | Show status of all workshops |
+| `/workshop-creator <topic>` | Create a workshop in one language with lessons, assessments, and thumbnails |
+| `/translate-workshop <name> --lang <code>` | Add a new language translation to an existing workshop |
+| `/extend-workshop <name> --lessons 11-20` | Add more lessons to an existing workshop |
+| `/publish-workshop [name]` | Publish to GitHub and deploy via GitHub Pages |
+| `/check-workshops` | Show status of all workshops (local, online, sources) |
+
+### Features
 
 The plugin generates Schema Version 2 compliant content with:
-- Multiple interface languages (German, English, Farsi, Arabic)
-- Interactive assessments with `correct` markers
+- Interactive assessments with `correct` markers (input, select, multiple-choice)
 - SVG thumbnails and GitHub Pages deployment workflow
 - Evidence-based learning methods (Active Recall, Spaced Repetition, Desirable Difficulty)
+- `CONTRIBUTING.md` in every workshop for community translations
+
+### Community Translations
+
+Each workshop includes a `CONTRIBUTING.md` that explains how to add a new language. Contributors translate `a`, `explanation`, `title`, and `description` fields — while `q`, `rel` IDs, `labels`, and `type` stay unchanged.
 
 See the [plugin repository](https://github.com/openlearnapp/plugin-workshop-creator) for full documentation.
 
