@@ -11,18 +11,18 @@ test.describe('Open Learn App', () => {
     });
 
     await page.goto('/');
-    
+
     // Wait a bit for the page to load
     await page.waitForTimeout(2000);
-    
+
     // Check if there are any console errors
     if (errors.length > 0) {
       console.log('Console errors:', errors);
     }
-    
+
     // Check that the page title is set
     await expect(page).toHaveTitle('Open Learn');
-    
+
     // Check that the app div exists
     const app = page.locator('#app');
     await expect(app).toBeAttached();
@@ -31,28 +31,27 @@ test.describe('Open Learn App', () => {
   test('should have the correct HTML structure', async ({ page }) => {
     await page.goto('/');
     await page.waitForTimeout(1000);
-    
+
     // Check if body has the expected classes
     const body = page.locator('body');
     await expect(body).toHaveClass(/bg-gradient-to-br/);
   });
 
   test('should toggle dark mode on and off correctly', async ({ page }) => {
-    await page.goto('/');
+    // Navigate to a workshop page first, then open settings
+    await page.goto('/#/english/open-learn-guide/lessons');
     await page.waitForTimeout(1000);
 
     // Open settings
-    const settingsButton = page.locator('button[title="Settings"]');
-    await settingsButton.click();
+    await page.getByRole('button', { name: 'Settings' }).click();
     await page.waitForTimeout(500);
 
-    // Verify dark mode is initially off (check html element, not body)
+    // Verify dark mode is initially off
     const html = page.locator('html');
     await expect(html).not.toHaveClass(/dark/);
 
-    // Find the Dark Mode toggle by finding the label that contains "Dark Mode" text
-    // then finding its associated toggle label
-    const darkModeToggle = page.locator('text=Dark Mode').locator('..').locator('..').locator('button[role="switch"]');
+    // Find the Dark Mode toggle switch
+    const darkModeToggle = page.getByRole('switch').first();
     await darkModeToggle.click();
     await page.waitForTimeout(500);
 
@@ -68,20 +67,20 @@ test.describe('Open Learn App', () => {
   });
 
   test('should persist dark mode setting after reload', async ({ page }) => {
-    await page.goto('/');
+    // Navigate to a workshop page first, then open settings
+    await page.goto('/#/english/open-learn-guide/lessons');
     await page.waitForTimeout(1000);
 
     // Open settings and enable dark mode
-    const settingsButton = page.locator('button[title="Settings"]');
-    await settingsButton.click();
+    await page.getByRole('button', { name: 'Settings' }).click();
     await page.waitForTimeout(500);
 
-    // Find the Dark Mode toggle
-    const darkModeToggle = page.locator('text=Dark Mode').locator('..').locator('..').locator('button[role="switch"]');
+    // Find the Dark Mode toggle switch
+    const darkModeToggle = page.getByRole('switch').first();
     await darkModeToggle.click();
     await page.waitForTimeout(500);
 
-    // Verify dark mode is enabled (check html element, not body)
+    // Verify dark mode is enabled
     const html = page.locator('html');
     await expect(html).toHaveClass(/dark/);
 

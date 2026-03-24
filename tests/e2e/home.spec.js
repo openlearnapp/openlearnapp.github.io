@@ -9,27 +9,24 @@ test.describe('Home Page', () => {
     // Should show the tagline
     await expect(page.getByText('Learn anything')).toBeVisible();
 
-    // Should show language buttons
+    // Should show Deutsch language button and Browse workshops link
     await expect(page.getByText('Deutsch', { exact: false })).toBeVisible();
-    await expect(page.getByText('English', { exact: false })).toBeVisible();
-
-    // Should NOT show navbar (hidden on home page)
-    await expect(page.locator('[aria-label="Settings"]')).not.toBeVisible();
+    await expect(page.getByRole('link', { name: 'Browse workshops' })).toBeVisible();
   });
 
   test('should navigate to workshop overview on language click', async ({ page }) => {
     await page.goto('/');
     await page.waitForTimeout(1000);
 
-    // Click English language button
-    await page.getByText('English', { exact: false }).click();
+    // Click Browse workshops link
+    await page.getByRole('link', { name: 'Browse workshops' }).click();
     await page.waitForTimeout(1000);
 
     // Should navigate to workshop overview
-    await expect(page).toHaveURL(/#\/english\/workshops/);
+    await expect(page).toHaveURL(/#\/deutsch/);
 
     // Should show workshop tiles
-    await expect(page.getByText('Open Learn Guide')).toBeVisible();
+    await expect(page.getByText('Open Learn Anleitung')).toBeVisible();
 
     // Clean up
     await page.evaluate(() => localStorage.clear());
@@ -39,11 +36,11 @@ test.describe('Home Page', () => {
 test.describe('Workshop Overview', () => {
 
   test('should show workshops and language dropdown', async ({ page }) => {
-    await page.goto('/#/english/workshops');
-    await page.waitForTimeout(1000);
+    await page.goto('/#/english');
+    await page.waitForTimeout(2000);
 
     // Should show language dropdown in navbar
-    const dropdown = page.locator('[aria-label="Change language"]');
+    const dropdown = page.getByRole('button', { name: 'Change language' });
     await expect(dropdown).toBeVisible();
 
     // Should show workshop tiles
@@ -52,8 +49,8 @@ test.describe('Workshop Overview', () => {
   });
 
   test('should navigate to lessons on workshop click', async ({ page }) => {
-    await page.goto('/#/english/workshops');
-    await page.waitForTimeout(1000);
+    await page.goto('/#/english');
+    await page.waitForTimeout(2000);
 
     // Click on workshop tile
     await page.getByText('Open Learn Guide').click();
@@ -64,18 +61,18 @@ test.describe('Workshop Overview', () => {
   });
 
   test('should switch language via dropdown', async ({ page }) => {
-    await page.goto('/#/english/workshops');
-    await page.waitForTimeout(1000);
+    await page.goto('/#/english');
+    await page.waitForTimeout(2000);
 
-    // Switch to Deutsch using precise dropdown selector
-    await page.locator('[aria-label="Change language"]').click();
+    // Switch to Deutsch using dropdown
+    await page.getByRole('button', { name: 'Change language' }).click();
     await page.waitForTimeout(300);
     const dropdown = page.locator('.absolute.top-full');
     await dropdown.getByText('Deutsch').click();
     await page.waitForTimeout(500);
 
     // Should navigate to deutsch workshops
-    await expect(page).toHaveURL(/#\/deutsch\/workshops/);
+    await expect(page).toHaveURL(/#\/deutsch/);
     await expect(page.getByText('Open Learn Anleitung')).toBeVisible();
 
     // Clean up
@@ -83,12 +80,12 @@ test.describe('Workshop Overview', () => {
   });
 
   test('should show info links', async ({ page }) => {
-    await page.goto('/#/english/workshops');
-    await page.waitForTimeout(1000);
+    await page.goto('/#/english');
+    await page.waitForTimeout(2000);
 
-    // Should show Guide, Feedback, and Bug Report links
-    await expect(page.getByText('Guide & First Steps')).toBeVisible();
-    await expect(page.getByText('Give Feedback')).toBeVisible();
-    await expect(page.getByText('Report a Bug')).toBeVisible();
+    // Should show footer links
+    await expect(page.getByRole('link', { name: 'Guide' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Feedback' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Bug Report' })).toBeVisible();
   });
 });

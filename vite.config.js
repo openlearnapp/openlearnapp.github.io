@@ -1,17 +1,13 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import basicSsl from '@vitejs/plugin-basic-ssl'
 import path from 'path'
 
 export default defineConfig(({ command }) => ({
   plugins: [
     vue(),
-    // Only use SSL in dev mode, not for preview/build
-    ...(command === 'serve' && !process.env.CI ? [basicSsl()] : [])
   ],
   base: '/',
   server: {
-    https: command === 'serve' && !process.env.CI,
     cors: true  // Enable CORS for cross-origin requests
   },
   preview: {
