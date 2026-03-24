@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-03-24
+
+### Fixes
+
+- Remove SSL from local dev server — dev now runs HTTP, matching Playwright and CI expectations
+- Remove unused `@vitejs/plugin-basic-ssl` dependency
+
+### Fixes
+
+- Fix 6 failing E2E tests: update selectors and URLs to match current UI (home page language buttons, settings button, workshop URLs, footer links)
+
 ## 2026-03-19
 
 ### Features
