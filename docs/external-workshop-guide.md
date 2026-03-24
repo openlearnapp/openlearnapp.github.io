@@ -512,6 +512,32 @@ Before sharing your workshop, verify:
 - GitHub Pages serves files with `Access-Control-Allow-Origin: *` by default — no issues
 - If self-hosting: ensure your server sends CORS headers
 
+## Automated Workshop Creation with Claude Code
+
+Instead of creating workshops manually, you can use the **Workshop Creator Plugin** for Claude Code to generate complete workshops automatically.
+
+### Installation
+
+```
+/install-plugin https://github.com/openlearnapp/plugin-workshop-creator
+```
+
+### Usage
+
+| Command | Description |
+|---------|-------------|
+| `/workshop-creator <topic>` | Generate a complete workshop with lessons, assessments, and thumbnails |
+| `/import-workshop [name]` | Import a finished workshop into GitHub and deploy via GitHub Pages |
+| `/check-workshops` | Show status of all workshops |
+
+The plugin generates Schema Version 2 compliant content with:
+- Multiple interface languages (German, English, Farsi, Arabic)
+- Interactive assessments with `correct` markers
+- SVG thumbnails and GitHub Pages deployment workflow
+- Evidence-based learning methods (Active Recall, Spaced Repetition, Desirable Difficulty)
+
+See the [plugin repository](https://github.com/openlearnapp/plugin-workshop-creator) for full documentation.
+
 ## See Also
 
 - [Lesson Schema Documentation](lesson-schema.md) — detailed field reference for `content.yaml`
