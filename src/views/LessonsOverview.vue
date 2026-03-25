@@ -126,7 +126,7 @@ const router = useRouter()
 const route = useRoute()
 const emit = defineEmits(['update-title'])
 
-const { loadAllLessonsForWorkshop, isRemoteWorkshop, getSourceForSlug, getWorkshopMeta } = useLessons()
+const { loadAllLessonsForWorkshop, isRemoteWorkshop, getSourceForSlug, getWorkshopMeta, resolveWorkshopKey } = useLessons()
 const {
   getLessonStatus, toggleLessonCompleted, markLessonVisited,
   toggleFavorite, getFavorites, reorderFavorites, getCompletionCount, getNextLesson,
@@ -247,6 +247,11 @@ function resolveLessonImage(lesson) {
   const baseUrl = import.meta.env.BASE_URL
   if (lesson._source?.type === 'url') {
     return `${lesson._source.path}/${imagePath}`
+  }
+  // For remote workshops where lessons are folders, resolve via workshop URL
+  const workshopUrl = resolveWorkshopKey(learning.value, workshop.value)
+  if (workshopUrl.startsWith('http://') || workshopUrl.startsWith('https://')) {
+    return `${workshopUrl}/${lesson._source?.path || lesson._filename}/${imagePath}`
   }
   return `${baseUrl}lessons/${learning.value}/${workshop.value}/${lesson._filename}/${imagePath}`
 }
