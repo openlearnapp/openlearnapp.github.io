@@ -36,10 +36,10 @@
           </svg>
           <!-- Visited dot -->
           <div v-else-if="getStatus(lesson.number) === 'visited'" class="w-2.5 h-2.5 rounded-full bg-current"></div>
-          <!-- Next lesson pulse -->
-          <div v-else-if="isNextLesson(lesson.number)" class="w-3 h-3 rounded-full bg-primary animate-pulse"></div>
-          <!-- Open: empty -->
-          <span v-else class="text-xs font-bold">{{ lesson.number }}</span>
+          <!-- Next lesson: number on filled background -->
+          <span v-else-if="isNextLesson(lesson.number)" class="text-sm font-bold">{{ lesson.number }}</span>
+          <!-- Open: show number -->
+          <span v-else class="text-sm font-bold">{{ lesson.number }}</span>
         </div>
 
         <!-- Card -->
@@ -49,13 +49,28 @@
           'sm:ml-0',
           index % 2 === 0 ? 'sm:mr-[calc(50%+1.5rem)] sm:pr-0' : 'sm:ml-[calc(50%+1.5rem)] sm:pl-0'
         ]">
-          <slot
-            name="card"
-            :lesson="lesson"
-            :status="getStatus(lesson.number)"
-            :is-favorite="checkFavorite(lesson.number)"
-            :is-next="isNextLesson(lesson.number)">
-          </slot>
+          <!-- Drag handle for favorites -->
+          <div class="flex items-center gap-1">
+            <div
+              v-if="draggable && checkFavorite(lesson.number) && getStatus(lesson.number) !== 'completed'"
+              class="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground touch-none"
+              :data-drag-handle="lesson.number">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
+                <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+                <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <slot
+                name="card"
+                :lesson="lesson"
+                :status="getStatus(lesson.number)"
+                :is-favorite="checkFavorite(lesson.number)"
+                :is-next="isNextLesson(lesson.number)">
+              </slot>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -70,8 +85,11 @@ const props = defineProps({
   nextLessonNumber: { type: Number, default: null },
   favorites: { type: Array, default: () => [] },
   getStatus: { type: Function, required: true },
-  completedCount: { type: Number, default: 0 }
+  completedCount: { type: Number, default: 0 },
+  draggable: { type: Boolean, default: false }
 })
+
+const emit = defineEmits(['reorder'])
 
 const completedRatio = computed(() => {
   if (props.lessons.length === 0) return 0
@@ -126,11 +144,11 @@ function getNodeClass(lesson) {
     return 'border-green-500 bg-green-500 text-white'
   }
   if (isNextLesson(lesson.number)) {
-    return 'border-primary bg-primary/10 text-primary'
+    return 'border-primary bg-primary text-white'
   }
   if (status === 'visited') {
-    return 'border-primary/50 bg-background text-primary/50'
+    return 'border-primary bg-background text-primary font-bold'
   }
-  return 'border-muted-foreground/30 bg-background text-muted-foreground/40'
+  return 'border-muted-foreground bg-background text-foreground font-bold'
 }
 </script>

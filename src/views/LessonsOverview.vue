@@ -30,7 +30,9 @@
         :next-lesson-number="nextLessonNumber"
         :favorites="favorites"
         :get-status="getLessonStatusForPath"
-        :completed-count="completionInfo.completed">
+        :completed-count="completionInfo.completed"
+        :draggable="favorites.length > 1"
+        @reorder="handleReorder">
         <template #card="{ lesson, status, isFavorite, isNext }">
           <LessonCard
             :lesson="lesson"
@@ -119,7 +121,7 @@ const emit = defineEmits(['update-title'])
 const { loadAllLessonsForWorkshop, isRemoteWorkshop, getSourceForSlug, getWorkshopMeta } = useLessons()
 const {
   getLessonStatus, toggleLessonCompleted, markLessonVisited,
-  toggleFavorite, getFavorites, getCompletionCount, getNextLesson
+  toggleFavorite, getFavorites, reorderFavorites, getCompletionCount, getNextLesson
 } = useProgress()
 
 const lessons = ref([])
@@ -187,6 +189,10 @@ function handleToggleFavorite(lessonNumber) {
 
 function handleToggleCompleted(lessonNumber) {
   toggleLessonCompleted(learning.value, workshop.value, lessonNumber)
+}
+
+function handleReorder(orderedNumbers) {
+  reorderFavorites(learning.value, workshop.value, orderedNumbers)
 }
 
 async function copyShareLink() {

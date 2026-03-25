@@ -5,7 +5,7 @@
       isNext
         ? 'border-primary shadow-lg shadow-primary/10 bg-primary/5 dark:bg-primary/10'
         : isCompleted
-          ? 'border-green-200 dark:border-green-800/40 bg-green-50/50 dark:bg-green-900/10 opacity-60'
+          ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-950/40'
           : 'border-border hover:border-primary/40 hover:shadow-md bg-card'
     ]"
     @click="$emit('open', lesson.number)">
@@ -24,7 +24,7 @@
         <!-- Lesson number -->
         <div :class="[
           'text-2xl font-bold flex-shrink-0 leading-none mt-0.5',
-          isNext ? 'text-primary' : isCompleted ? 'text-green-500/50' : 'text-primary/70'
+          isNext ? 'text-primary' : isCompleted ? 'text-green-600 dark:text-green-400' : 'text-primary/70'
         ]">
           {{ lesson.number }}
         </div>
@@ -34,7 +34,7 @@
           <div class="flex items-center gap-2">
             <h3 :class="[
               'text-base font-semibold truncate',
-              isCompleted ? 'text-green-600/50 dark:text-green-400/40' : 'text-foreground'
+              isCompleted ? 'text-green-700 dark:text-green-300' : 'text-foreground'
             ]">
               {{ lesson.title }}
             </h3>
