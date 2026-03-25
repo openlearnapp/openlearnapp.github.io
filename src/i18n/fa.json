@@ -200,7 +200,8 @@
     "examples": "مثال‌ها",
     "quizzes": "آزمون‌ها",
     "audioAvailable": "صدا موجود است",
-    "videoAvailable": "ویدیو موجود است"
+    "videoAvailable": "ویدیو موجود است",
+    "itemsLearned": "مورد یاد گرفته شده"
   },
   "results": {
     "allLessons": "همه درس‌ها",

@@ -41,6 +41,7 @@
             :is-next="isNext"
             :image-url="resolveLessonImage(lesson)"
             :answered-count="getAnsweredCount(lesson)"
+            :learned-item-count="getLearnedItemCount(lesson)"
             :next-label="$t('lesson.continueLabel')"
             :sections-label="$t('lesson.sections')"
             :examples-label="$t('lesson.examples')"
@@ -51,6 +52,7 @@
             :remove-favorite-label="$t('lesson.removeFavorite')"
             :mark-complete-label="$t('lesson.markComplete')"
             :mark-incomplete-label="$t('lesson.markIncomplete')"
+            :items-label="$t('lesson.itemsLearned')"
             @open="openLesson"
             @toggle-favorite="handleToggleFavorite"
             @toggle-completed="handleToggleCompleted" />
@@ -127,7 +129,8 @@ const emit = defineEmits(['update-title'])
 const { loadAllLessonsForWorkshop, isRemoteWorkshop, getSourceForSlug, getWorkshopMeta } = useLessons()
 const {
   getLessonStatus, toggleLessonCompleted, markLessonVisited,
-  toggleFavorite, getFavorites, reorderFavorites, getCompletionCount, getNextLesson
+  toggleFavorite, getFavorites, reorderFavorites, getCompletionCount, getNextLesson,
+  isItemLearned
 } = useProgress()
 const { getAssessments } = useAssessments()
 
@@ -196,6 +199,21 @@ function handleToggleFavorite(lessonNumber) {
 
 function handleToggleCompleted(lessonNumber) {
   toggleLessonCompleted(learning.value, workshop.value, lessonNumber)
+}
+
+function getLearnedItemCount(lesson) {
+  if (!lesson.sections) return 0
+  let count = 0
+  lesson.sections.forEach(s => {
+    s.examples?.forEach(e => {
+      e.rel?.forEach(item => {
+        if (isItemLearned(learning.value, workshop.value, item[0])) {
+          count++
+        }
+      })
+    })
+  })
+  return count
 }
 
 function getAnsweredCount(lesson) {

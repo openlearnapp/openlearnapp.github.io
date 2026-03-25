@@ -206,7 +206,8 @@
     "examples": "Beispiele",
     "quizzes": "Quizze",
     "audioAvailable": "Audio verfügbar",
-    "videoAvailable": "Video verfügbar"
+    "videoAvailable": "Video verfügbar",
+    "itemsLearned": "Elemente gelernt"
   },
   "results": {
     "allLessons": "Alle Lektionen",

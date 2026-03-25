@@ -200,7 +200,8 @@
     "examples": "أمثلة",
     "quizzes": "اختبارات",
     "audioAvailable": "الصوت متاح",
-    "videoAvailable": "الفيديو متاح"
+    "videoAvailable": "الفيديو متاح",
+    "itemsLearned": "عنصر تم تعلمه"
   },
   "results": {
     "allLessons": "جميع الدروس",

@@ -131,16 +131,38 @@
         </span>
       </div>
 
-      <!-- Mini progress bar (examples answered) -->
-      <div v-if="exampleCount > 0 && answeredCount > 0" class="mt-2">
-        <div class="flex items-center gap-2">
-          <div class="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-            <div
-              class="h-full rounded-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500"
-              :style="{ width: Math.round((answeredCount / exampleCount) * 100) + '%' }">
-            </div>
+      <!-- Learning Items -->
+      <div v-if="itemCount > 0" class="flex items-center gap-2 mt-2">
+        <span class="flex items-center gap-1 text-xs text-muted-foreground">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          {{ learnedItemCount }}/{{ itemCount }} {{ itemsLabel }}
+        </span>
+        <!-- Items progress bar (green) -->
+        <div class="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            class="h-full rounded-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
+            :style="{ width: itemProgressPercent + '%' }">
           </div>
-          <span class="text-[10px] text-muted-foreground font-medium">{{ answeredCount }}/{{ exampleCount }}</span>
+        </div>
+      </div>
+
+      <!-- Assessment progress bar (green) -->
+      <div v-if="exampleCount > 0" class="flex items-center gap-2 mt-1.5">
+        <span class="text-xs text-muted-foreground">
+          {{ answeredCount }}/{{ exampleCount }} {{ examplesLabel }}
+        </span>
+        <div class="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            :class="[
+              'h-full rounded-full transition-all duration-500',
+              answeredCount >= exampleCount
+                ? 'bg-gradient-to-r from-green-500 to-green-400'
+                : answeredCount > 0
+                  ? 'bg-gradient-to-r from-green-500/70 to-green-400/70'
+                  : ''
+            ]"
+            :style="{ width: Math.round((answeredCount / exampleCount) * 100) + '%' }">
+          </div>
         </div>
       </div>
     </div>
@@ -157,6 +179,7 @@ const props = defineProps({
   isNext: { type: Boolean, default: false },
   imageUrl: { type: String, default: '' },
   answeredCount: { type: Number, default: 0 },
+  learnedItemCount: { type: Number, default: 0 },
   nextLabel: { type: String, default: 'Next' },
   sectionsLabel: { type: String, default: 'sections' },
   examplesLabel: { type: String, default: 'examples' },
@@ -166,12 +189,30 @@ const props = defineProps({
   addFavoriteLabel: { type: String, default: 'Add to favorites' },
   removeFavoriteLabel: { type: String, default: 'Remove from favorites' },
   markCompleteLabel: { type: String, default: 'Mark as completed' },
-  markIncompleteLabel: { type: String, default: 'Mark as incomplete' }
+  markIncompleteLabel: { type: String, default: 'Mark as incomplete' },
+  itemsLabel: { type: String, default: 'items learned' }
 })
 
 defineEmits(['open', 'toggle-favorite', 'toggle-completed'])
 
 const isCompleted = computed(() => props.status === 'completed')
+
+// Count total learning items (rel entries) across all sections
+const itemCount = computed(() => {
+  if (!props.lesson.sections) return 0
+  let count = 0
+  props.lesson.sections.forEach(s => {
+    s.examples?.forEach(e => {
+      count += e.rel?.length || 0
+    })
+  })
+  return count
+})
+
+const itemProgressPercent = computed(() => {
+  if (itemCount.value === 0) return 0
+  return Math.round((props.learnedItemCount / itemCount.value) * 100)
+})
 
 // Count total examples across all sections
 const exampleCount = computed(() => {
