@@ -202,7 +202,11 @@
     "addFavorite": "Zu Favoriten hinzufügen",
     "removeFavorite": "Aus Favoriten entfernen",
     "markComplete": "Als erledigt markieren",
-    "markIncomplete": "Als nicht erledigt markieren"
+    "markIncomplete": "Als nicht erledigt markieren",
+    "examples": "Beispiele",
+    "quizzes": "Quizze",
+    "audioAvailable": "Audio verfügbar",
+    "videoAvailable": "Video verfügbar"
   },
   "results": {
     "allLessons": "Alle Lektionen",

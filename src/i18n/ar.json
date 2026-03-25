@@ -196,7 +196,11 @@
     "addFavorite": "إضافة إلى المفضلة",
     "removeFavorite": "إزالة من المفضلة",
     "markComplete": "وضع علامة مكتمل",
-    "markIncomplete": "وضع علامة غير مكتمل"
+    "markIncomplete": "وضع علامة غير مكتمل",
+    "examples": "أمثلة",
+    "quizzes": "اختبارات",
+    "audioAvailable": "الصوت متاح",
+    "videoAvailable": "الفيديو متاح"
   },
   "results": {
     "allLessons": "جميع الدروس",

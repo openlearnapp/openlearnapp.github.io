@@ -196,7 +196,11 @@
     "addFavorite": "افزودن به علاقه‌مندی‌ها",
     "removeFavorite": "حذف از علاقه‌مندی‌ها",
     "markComplete": "علامت‌گذاری به عنوان تکمیل شده",
-    "markIncomplete": "علامت‌گذاری به عنوان تکمیل نشده"
+    "markIncomplete": "علامت‌گذاری به عنوان تکمیل نشده",
+    "examples": "مثال‌ها",
+    "quizzes": "آزمون‌ها",
+    "audioAvailable": "صدا موجود است",
+    "videoAvailable": "ویدیو موجود است"
   },
   "results": {
     "allLessons": "همه درس‌ها",

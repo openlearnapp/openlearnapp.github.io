@@ -40,8 +40,13 @@
             :is-favorite="isFavorite"
             :is-next="isNext"
             :image-url="resolveLessonImage(lesson)"
+            :answered-count="getAnsweredCount(lesson)"
             :next-label="$t('lesson.continueLabel')"
             :sections-label="$t('lesson.sections')"
+            :examples-label="$t('lesson.examples')"
+            :quizzes-label="$t('lesson.quizzes')"
+            :audio-label="$t('lesson.audioAvailable')"
+            :video-label="$t('lesson.videoAvailable')"
             :add-favorite-label="$t('lesson.addFavorite')"
             :remove-favorite-label="$t('lesson.removeFavorite')"
             :mark-complete-label="$t('lesson.markComplete')"
@@ -108,6 +113,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useLessons } from '../composables/useLessons'
 import { useProgress } from '../composables/useProgress'
+import { useAssessments } from '../composables/useAssessments'
 import { formatLangName } from '../utils/formatters'
 import { Button } from '@/components/ui/button'
 import ProgressBar from '@/components/ProgressBar.vue'
@@ -123,6 +129,7 @@ const {
   getLessonStatus, toggleLessonCompleted, markLessonVisited,
   toggleFavorite, getFavorites, reorderFavorites, getCompletionCount, getNextLesson
 } = useProgress()
+const { getAssessments } = useAssessments()
 
 const lessons = ref([])
 const isLoading = ref(true)
@@ -189,6 +196,14 @@ function handleToggleFavorite(lessonNumber) {
 
 function handleToggleCompleted(lessonNumber) {
   toggleLessonCompleted(learning.value, workshop.value, lessonNumber)
+}
+
+function getAnsweredCount(lesson) {
+  const assessmentData = getAssessments()
+  const key = `${learning.value}:${workshop.value}:${lesson.number}`
+  const answers = assessmentData[key]
+  if (!answers) return 0
+  return Object.keys(answers).length
 }
 
 function handleReorder(orderedNumbers) {
