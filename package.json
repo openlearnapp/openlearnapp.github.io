@@ -23,7 +23,8 @@
     "tailwind-merge": "^2.2.0",
     "vue": "^3.4.21",
     "vue-i18n": "^11.2.8",
-    "vue-router": "^4.6.3"
+    "vue-router": "^4.6.3",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",

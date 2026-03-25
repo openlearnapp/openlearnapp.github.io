@@ -15,36 +15,49 @@
       </Button>
     </div>
 
-    <!-- Lessons grid -->
-    <div v-if="!isLoading && lessons.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      <Card
-        v-for="lesson in lessons"
-        :key="lesson.number"
-        @click="openLesson(lesson.number)"
-        class="cursor-pointer transition hover:-translate-y-1 hover:shadow-xl overflow-hidden">
-        <div v-if="lesson.image" class="overflow-hidden aspect-[16/9] bg-accent/20">
-          <img
-            :src="resolveLessonImage(lesson)"
-            :alt="lesson.title"
-            class="w-full h-full object-cover" />
-        </div>
-        <div class="p-6">
-          <div class="flex items-center gap-3 mb-2">
-            <div class="text-5xl font-bold text-primary flex-shrink-0 leading-none">
-              {{ lesson.number }}
-            </div>
-            <div class="text-2xl font-semibold text-foreground">
-              {{ lesson.title }}
-            </div>
-          </div>
-          <div class="text-muted-foreground mb-2">
-            {{ lesson.description || '' }}
-          </div>
-          <div class="text-primary font-semibold">
-            {{ lesson.sections.length }} {{ $t('lesson.sections') }}
-          </div>
-        </div>
-      </Card>
+    <!-- Progress bar -->
+    <div v-if="!isLoading && lessons.length > 0" class="mb-6">
+      <ProgressBar
+        :completed="completionInfo.completed"
+        :total="completionInfo.total"
+        :label="$t('lesson.completed')" />
+    </div>
+
+    <!-- Learning path -->
+    <div v-if="!isLoading && lessons.length > 0">
+      <LearningPath
+        :lessons="lessons"
+        :next-lesson-number="nextLessonNumber"
+        :favorites="favorites"
+        :get-status="getLessonStatusForPath"
+        :completed-count="completionInfo.completed"
+        :draggable="favorites.length > 1"
+        @reorder="handleReorder">
+        <template #card="{ lesson, status, isFavorite, isNext }">
+          <LessonCard
+            :lesson="lesson"
+            :status="status"
+            :is-favorite="isFavorite"
+            :is-next="isNext"
+            :image-url="resolveLessonImage(lesson)"
+            :answered-count="getAnsweredCount(lesson)"
+            :learned-item-count="getLearnedItemCount(lesson)"
+            :next-label="$t('lesson.continueLabel')"
+            :sections-label="$t('lesson.sections')"
+            :examples-label="$t('lesson.examples')"
+            :quizzes-label="$t('lesson.quizzes')"
+            :audio-label="$t('lesson.audioAvailable')"
+            :video-label="$t('lesson.videoAvailable')"
+            :add-favorite-label="$t('lesson.addFavorite')"
+            :remove-favorite-label="$t('lesson.removeFavorite')"
+            :mark-complete-label="$t('lesson.markComplete')"
+            :mark-incomplete-label="$t('lesson.markIncomplete')"
+            :items-label="$t('lesson.itemsLearned')"
+            @open="openLesson"
+            @toggle-favorite="handleToggleFavorite"
+            @toggle-completed="handleToggleCompleted" />
+        </template>
+      </LearningPath>
     </div>
 
     <!-- Loading state -->
@@ -101,15 +114,25 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useLessons } from '../composables/useLessons'
+import { useProgress } from '../composables/useProgress'
+import { useAssessments } from '../composables/useAssessments'
 import { formatLangName } from '../utils/formatters'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import ProgressBar from '@/components/ProgressBar.vue'
+import LessonCard from '@/components/LessonCard.vue'
+import LearningPath from '@/components/LearningPath.vue'
 
 const router = useRouter()
 const route = useRoute()
 const emit = defineEmits(['update-title'])
 
 const { loadAllLessonsForWorkshop, isRemoteWorkshop, getSourceForSlug, getWorkshopMeta } = useLessons()
+const {
+  getLessonStatus, toggleLessonCompleted, markLessonVisited,
+  toggleFavorite, getFavorites, reorderFavorites, getCompletionCount, getNextLesson,
+  isItemLearned
+} = useProgress()
+const { getAssessments } = useAssessments()
 
 const lessons = ref([])
 const isLoading = ref(true)
@@ -153,6 +176,58 @@ const sourceUrl = computed(() => {
   } catch { return '#' }
 })
 
+// Progress computeds
+const completionInfo = computed(() => {
+  return getCompletionCount(learning.value, workshop.value, lessons.value.length)
+})
+
+const nextLessonNumber = computed(() => {
+  return getNextLesson(learning.value, workshop.value, lessons.value.length)
+})
+
+const favorites = computed(() => {
+  return getFavorites(learning.value, workshop.value)
+})
+
+function getLessonStatusForPath(lessonNumber) {
+  return getLessonStatus(learning.value, workshop.value, lessonNumber)
+}
+
+function handleToggleFavorite(lessonNumber) {
+  toggleFavorite(learning.value, workshop.value, lessonNumber)
+}
+
+function handleToggleCompleted(lessonNumber) {
+  toggleLessonCompleted(learning.value, workshop.value, lessonNumber)
+}
+
+function getLearnedItemCount(lesson) {
+  if (!lesson.sections) return 0
+  let count = 0
+  lesson.sections.forEach(s => {
+    s.examples?.forEach(e => {
+      e.rel?.forEach(item => {
+        if (isItemLearned(learning.value, workshop.value, item[0])) {
+          count++
+        }
+      })
+    })
+  })
+  return count
+}
+
+function getAnsweredCount(lesson) {
+  const assessmentData = getAssessments()
+  const key = `${learning.value}:${workshop.value}:${lesson.number}`
+  const answers = assessmentData[key]
+  if (!answers) return 0
+  return Object.keys(answers).length
+}
+
+function handleReorder(orderedNumbers) {
+  reorderFavorites(learning.value, workshop.value, orderedNumbers)
+}
+
 async function copyShareLink() {
   const base = window.location.href.replace(/#.*$/, '')
   const url = `${base}#/${learning.value}/${workshop.value}/lessons`
@@ -177,6 +252,8 @@ function resolveLessonImage(lesson) {
 }
 
 function openLesson(number) {
+  // Mark as visited when opening
+  markLessonVisited(learning.value, workshop.value, number)
   router.push({
     name: 'lesson-detail',
     params: {
@@ -238,7 +315,6 @@ async function loadLessons() {
   setWorkshopManifest()
 
   const meta = getWorkshopMeta(learning.value, workshop.value)
-  console.log(`🎨 [LessonsOverview] ${workshop.value}: color="${meta.color}", primaryColor="${meta.primaryColor}"`)
   emit('update-title', meta.title || formatLangName(workshop.value))
 }
 

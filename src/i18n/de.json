@@ -196,7 +196,18 @@
     "loadingLessons": "Lektionen werden geladen...",
     "noLessonsFound": "Keine Lektionen gefunden",
     "copied": "Kopiert!",
-    "share": "Teilen"
+    "share": "Teilen",
+    "completed": "erledigt",
+    "continueLabel": "Weiterlernen",
+    "addFavorite": "Zu Favoriten hinzufügen",
+    "removeFavorite": "Aus Favoriten entfernen",
+    "markComplete": "Als erledigt markieren",
+    "markIncomplete": "Als nicht erledigt markieren",
+    "examples": "Beispiele",
+    "quizzes": "Quizze",
+    "audioAvailable": "Audio verfügbar",
+    "videoAvailable": "Video verfügbar",
+    "itemsLearned": "Elemente gelernt"
   },
   "results": {
     "allLessons": "Alle Lektionen",
