@@ -190,7 +190,13 @@
     "loadingLessons": "جارٍ تحميل الدروس...",
     "noLessonsFound": "لم يتم العثور على دروس",
     "copied": "تم النسخ!",
-    "share": "مشاركة"
+    "share": "مشاركة",
+    "completed": "مكتمل",
+    "continueLabel": "متابعة التعلم",
+    "addFavorite": "إضافة إلى المفضلة",
+    "removeFavorite": "إزالة من المفضلة",
+    "markComplete": "وضع علامة مكتمل",
+    "markIncomplete": "وضع علامة غير مكتمل"
   },
   "results": {
     "allLessons": "جميع الدروس",

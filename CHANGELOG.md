@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-03-25
+
+### Features
+
+#### Lesson Overview — Learning Path (#93)
+- Replace 3-column grid with vertical learning path visualization
+- Add progress bar showing completed/total lessons
+- Add lesson status tracking (open/visited/completed) with manual marking
+- Add favorites system to customize learning order
+- Add next lesson highlighting with "Continue" badge
+- Completed lessons appear at bottom, visually dimmed
+- Path nodes with status indicators (empty/dot/checkmark)
+- Desktop: cards alternate left/right of path line
+- Mobile: path line left, cards right
+- i18n: all new strings in DE, EN, FA, AR
+- 7 new E2E tests for learning path functionality
+
 ## 2026-03-24
 
 ### Fixes

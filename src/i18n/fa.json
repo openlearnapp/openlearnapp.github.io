@@ -190,7 +190,13 @@
     "loadingLessons": "در حال بارگذاری درس‌ها...",
     "noLessonsFound": "درسی یافت نشد",
     "copied": "کپی شد!",
-    "share": "اشتراک‌گذاری"
+    "share": "اشتراک‌گذاری",
+    "completed": "تکمیل شده",
+    "continueLabel": "ادامه یادگیری",
+    "addFavorite": "افزودن به علاقه‌مندی‌ها",
+    "removeFavorite": "حذف از علاقه‌مندی‌ها",
+    "markComplete": "علامت‌گذاری به عنوان تکمیل شده",
+    "markIncomplete": "علامت‌گذاری به عنوان تکمیل نشده"
   },
   "results": {
     "allLessons": "همه درس‌ها",

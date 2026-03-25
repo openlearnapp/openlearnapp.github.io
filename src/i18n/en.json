@@ -196,7 +196,13 @@
     "loadingLessons": "Loading lessons...",
     "noLessonsFound": "No lessons found",
     "copied": "Copied!",
-    "share": "Share"
+    "share": "Share",
+    "completed": "completed",
+    "continueLabel": "Continue",
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites",
+    "markComplete": "Mark as completed",
+    "markIncomplete": "Mark as incomplete"
   },
   "results": {
     "allLessons": "All Lessons",
