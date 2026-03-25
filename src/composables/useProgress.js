@@ -8,6 +8,10 @@ const progress = ref({})
 // Last visited lesson per workshop: { "learning:workshop": "lesson-number" }
 const lastVisited = ref({})
 
+// Lesson-level progress (separate from item-level progress)
+// Structure: { "learning:workshop": { status: { "1": "completed", "2": "visited" }, favorites: [4, 7, 9] } }
+const lessonProgress = ref({})
+
 let isInitialized = false
 
 // Get the storage key for a specific workshop
@@ -22,6 +26,11 @@ function saveProgress() {
   if (isLoggedIn.value) {
     syncToGun('progress', progress.value)
   }
+}
+
+// Save lesson progress to localStorage
+function saveLessonProgress() {
+  localStorage.setItem('lessonProgress', JSON.stringify(lessonProgress.value))
 }
 
 // Load progress from localStorage
@@ -41,6 +50,14 @@ function loadProgress() {
       lastVisited.value = JSON.parse(savedVisited)
     } catch {
       lastVisited.value = {}
+    }
+  }
+  const savedLessonProgress = localStorage.getItem('lessonProgress')
+  if (savedLessonProgress) {
+    try {
+      lessonProgress.value = JSON.parse(savedLessonProgress)
+    } catch {
+      lessonProgress.value = {}
     }
   }
 }
@@ -91,6 +108,115 @@ function areAllItemsLearned(learning, workshop, items) {
   })
 }
 
+// --- Lesson-level progress ---
+
+function ensureLessonEntry(learning, workshop) {
+  const key = getWorkshopKey(learning, workshop)
+  if (!lessonProgress.value[key]) {
+    lessonProgress.value[key] = { status: {}, favorites: [] }
+  }
+  return key
+}
+
+// Set lesson status: 'visited' or 'completed'
+function setLessonStatus(learning, workshop, lessonNumber, status) {
+  const key = ensureLessonEntry(learning, workshop)
+  lessonProgress.value[key].status[String(lessonNumber)] = status
+  saveLessonProgress()
+}
+
+// Get lesson status: 'visited', 'completed', or null (open)
+function getLessonStatus(learning, workshop, lessonNumber) {
+  const key = getWorkshopKey(learning, workshop)
+  return lessonProgress.value[key]?.status?.[String(lessonNumber)] || null
+}
+
+// Check if a lesson is completed
+function isLessonCompleted(learning, workshop, lessonNumber) {
+  return getLessonStatus(learning, workshop, lessonNumber) === 'completed'
+}
+
+// Toggle lesson completed status
+function toggleLessonCompleted(learning, workshop, lessonNumber) {
+  if (isLessonCompleted(learning, workshop, lessonNumber)) {
+    const key = ensureLessonEntry(learning, workshop)
+    delete lessonProgress.value[key].status[String(lessonNumber)]
+  } else {
+    setLessonStatus(learning, workshop, lessonNumber, 'completed')
+  }
+  saveLessonProgress()
+}
+
+// Mark lesson as visited (only upgrades from null, never downgrades from completed)
+function markLessonVisited(learning, workshop, lessonNumber) {
+  const current = getLessonStatus(learning, workshop, lessonNumber)
+  if (!current) {
+    setLessonStatus(learning, workshop, lessonNumber, 'visited')
+  }
+}
+
+// --- Favorites ---
+
+// Toggle favorite for a lesson
+function toggleFavorite(learning, workshop, lessonNumber) {
+  const key = ensureLessonEntry(learning, workshop)
+  const favorites = lessonProgress.value[key].favorites
+  const num = Number(lessonNumber)
+  const index = favorites.indexOf(num)
+  if (index >= 0) {
+    favorites.splice(index, 1)
+  } else {
+    favorites.push(num)
+  }
+  saveLessonProgress()
+}
+
+// Get favorites for a workshop (ordered array of lesson numbers)
+function getFavorites(learning, workshop) {
+  const key = getWorkshopKey(learning, workshop)
+  return lessonProgress.value[key]?.favorites || []
+}
+
+// Check if a lesson is a favorite
+function isFavorite(learning, workshop, lessonNumber) {
+  return getFavorites(learning, workshop).includes(Number(lessonNumber))
+}
+
+// Reorder favorites (after drag & drop)
+function reorderFavorites(learning, workshop, orderedNumbers) {
+  const key = ensureLessonEntry(learning, workshop)
+  lessonProgress.value[key].favorites = orderedNumbers.map(Number)
+  saveLessonProgress()
+}
+
+// --- Completion count ---
+
+// Get number of completed lessons and total
+function getCompletionCount(learning, workshop, totalLessons) {
+  const key = getWorkshopKey(learning, workshop)
+  const statuses = lessonProgress.value[key]?.status || {}
+  const completed = Object.values(statuses).filter(s => s === 'completed').length
+  return { completed, total: totalLessons }
+}
+
+// Get the next recommended lesson number (lowest non-completed, favorites first)
+function getNextLesson(learning, workshop, totalLessons) {
+  const favorites = getFavorites(learning, workshop)
+  // Check favorites first
+  for (const num of favorites) {
+    if (!isLessonCompleted(learning, workshop, num)) {
+      return num
+    }
+  }
+  // Then check all lessons in order
+  for (let i = 1; i <= totalLessons; i++) {
+    if (!isLessonCompleted(learning, workshop, i)) {
+      return i
+    }
+  }
+  return null // all completed
+}
+
 // Initialize watchers only once
 function initializeWatchers() {
   if (isInitialized) return
@@ -133,6 +259,7 @@ export function useProgress() {
   return {
     progress,
     lastVisited,
+    lessonProgress,
     loadProgress,
     isItemLearned,
     toggleItemLearned,
@@ -140,6 +267,17 @@ export function useProgress() {
     getProgress,
     mergeProgress,
     setLastVisited,
-    getLastVisited
+    getLastVisited,
+    setLessonStatus,
+    getLessonStatus,
+    isLessonCompleted,
+    toggleLessonCompleted,
+    markLessonVisited,
+    toggleFavorite,
+    getFavorites,
+    isFavorite,
+    reorderFavorites,
+    getCompletionCount,
+    getNextLesson
   }
 }
