@@ -144,6 +144,7 @@ workshops:
     - **color** (string, optional): HSL background color for the workshop (e.g., `"145 45% 92%"`). Shown as the accent bar on workshop cards. When lightness > 80%, it is automatically darkened by 40% for the page background.
     - **primaryColor** (string, optional): HSL primary/accent color for the workshop (e.g., `"220 75% 50%"`). Used for the header bar, links, and UI accents when inside the workshop.
     - **image** (string, optional): Thumbnail image for the workshop card. Shown below the accent bar. Supports relative paths (resolved from app base URL) or absolute URLs. No fallback image is shown when absent.
+    - **labels** (array of strings, optional): Category tags for filtering (e.g., `["Sprache", "Kids"]`). Shown as filter chips on the workshop overview page.
     - **coach** (object, optional): Workshop coach configuration
       - **email** (string, required): Coach's email address for `mailto:` results
       - **name** (string, optional): Coach or workshop name displayed in the UI
@@ -155,6 +156,7 @@ workshops:
     - **color** (string, optional): HSL background color (same as above)
     - **primaryColor** (string, optional): HSL primary/accent color (same as above)
     - **image** (string, optional): Thumbnail image (same as above)
+    - **labels** (array of strings, optional): Category tags for filtering (same as above)
     - **coach** (object, optional): Workshop coach configuration (same fields as above)
 
 For language workshops, use the target language code (e.g., "pt-PT" for Portuguese). For non-language workshops, use the base language code.
@@ -172,6 +174,7 @@ workshops:
     code: pt-PT
     title: "Portugiesisch"
     description: "10 Lektionen zu den wichtigsten portugiesischen Verben."
+    labels: ["Sprache"]
     color: "30 50% 95%"            # Light orange background
     primaryColor: "25 80% 50%"     # Orange accent for header/links
     coach:

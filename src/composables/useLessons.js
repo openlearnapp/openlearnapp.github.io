@@ -228,7 +228,8 @@ export function useLessons() {
               coach: workshopSource.coach || null,
               color: workshopSource.color || null,
               primaryColor: workshopSource.primaryColor || null,
-              image: imageUrl
+              image: imageUrl,
+              labels: workshopSource.labels || []
             }
 
             console.log(`  ✓ Remote workshop: ${slug} → ${workshopUrl} (${workshopSource.code || 'no code'})`)
@@ -309,7 +310,8 @@ export function useLessons() {
                 coach: ws.coach || null,
                 color: ws.color || null,
                 primaryColor: ws.primaryColor || null,
-                image: imageUrl
+                image: imageUrl,
+                labels: [...(ws.labels || []), 'local-dev']
               }
 
               console.log(`  🔧 Local: ${langKey}/${localSlug} → ${workshopUrl}`)
@@ -440,7 +442,8 @@ export function useLessons() {
           coach: source.coach || null,
           color: source.color || null,
           primaryColor: source.primaryColor || null,
-          image: source.image || null
+          image: source.image || null,
+          labels: source.labels || []
         }
 
         console.log(`  ✓ Workshop: ${key} (${source.type}) (${source.code || 'no code'})`)

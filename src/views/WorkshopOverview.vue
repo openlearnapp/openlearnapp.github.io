@@ -18,20 +18,43 @@
         </button>
       </div>
 
-      <!-- Workshop count -->
-      <div class="flex items-center justify-between mb-3">
-        <label class="text-sm font-medium text-muted-foreground">
-          {{ t('workshops') }}
-        </label>
-        <span class="text-xs text-muted-foreground">
-          {{ workshops.length }} {{ workshops.length === 1 ? 'Workshop' : 'Workshops' }}
-        </span>
+      <!-- Filter chips + workshop count -->
+      <div class="mb-3">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-sm font-medium text-muted-foreground">
+            {{ t('workshops') }}
+          </label>
+          <span class="text-xs text-muted-foreground">
+            {{ filteredWorkshops.length }} {{ filteredWorkshops.length === 1 ? 'Workshop' : 'Workshops' }}
+          </span>
+        </div>
+        <div v-if="allLabels.length > 0" class="flex flex-wrap gap-2">
+          <button
+            @click="activeFilter = null"
+            class="px-3 py-1 rounded-full text-xs font-medium transition-all"
+            :class="activeFilter === null
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-accent text-muted-foreground hover:text-foreground'">
+            {{ isDE ? 'Alle' : 'All' }}
+          </button>
+          <button
+            v-for="label in allLabels"
+            :key="label"
+            @click="activeFilter = activeFilter === label ? null : label"
+            class="px-3 py-1 rounded-full text-xs font-medium transition-all"
+            :class="activeFilter === label
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-accent text-muted-foreground hover:text-foreground'">
+            {{ label === 'local-dev' ? '🔧 local-dev' : label }}
+            <span class="ml-1 opacity-60">{{ labelCount(label) }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- Workshop cards grid -->
-      <div v-if="workshops.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div v-if="filteredWorkshops.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card
-          v-for="ws in workshops"
+          v-for="ws in filteredWorkshops"
           :key="ws"
           @click="openWorkshop(ws)"
           class="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/50 overflow-hidden"
@@ -152,6 +175,7 @@ const route = useRoute()
 const { availableContent, isLoading, loadAvailableContent, loadWorkshopsForLanguage, removeContentSource, isRemoteWorkshop, isDefaultSource, getSourceForSlug, getWorkshopMeta, getContentSources } = useLessons()
 const { selectedLanguage, setLanguage } = useLanguage()
 
+const activeFilter = ref(null)
 const copiedWorkshop = ref(null)
 const addedNotice = ref(null)
 const favorites = ref(JSON.parse(localStorage.getItem('workshopFavorites') || '[]'))
@@ -196,6 +220,30 @@ const workshops = computed(() => {
     return aImg - bImg
   })
 })
+
+function getWorkshopLabels(workshop) {
+  const meta = getWorkshopMeta(learning.value, workshop)
+  return meta.labels || []
+}
+
+const allLabels = computed(() => {
+  const labels = new Set()
+  for (const ws of workshops.value) {
+    for (const label of getWorkshopLabels(ws)) {
+      labels.add(label)
+    }
+  }
+  return [...labels].sort()
+})
+
+const filteredWorkshops = computed(() => {
+  if (!activeFilter.value) return workshops.value
+  return workshops.value.filter(ws => getWorkshopLabels(ws).includes(activeFilter.value))
+})
+
+function labelCount(label) {
+  return workshops.value.filter(ws => getWorkshopLabels(ws).includes(label)).length
+}
 
 const availableWorkshops = computed(() => {
   const sources = getContentSources()
