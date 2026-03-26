@@ -30,14 +30,6 @@
         </div>
         <div v-if="allLabels.length > 0" class="flex flex-wrap gap-2">
           <button
-            @click="activeFilter = null"
-            class="px-3 py-1 rounded-full text-xs font-medium transition-all"
-            :class="activeFilter === null
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-accent text-muted-foreground hover:text-foreground'">
-            {{ isDE ? 'Alle' : 'All' }}
-          </button>
-          <button
             v-for="label in allLabels"
             :key="label"
             @click="activeFilter = activeFilter === label ? null : label"
