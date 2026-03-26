@@ -144,7 +144,7 @@ workshops:
     - **color** (string, optional): HSL background color for the workshop (e.g., `"145 45% 92%"`). Shown as the accent bar on workshop cards. When lightness > 80%, it is automatically darkened by 40% for the page background.
     - **primaryColor** (string, optional): HSL primary/accent color for the workshop (e.g., `"220 75% 50%"`). Used for the header bar, links, and UI accents when inside the workshop.
     - **image** (string, optional): Thumbnail image for the workshop card. Shown below the accent bar. Supports relative paths (resolved from app base URL) or absolute URLs. No fallback image is shown when absent.
-    - **labels** (array of strings, optional): Category tags for filtering (e.g., `["Sprache", "Kids"]`). Shown as filter chips on the workshop overview page.
+    - **labels** (array of strings, optional): Category tags for filtering. Shown as clickable chips on workshop cards and as filter chips above the workshop grid. Supports hierarchy with `/` separator: `"IT"` is a top-level category, `"IT/Linux"` is a sub-label shown only when "IT" is filtered. Example: `["IT", "IT/Linux", "IT/DevOps"]`. Two labels are computed automatically: `active` (for opened workshops) and `local-dev` (for local dev workshops).
     - **coach** (object, optional): Workshop coach configuration
       - **email** (string, required): Coach's email address for `mailto:` results
       - **name** (string, optional): Coach or workshop name displayed in the UI
@@ -156,7 +156,7 @@ workshops:
     - **color** (string, optional): HSL background color (same as above)
     - **primaryColor** (string, optional): HSL primary/accent color (same as above)
     - **image** (string, optional): Thumbnail image (same as above)
-    - **labels** (array of strings, optional): Category tags for filtering (same as above)
+    - **labels** (array of strings, optional): Category tags for filtering (same as above, supports hierarchy)
     - **coach** (object, optional): Workshop coach configuration (same fields as above)
 
 For language workshops, use the target language code (e.g., "pt-PT" for Portuguese). For non-language workshops, use the base language code.
@@ -179,6 +179,12 @@ workshops:
     primaryColor: "25 80% 50%"     # Orange accent for header/links
     coach:
       email: "coach@example.com"
+
+  # Hierarchical labels: "IT" is top-level, "IT/Linux" is a sub-label
+  - folder: linux-grundlagen
+    code: de-DE
+    title: "Linux Grundlagen"
+    labels: ["IT", "IT/Linux", "IT/DevOps"]
 
   # String format (backward compatible)
   - englisch
