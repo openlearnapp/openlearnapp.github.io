@@ -1,7 +1,7 @@
 <template>
   <div class="relative">
-    <!-- Vertical path line (center on desktop, left on mobile) -->
-    <div class="absolute top-0 bottom-0 left-5 sm:left-1/2 sm:-translate-x-px w-0.5">
+    <!-- Vertical path line (always left) -->
+    <div class="absolute top-0 bottom-0 left-5 w-0.5">
       <!-- Background line (full height, dashed for incomplete) -->
       <div class="absolute inset-0 border-l-2 border-dashed border-muted-foreground/20"></div>
       <!-- Completed portion (solid, gradient) -->
@@ -15,19 +15,13 @@
     <!-- Lesson nodes -->
     <div class="relative space-y-6">
       <div
-        v-for="(lesson, index) in sortedLessons"
+        v-for="lesson in sortedLessons"
         :key="lesson.number"
-        :class="[
-          'relative flex items-start gap-4',
-          // Desktop: alternate left/right
-          'sm:gap-0',
-          index % 2 === 0 ? 'sm:flex-row' : 'sm:flex-row-reverse'
-        ]">
+        class="relative flex items-start gap-4">
 
         <!-- Node dot -->
         <div :class="[
           'relative z-10 flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300',
-          'sm:absolute sm:left-1/2 sm:-translate-x-1/2',
           getNodeClass(lesson)
         ]">
           <!-- Completed checkmark -->
@@ -43,12 +37,7 @@
         </div>
 
         <!-- Card -->
-        <div :class="[
-          'flex-1 ml-2',
-          // Desktop positioning
-          'sm:ml-0',
-          index % 2 === 0 ? 'sm:mr-[calc(50%+1.5rem)] sm:pr-0' : 'sm:ml-[calc(50%+1.5rem)] sm:pl-0'
-        ]">
+        <div class="flex-1">
           <!-- Drag handle for favorites -->
           <div class="flex items-center gap-1">
             <div

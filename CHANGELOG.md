@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-03-26
+
+### Fixes
+
+- Learning path: move path line to left side on all screen sizes — cards use full width instead of alternating left/right (#93)
+
 ## 2026-03-25
 
 ### Features
@@ -12,8 +18,7 @@
 - Add next lesson highlighting with "Continue" badge
 - Completed lessons appear at bottom, visually dimmed
 - Path nodes with status indicators (empty/dot/checkmark)
-- Desktop: cards alternate left/right of path line
-- Mobile: path line left, cards right
+- Path line always on left, cards always right — consistent on all screen sizes
 - i18n: all new strings in DE, EN, FA, AR
 - 7 new E2E tests for learning path functionality
 

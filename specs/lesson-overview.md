@@ -92,7 +92,7 @@ Neue Daten in localStorage:
 
 ## Entscheidungen
 
-1. **Grafischer Pfad**: Ja — eine vertikale Linie verbindet die Lektionen visuell. Erledigte Abschnitte der Linie sind farbig ausgefüllt (primary color, sanfter Gradient), offene Abschnitte gestrichelt/grau. An jedem Knotenpunkt sitzt ein Kreis-Indikator (offen/besucht/erledigt). Karten liegen abwechselnd links und rechts des Pfads (Desktop) für ein modernes, aufgeräumtes Layout. Auf Mobile: Linie links, Karten rechts. Der Stil ist clean und minimalistisch — keine Spielelemente, sondern ein eleganter visueller Fortschrittsindikator.
+1. **Grafischer Pfad**: Ja — eine vertikale Linie verbindet die Lektionen visuell. Erledigte Abschnitte der Linie sind farbig ausgefüllt (primary color, sanfter Gradient), offene Abschnitte gestrichelt/grau. An jedem Knotenpunkt sitzt ein Kreis-Indikator (offen/besucht/erledigt). Die Linie verläuft durchgehend links, Karten liegen rechts davon — auf allen Bildschirmgrößen gleich. Das vermeidet leeren Raum und nutzt die volle Breite für die Karten. Der Stil ist clean und minimalistisch — keine Spielelemente, sondern ein eleganter visueller Fortschrittsindikator.
 2. **Fortschrittsbalken**: Ja — oben auf der Seite wird der Gesamtfortschritt angezeigt (z.B. "4/10 Lektionen erledigt" mit visueller Leiste).
 3. **Drag & Drop**: Ja — Favoriten können per Drag & Drop umsortiert werden. Touch-Support (long press → drag) für Mobile. Reihenfolge wird in localStorage gespeichert.
 

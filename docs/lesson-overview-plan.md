@@ -88,8 +88,7 @@ Getrennt von bestehendem `progress` (Item-Level) um keine Migration zu brauchen.
 
 **LearningPath.vue:**
 - Vertikale Linie (CSS) mit Knotenpunkten pro Lektion
-- Desktop: Karten alternierend links/rechts vom Pfad
-- Mobile: Linie links, Karten rechts
+- Linie immer links, Karten immer rechts — auf allen Bildschirmgrößen gleich
 - Erledigte Pfad-Abschnitte: ausgefüllte Linie (primary, sanfter Gradient)
 - Offene Abschnitte: gestrichelte graue Linie
 - Knotenpunkte: Kreis mit Status-Farbe (grau/blau/grün)
