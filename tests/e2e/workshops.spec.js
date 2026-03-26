@@ -49,6 +49,30 @@ test.describe('Workshop System — Bundled Workshops', () => {
   });
 });
 
+test.describe('Workshop Assets — Images & Paths', () => {
+
+  test('should resolve lesson images from workshop-* paths', async ({ page }) => {
+    await page.goto('/#/english/open-learn-guide/lesson/1');
+    await page.waitForTimeout(3000);
+
+    // The lesson has images — verify at least one rendered
+    const images = page.locator('img[src]');
+    const count = await images.count();
+    expect(count).toBeGreaterThan(0);
+
+    // Verify image src points to workshop-* path, not old lessons/ path
+    const srcs = await images.evaluateAll(imgs => imgs.map(img => img.src));
+    const wrongPaths = srcs.filter(s => s.includes('/lessons/english/'));
+    expect(wrongPaths).toEqual([]);
+
+    // Verify images actually loaded (naturalWidth > 0)
+    const brokenImages = await images.evaluateAll(imgs =>
+      imgs.filter(img => !img.complete || img.naturalWidth === 0).map(img => img.src)
+    );
+    expect(brokenImages).toEqual([]);
+  });
+});
+
 test.describe('Assessments — Interactive Types', () => {
 
   test('should show select assessment with radio buttons', async ({ page }) => {

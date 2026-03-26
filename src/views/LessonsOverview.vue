@@ -248,10 +248,9 @@ function resolveLessonImage(lesson) {
   if (lesson._source?.type === 'url') {
     return `${lesson._source.path}/${imagePath}`
   }
-  // For remote workshops where lessons are folders, resolve via workshop URL
-  const workshopUrl = resolveWorkshopKey(learning.value, workshop.value)
-  if (workshopUrl.startsWith('http://') || workshopUrl.startsWith('https://')) {
-    return `${workshopUrl}/${lesson._source?.path || lesson._filename}/${imagePath}`
+  const resolvedWorkshop = resolveWorkshopKey(learning.value, workshop.value)
+  if (resolvedWorkshop !== workshop.value) {
+    return `${baseUrl}${resolvedWorkshop}/${lesson._source?.path || lesson._filename}/${imagePath}`
   }
   return `${baseUrl}lessons/${learning.value}/${workshop.value}/${lesson._filename}/${imagePath}`
 }
