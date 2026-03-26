@@ -124,6 +124,30 @@ pnpm test:ui
 pnpm test:e2e
 ```
 
+### Local Workshop Development
+
+Workshop repos placed as sibling directories are automatically detected and served during `pnpm dev`. No configuration needed.
+
+```
+your-workspace/
+├── openlearnapp.github.io/    ← pnpm dev here
+├── workshop-english/          ← auto-detected
+├── workshop-portugiesisch/    ← auto-detected
+└── workshop-farsi/            ← auto-detected
+```
+
+**Requirements:** The workshop directory must start with `workshop-` and contain an `index.yaml`.
+
+**How it works:**
+- A Vite plugin scans `../workshop-*` directories on dev server start
+- Local workshops appear **alongside** remote versions in the app, marked with 🔧 in the title
+- Files are served directly from the local filesystem — changes are visible immediately
+- Only active in dev mode; production builds are unaffected
+
+**Endpoints (dev only):**
+- `/__local-workshops.json` — lists detected local workshops
+- `/__local/workshop-xxx/...` — serves files from the local workshop directory
+
 ## Architecture
 
 ### Vue Application Structure
