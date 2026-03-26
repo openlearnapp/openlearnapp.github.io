@@ -101,9 +101,22 @@
               </Badge>
             </div>
 
-            <p v-if="getWorkshopDescription(ws)" class="text-sm text-muted-foreground leading-relaxed mb-3">
+            <p v-if="getWorkshopDescription(ws)" class="text-sm text-muted-foreground leading-relaxed mb-2">
               {{ getWorkshopDescription(ws) }}
             </p>
+
+            <div v-if="getWorkshopLabels(ws).length > 0" class="flex flex-wrap gap-1.5 mb-3">
+              <button
+                v-for="label in getWorkshopLabels(ws)"
+                :key="label"
+                @click.stop="activeFilter = activeFilter === label ? null : label"
+                class="px-2 py-0.5 rounded-full text-xs transition-all"
+                :class="activeFilter === label
+                  ? 'bg-primary/20 text-primary font-medium'
+                  : 'bg-accent text-muted-foreground hover:text-foreground'">
+                {{ label === 'local-dev' ? '🔧 dev' : label }}
+              </button>
+            </div>
 
             <div v-if="isRemoteWorkshop(learning, ws)" class="flex items-center justify-between">
               <a
