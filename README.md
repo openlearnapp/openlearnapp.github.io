@@ -115,53 +115,37 @@ openlearnapp.github.io/
 │   └── utils/
 │       └── formatters.js    # Display name formatting
 ├── public/
-│   └── lessons/             # YAML lesson content
-│       ├── index.yaml       # Root index
-│       └── deutsch/         # German learning content
+│   ├── lessons/
+│   │   └── index.yaml           # Language index
+│   ├── workshop-open-learn-guide/   # Built-in workshop
+│   ├── workshop-open-learn-feedback/
+│   ├── workshop-milas-abenteuer/
+│   └── default-sources.yaml     # Default workshop sources
 ├── tests/                   # Test files
 ├── docs/                    # Documentation
+│   ├── workshop-guide.md    # How to create workshops
 │   ├── lesson-schema.md     # YAML schema reference
 │   ├── yaml-schemas.md      # Index file schemas
 │   └── audio-system.md      # Audio system docs
 └── dist/                    # Production build output
 ```
 
-## 📚 Adding New Content
+## 📚 Creating Workshops
 
-### Adding a New Lesson
+Every workshop follows the same structure, whether built-in or hosted externally:
 
-1. Navigate to the appropriate folder: `public/lessons/<language>/<workshop>/`
-2. Create a new lesson folder: `public/lessons/<language>/<workshop>/##-lesson-name/`
-3. Create `content.yaml` in the lesson folder following the schema (see `docs/lesson-schema.md`)
-4. Add the folder name to `lessons.yaml`
-5. Optionally generate audio files with `./generate-audio.sh`
-
-### Lesson Format Example
-
-```yaml
-number: 1
-title: "Basic Verbs"
-description: "Essential verbs for daily conversation"
-sections:
-  - title: "Common Verbs"
-    explanation: |
-      These are the most commonly used verbs.
-    examples:
-      - q: "Ich bin Student"
-        a: "I am a student"
-        labels: ["Present"]
-        rel:
-          - ["bin", "am", "to be"]
+```
+workshop-my-topic/
+├── index.yaml           # Languages
+├── deutsch/
+│   ├── workshops.yaml   # Metadata (title, labels, colors)
+│   └── my-topic/
+│       ├── lessons.yaml
+│       └── 01-lesson/
+│           └── content.yaml
 ```
 
-### Adding a New Workshop
-
-1. Create folder structure: `public/lessons/<learning>/<workshop>/`
-2. Add workshop to `public/lessons/<learning>/workshops.yaml`
-3. Create `lessons.yaml` with lesson folder names
-4. Add lesson folders with `content.yaml` files
-
-For complete schema documentation, see [`docs/lesson-schema.md`](docs/lesson-schema.md).
+See the [Workshop Guide](docs/workshop-guide.md) for the full reference.
 
 ## 🧪 Testing
 
@@ -231,7 +215,7 @@ Community workshops hosted on [open-learn.app](https://open-learn.app):
 | **Arabisch** | 5 lessons — key words and phrases (DE/EN/AR) | [Start](https://open-learn.app/#/add?source=https://open-learn.app/workshop-arabisch) · [Repo](https://github.com/openlearnapp/workshop-arabisch) |
 | **KI im Journalismus** | Workshop zum Einsatz von KI-Tools in der journalistischen Praxis | [Start](https://open-learn.app/#/add?source=https://open-learn.app/workshop-AI-im-Journalismus) · [Repo](https://github.com/openlearnapp/workshop-AI-im-Journalismus) |
 
-Want to create your own workshop? See the [External Workshop Guide](docs/external-workshop-guide.md).
+Want to create your own workshop? See the [Workshop Guide](docs/workshop-guide.md).
 
 ## 🤝 Contributing
 

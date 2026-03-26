@@ -66,24 +66,18 @@ openlearnapp.github.io/
 ├── public/
 │   ├── CNAME              # Custom domain: open-learn.app
 │   ├── default-sources.yaml # Default workshop sources (loaded at startup)
-│   └── lessons/           # YAML lesson content (deployed as-is)
-│       ├── index.yaml     # Root index - lists available interface languages
-│       ├── deutsch/       # German interface folder
-│       │   ├── workshops.yaml         # Lists bundled workshops
-│       │   ├── open-learn-guide/      # Bundled: platform tutorial
-│       │   └── open-learn-feedback/   # Bundled: feedback workshop
-│       ├── english/       # English interface folder
-│       │   ├── workshops.yaml
-│       │   ├── open-learn-guide/
-│       │   └── open-learn-feedback/
-│       └── README.md      # Lesson system documentation
+│   ├── lessons/
+│   │   └── index.yaml     # Root index - lists available interface languages
+│   ├── workshop-open-learn-guide/   # Built-in: platform tutorial (DE + EN)
+│   ├── workshop-open-learn-feedback/ # Built-in: feedback workshop (DE + EN)
+│   └── workshop-milas-abenteuer/    # Built-in: interactive story (DE)
 ├── docs/
+│   ├── workshop-guide.md  # How to create workshops
 │   ├── features.md        # Complete feature inventory
 │   ├── development-plan.md # Current development plan
 │   ├── lesson-schema.md   # Individual lesson YAML schema documentation
 │   ├── yaml-schemas.md    # Index YAML schemas (languages/topics/lessons)
 │   ├── audio-system.md    # Audio playback documentation
-│   ├── external-workshop-guide.md  # Guide for creating external workshops
 │   ├── lesson-plan-template.md     # Lesson planning guide
 │   └── adr/               # Architecture Decision Records
 ├── tests/
@@ -313,46 +307,23 @@ See `docs/lesson-schema.md` for individual lesson documentation and `docs/yaml-s
 
 ### Adding a New Lesson
 
-1. Choose or create the appropriate workshop folder: `public/lessons/<language>/<workshop>/`
-2. Create a new lesson folder: `public/lessons/<language>/<workshop>/##-lesson-name/`
-3. Create `content.yaml` in the lesson folder following the schema (see `docs/lesson-schema.md`)
-4. Optionally create an `audio/` subfolder for audio files
-5. Add the folder name to `public/lessons/<language>/<workshop>/lessons.yaml`:
-   ```yaml
-   lessons:
-     - 01-basics
-     - 02-your-new-lesson
-   ```
-6. Generate audio files using `./generate-audio.sh public/lessons/<language>/<workshop>/02-your-new-lesson/`
+Every workshop follows the same `workshop-{name}/` structure:
 
-### Adding a New Workshop
+```
+workshop-my-topic/
+├── index.yaml              # Languages this workshop supports
+├── deutsch/
+│   ├── workshops.yaml      # Workshop metadata (title, labels, colors)
+│   └── my-topic/
+│       ├── lessons.yaml    # Lesson list
+│       └── 01-lesson/
+│           ├── content.yaml
+│           └── audio/      # Optional: generated MP3 files
+```
 
-1. Create folder structure: `public/lessons/<language>/<workshop>/`
-2. Add workshop to `public/lessons/<language>/workshops.yaml`:
-   ```yaml
-   workshops:
-     - folder: portugiesisch
-       code: pt-PT
-     - folder: your-new-workshop
-       code: de-DE
-   ```
-3. Create `public/lessons/<language>/<workshop>/lessons.yaml` with lesson folder names
-4. Add lesson folders with `content.yaml` files
+Built-in workshops live in `public/workshop-*/`. External workshops are loaded from URLs via `default-sources.yaml`.
 
-### Adding a New Interface Language
-
-1. Add language to `public/lessons/index.yaml`:
-   ```yaml
-   languages:
-     - folder: deutsch
-       code: de-DE
-     - folder: your-new-language
-       code: xx-XX
-   ```
-2. Create `public/lessons/<language>/workshops.yaml` with workshops list
-3. Create workshop folders with `lessons.yaml` and lesson folders
-
-See `docs/yaml-schemas.md` for detailed documentation on all index file schemas.
+See `docs/workshop-guide.md` for the full guide and `docs/yaml-schemas.md` for schema details.
 
 ## Terminology
 
