@@ -307,7 +307,7 @@ const router = useRouter()
 const { t } = useI18n()
 const emit = defineEmits(['update-title'])
 
-const { loadAllLessonsForWorkshop } = useLessons()
+const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
 const { settings } = useSettings()
 const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress, setLastVisited } = useProgress()
 const { isLoadingAudio, isPlaying, isPaused, playbackFinished, hasAudio, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
@@ -338,29 +338,29 @@ function normalizeVideoUrl(url) {
   return url
 }
 
-function resolveVideoPath(videoPath) {
-  if (videoPath.startsWith('http://') || videoPath.startsWith('https://') || videoPath.startsWith('/')) {
-    return videoPath
+function resolveLessonAssetPath(assetPath) {
+  if (!assetPath) return ''
+  if (assetPath.startsWith('http://') || assetPath.startsWith('https://') || assetPath.startsWith('/')) {
+    return assetPath
   }
   const baseUrl = import.meta.env.BASE_URL
   if (lesson.value?._source?.type === 'url') {
-    return `${lesson.value._source.path}/${videoPath}`
+    return `${lesson.value._source.path}/${assetPath}`
   }
   const filename = lesson.value?._filename || `${String(lesson.value?.number).padStart(2, '0')}-lesson`
-  return `${baseUrl}lessons/${learning.value}/${workshop.value}/${filename}/${videoPath}`
+  const resolvedWorkshop = resolveWorkshopKey(learning.value, workshop.value)
+  if (resolvedWorkshop !== workshop.value) {
+    return `${baseUrl}${resolvedWorkshop}/${filename}/${assetPath}`
+  }
+  return `${baseUrl}lessons/${learning.value}/${workshop.value}/${filename}/${assetPath}`
+}
+
+function resolveVideoPath(videoPath) {
+  return resolveLessonAssetPath(videoPath)
 }
 
 function resolveImagePath(imagePath) {
-  if (!imagePath) return ''
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('/')) {
-    return imagePath
-  }
-  const baseUrl = import.meta.env.BASE_URL
-  if (lesson.value?._source?.type === 'url') {
-    return `${lesson.value._source.path}/${imagePath}`
-  }
-  const filename = lesson.value?._filename || `${String(lesson.value?.number).padStart(2, '0')}-lesson`
-  return `${baseUrl}lessons/${learning.value}/${workshop.value}/${filename}/${imagePath}`
+  return resolveLessonAssetPath(imagePath)
 }
 
 function openLightbox(src, caption) {

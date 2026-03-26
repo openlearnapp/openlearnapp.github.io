@@ -273,30 +273,30 @@ const audioSettings = computed(() => ({
   hideLearnedExamples: false
 }))
 
-function resolveSectionImage(imagePath) {
+function resolveStoryAssetPath(imagePath, lesson) {
   if (!imagePath) return null
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('/')) {
     return imagePath
   }
-  const resolvedWorkshop = resolveWorkshopKey(learning.value, workshop.value)
-  const lessonFilename = currentLesson.value?._filename || `${String(lessonNumber.value).padStart(2, '0')}-lesson`
-  if (resolvedWorkshop?.startsWith('http')) {
-    return `${resolvedWorkshop}/${lessonFilename}/${imagePath}`
+  const baseUrl = import.meta.env.BASE_URL
+  const effectiveLesson = lesson || currentLesson.value
+  if (effectiveLesson?._source?.type === 'url') {
+    return `${effectiveLesson._source.path}/${imagePath}`
   }
-  return `${import.meta.env.BASE_URL}lessons/${learning.value}/${workshop.value}/${lessonFilename}/${imagePath}`
+  const lessonFilename = effectiveLesson?._filename || `${String(lessonNumber.value).padStart(2, '0')}-lesson`
+  const resolvedWorkshop = resolveWorkshopKey(learning.value, workshop.value)
+  if (resolvedWorkshop !== workshop.value) {
+    return `${baseUrl}${resolvedWorkshop}/${lessonFilename}/${imagePath}`
+  }
+  return `${baseUrl}lessons/${learning.value}/${workshop.value}/${lessonFilename}/${imagePath}`
+}
+
+function resolveSectionImage(imagePath) {
+  return resolveStoryAssetPath(imagePath)
 }
 
 function resolveLessonImage(imagePath) {
-  if (!imagePath) return null
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('/')) {
-    return imagePath
-  }
-  const lesson = currentLesson.value
-  if (lesson?._source?.type === 'url') {
-    return `${lesson._source.path}/${imagePath}`
-  }
-  const lessonFilename = lesson?._filename || `${String(lessonNumber.value).padStart(2, '0')}-lesson`
-  return `${import.meta.env.BASE_URL}lessons/${learning.value}/${workshop.value}/${lessonFilename}/${imagePath}`
+  return resolveStoryAssetPath(imagePath)
 }
 
 function getAudioBase() {
@@ -307,8 +307,8 @@ function getAudioBase() {
     return `${lesson._source.path}/audio`
   }
   const resolvedWorkshop = resolveWorkshopKey(learning.value, workshop.value)
-  if (resolvedWorkshop?.startsWith('http')) {
-    return `${resolvedWorkshop}/${lessonFilename}/audio`
+  if (resolvedWorkshop !== workshop.value) {
+    return `${import.meta.env.BASE_URL}${resolvedWorkshop}/${lessonFilename}/audio`
   }
   return `${import.meta.env.BASE_URL}lessons/${learning.value}/${workshop.value}/${lessonFilename}/audio`
 }
