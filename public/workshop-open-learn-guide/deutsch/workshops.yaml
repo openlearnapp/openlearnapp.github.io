@@ -1,0 +1,9 @@
+workshops:
+  - folder: open-learn-guide
+    code: de-DE
+    title: "Open Learn Anleitung"
+    description: "Lerne die Plattform kennen — Videos, Quizze, Labels und mehr. Perfekt für neue Nutzer und Workshop-Ersteller."
+    color: "145 45% 92%"
+    primaryColor: "220 75% 50%"
+    image: "open-learn-guide/thumbnail.svg"
+    labels: ["Open Learn"]

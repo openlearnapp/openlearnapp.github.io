@@ -1,0 +1,11 @@
+workshops:
+  - folder: open-learn-feedback
+    code: en-US
+    title: "Open Learn Feedback"
+    description: "Share your thoughts and help shape the future of Open Learn."
+    color: "145 40% 94%"
+    primaryColor: "152 60% 36%"
+    image: "open-learn-feedback/thumbnail.svg"
+    labels: ["Open Learn"]
+    coach:
+      email: "open-learn@felixboehm.it"
