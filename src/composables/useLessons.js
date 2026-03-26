@@ -19,10 +19,10 @@ function parseSource(source) {
   }
   if (typeof source === 'object') {
     if (source.folder) {
-      return { type: 'folder', path: source.folder, code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null }
+      return { type: 'folder', path: source.folder, code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null, labels: source.labels || [] }
     }
     if (source.url) {
-      return { type: 'url', path: resolveUrl(source.url), code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null }
+      return { type: 'url', path: resolveUrl(source.url), code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null, labels: source.labels || [] }
     }
   }
   return null
@@ -228,7 +228,8 @@ export function useLessons() {
               coach: workshopSource.coach || null,
               color: workshopSource.color || null,
               primaryColor: workshopSource.primaryColor || null,
-              image: imageUrl
+              image: imageUrl,
+              labels: workshopSource.labels || []
             }
 
             console.log(`  ✓ Remote workshop: ${slug} → ${workshopUrl} (${workshopSource.code || 'no code'})`)
@@ -309,7 +310,8 @@ export function useLessons() {
                 coach: ws.coach || null,
                 color: ws.color || null,
                 primaryColor: ws.primaryColor || null,
-                image: imageUrl
+                image: imageUrl,
+                labels: [...(ws.labels || []), 'local-dev']
               }
 
               console.log(`  🔧 Local: ${langKey}/${localSlug} → ${workshopUrl}`)
@@ -434,13 +436,18 @@ export function useLessons() {
         if (!workshopMeta.value[lang]) {
           workshopMeta.value[lang] = {}
         }
+        const builtinLabels = [...(source.labels || [])]
+        if (import.meta.env.DEV && !builtinLabels.includes('local-dev')) {
+          builtinLabels.push('local-dev')
+        }
         workshopMeta.value[lang][key] = {
-          title: source.title || null,
+          title: import.meta.env.DEV ? `🔧 ${source.title || key}` : (source.title || null),
           description: source.description || null,
           coach: source.coach || null,
           color: source.color || null,
           primaryColor: source.primaryColor || null,
-          image: source.image || null
+          image: source.image || null,
+          labels: builtinLabels
         }
 
         console.log(`  ✓ Workshop: ${key} (${source.type}) (${source.code || 'no code'})`)

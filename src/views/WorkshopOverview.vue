@@ -18,20 +18,27 @@
         </button>
       </div>
 
-      <!-- Workshop count -->
-      <div class="flex items-center justify-between mb-3">
-        <label class="text-sm font-medium text-muted-foreground">
-          {{ t('workshops') }}
-        </label>
-        <span class="text-xs text-muted-foreground">
-          {{ workshops.length }} {{ workshops.length === 1 ? 'Workshop' : 'Workshops' }}
-        </span>
+      <!-- Filter chips -->
+      <div class="mb-3">
+        <div v-if="allLabels.length > 0" class="flex flex-wrap gap-2">
+          <button
+            v-for="label in allLabels"
+            :key="label"
+            @click="activeFilter = activeFilter === label ? null : label"
+            class="px-3 py-1 rounded-full text-xs font-medium transition-all"
+            :class="activeFilter === label
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-accent text-muted-foreground hover:text-foreground'">
+            {{ getDisplayLabel(label) }}
+            <span class="ml-1 opacity-60">{{ labelCount(label) }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- Workshop cards grid -->
-      <div v-if="workshops.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div v-if="filteredWorkshops.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card
-          v-for="ws in workshops"
+          v-for="ws in filteredWorkshops"
           :key="ws"
           @click="openWorkshop(ws)"
           class="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/50 overflow-hidden"
@@ -49,55 +56,62 @@
           </div>
 
           <div class="p-5">
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <h3 class="font-semibold text-foreground text-lg group-hover:text-primary transition-colors leading-tight" :style="getWorkshopTitleStyle(ws)">
+            <div class="flex items-start gap-2 mb-2">
+              <h3 class="font-semibold text-foreground text-lg group-hover:text-primary transition-colors leading-tight flex-1" :style="getWorkshopTitleStyle(ws)">
                 {{ getWorkshopTitle(ws) }}
               </h3>
-              <button
-                @click.stop="toggleFavorite(ws)"
-                class="p-1.5 rounded-md hover:bg-accent transition flex-shrink-0"
-                :title="isFavorite(ws) ? 'Remove favorite' : 'Add favorite'">
-                <svg v-if="isFavorite(ws)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground/40"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-              </button>
-              <button
-                @click.stop="copyWorkshopLink(ws)"
-                class="p-1.5 rounded-md hover:bg-accent transition flex-shrink-0"
-                :style="getWorkshopTitleStyle(ws)"
-                title="Copy link">
-                <svg v-if="copiedWorkshop !== ws" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><polyline points="20 6 9 17 4 12"/></svg>
-              </button>
+              <div class="flex items-center gap-1 flex-shrink-0">
+                <button
+                  @click.stop="toggleFavorite(ws)"
+                  class="p-1.5 rounded-md hover:bg-accent transition"
+                  :title="isFavorite(ws) ? 'Remove favorite' : 'Add favorite'">
+                  <svg v-if="isFavorite(ws)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground/40"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                </button>
+                <button
+                  @click.stop="copyWorkshopLink(ws)"
+                  class="p-1.5 rounded-md hover:bg-accent transition"
+                  :style="getWorkshopTitleStyle(ws)"
+                  title="Copy link">
+                  <svg v-if="copiedWorkshop !== ws" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              </div>
             </div>
 
-            <div v-if="isActive(ws)" class="mb-2">
-              <Badge
-                @click.stop="deactivateWorkshop(ws)"
-                class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700 cursor-pointer hover:opacity-70 transition">
-                {{ isDE ? 'Aktiv' : 'Active' }} ✕
-              </Badge>
+            <div v-if="getWorkshopLabels(ws).length > 0 || isActive(ws)" class="flex flex-wrap gap-1.5 mb-2">
+              <span v-if="isActive(ws)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all"
+                :class="activeFilter === 'active'
+                  ? 'bg-green-200 dark:bg-green-800/40 text-green-800 dark:text-green-300 font-medium'
+                  : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'">
+                <button @click.stop="activeFilter = activeFilter === 'active' ? null : 'active'">{{ isDE ? 'Aktiv' : 'Active' }}</button>
+                <button @click.stop="deactivateWorkshop(ws)" class="hover:text-red-500 transition" title="Remove active">✕</button>
+              </span>
+              <button
+                v-for="label in getWorkshopLabels(ws)"
+                :key="label"
+                @click.stop="activeFilter = activeFilter === label ? null : label"
+                class="px-2 py-0.5 rounded-full text-xs transition-all"
+                :class="activeFilter === label
+                  ? 'bg-primary/20 text-primary font-medium'
+                  : 'bg-accent text-muted-foreground hover:text-foreground'">
+                {{ getDisplayLabel(label) }}
+              </button>
             </div>
 
             <p v-if="getWorkshopDescription(ws)" class="text-sm text-muted-foreground leading-relaxed mb-3">
               {{ getWorkshopDescription(ws) }}
             </p>
 
-            <div v-if="isRemoteWorkshop(learning, ws)" class="flex items-center justify-between">
+            <div v-if="isRemoteWorkshop(learning, ws)" class="flex items-center">
               <a
                 :href="getWorkshopSourceUrl(ws)"
                 target="_blank"
                 rel="noopener"
                 @click.stop
-                class="text-xs text-muted-foreground/50 hover:text-primary truncate max-w-[60%] transition">
+                class="text-xs text-muted-foreground/50 hover:text-primary truncate transition">
                 {{ getWorkshopSourceLabel(ws) }}
               </a>
-              <button
-                v-if="!isDefaultWorkshop(ws)"
-                @click.stop="removeSource(ws)"
-                class="p-1 rounded text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition text-xs"
-                title="Remove">
-                Remove
-              </button>
             </div>
           </div>
         </Card>
@@ -152,6 +166,7 @@ const route = useRoute()
 const { availableContent, isLoading, loadAvailableContent, loadWorkshopsForLanguage, removeContentSource, isRemoteWorkshop, isDefaultSource, getSourceForSlug, getWorkshopMeta, getContentSources } = useLessons()
 const { selectedLanguage, setLanguage } = useLanguage()
 
+const activeFilter = ref(null)
 const copiedWorkshop = ref(null)
 const addedNotice = ref(null)
 const favorites = ref(JSON.parse(localStorage.getItem('workshopFavorites') || '[]'))
@@ -196,6 +211,82 @@ const workshops = computed(() => {
     return aImg - bImg
   })
 })
+
+function getWorkshopLabels(workshop) {
+  const meta = getWorkshopMeta(learning.value, workshop)
+  return meta.labels || []
+}
+
+// Filter matching: "IT" matches workshops with "IT" or "IT/Linux" etc.
+function isWorkshopMatchingFilter(ws, filter) {
+  if (filter === 'active') return isActive(ws)
+  const labels = getWorkshopLabels(ws)
+  return labels.some(l => l === filter || l.startsWith(filter + '/'))
+}
+
+const filteredWorkshops = computed(() => {
+  if (!activeFilter.value) return workshops.value
+  return workshops.value.filter(ws => isWorkshopMatchingFilter(ws, activeFilter.value))
+})
+
+// Hierarchical labels: show top-level by default, sub-labels when filtered
+// e.g. labels: ["IT", "IT/Linux"] → default shows "IT", filter "IT" reveals "Linux"
+function getDisplayLabel(label) {
+  if (label === 'active') return isDE.value ? 'Aktiv' : 'Active'
+  if (label === 'local-dev') return '🔧 local-dev'
+  // If it's a sub-label under the active filter, show only the suffix
+  if (activeFilter.value && label.startsWith(activeFilter.value + '/')) {
+    return label.slice(activeFilter.value.length + 1)
+  }
+  return label
+}
+
+const allLabels = computed(() => {
+  const labels = new Set()
+  const source = filteredWorkshops.value
+
+  if (source.some(ws => isActive(ws)) || activeFilter.value === 'active') {
+    labels.add('active')
+  }
+
+  for (const ws of source) {
+    for (const label of getWorkshopLabels(ws)) {
+      labels.add(label)
+    }
+  }
+
+  // Always include the active filter so it can be deselected
+  if (activeFilter.value && activeFilter.value !== 'active') {
+    labels.add(activeFilter.value)
+  }
+
+  // Filter to appropriate level:
+  // - No active filter: show only top-level (no /) + special labels
+  // - With active filter: show the active filter + its direct children
+  const visible = [...labels].filter(l => {
+    if (l === 'active' || l === 'local-dev') return true
+    if (l === activeFilter.value) return true
+    if (!activeFilter.value) return !l.includes('/')
+    // Show direct children of active filter
+    if (l.startsWith(activeFilter.value + '/')) {
+      const rest = l.slice(activeFilter.value.length + 1)
+      return !rest.includes('/') // only direct children, not deeper
+    }
+    // Also show other top-level labels still present in results
+    return !l.includes('/')
+  })
+
+  const special = ['active', 'local-dev']
+  const sorted = visible.filter(l => !special.includes(l)).sort()
+  // Prepend special labels (active, local-dev) in order if present
+  if (visible.includes('local-dev')) sorted.unshift('local-dev')
+  if (visible.includes('active')) sorted.unshift('active')
+  return sorted
+})
+
+function labelCount(label) {
+  return filteredWorkshops.value.filter(ws => isWorkshopMatchingFilter(ws, label)).length
+}
 
 const availableWorkshops = computed(() => {
   const sources = getContentSources()
