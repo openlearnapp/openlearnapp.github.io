@@ -77,6 +77,20 @@ pnpm test:ui
 pnpm test:e2e
 ```
 
+### Local Workshop Development
+
+Workshop repos placed as sibling directories are automatically detected and served during `pnpm dev`:
+
+```
+your-workspace/
+├── openlearnapp.github.io/    ← pnpm dev here
+├── workshop-english/          ← auto-detected (🔧)
+├── workshop-portugiesisch/    ← auto-detected (🔧)
+└── workshop-farsi/            ← auto-detected (🔧)
+```
+
+Local workshops appear **alongside** remote versions, marked with 🔧 in the title. Requirements: directory starts with `workshop-` and contains `index.yaml`. Changes are reflected immediately — no rebuild needed. Only active in dev mode.
+
 ## 📁 Project Structure
 
 ```
