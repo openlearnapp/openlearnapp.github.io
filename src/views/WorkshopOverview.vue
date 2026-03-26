@@ -18,16 +18,8 @@
         </button>
       </div>
 
-      <!-- Filter chips + workshop count -->
+      <!-- Filter chips -->
       <div class="mb-3">
-        <div class="flex items-center justify-between mb-2">
-          <label class="text-sm font-medium text-muted-foreground">
-            {{ t('workshops') }}
-          </label>
-          <span class="text-xs text-muted-foreground">
-            {{ filteredWorkshops.length }} {{ filteredWorkshops.length === 1 ? 'Workshop' : 'Workshops' }}
-          </span>
-        </div>
         <div v-if="allLabels.length > 0" class="flex flex-wrap gap-2">
           <button
             v-for="label in allLabels"
