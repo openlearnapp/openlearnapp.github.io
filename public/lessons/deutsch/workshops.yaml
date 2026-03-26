@@ -7,6 +7,7 @@ workshops:
     color: "145 45% 92%"
     primaryColor: "220 75% 50%"
     image: "lessons/deutsch/open-learn-guide/thumbnail.svg"
+    labels: ["Open Learn"]
   - folder: spanisch
     code: es-ES
     title: "Spanisch"
@@ -14,6 +15,7 @@ workshops:
     color: "35 90% 93%"
     primaryColor: "35 90% 45%"
     image: "lessons/deutsch/spanisch/thumbnail.svg"
+    labels: ["Language"]
   - folder: milas-abenteuer
     code: de-DE
     title: "Milas Abenteuer"
@@ -21,6 +23,7 @@ workshops:
     color: "270 40% 92%"
     primaryColor: "270 60% 50%"
     image: "lessons/deutsch/milas-abenteuer/thumbnail.svg"
+    labels: ["Kids", "Mila"]
   - folder: open-learn-feedback
     code: de-DE
     title: "Open Learn Feedback"
@@ -28,5 +31,6 @@ workshops:
     color: "145 40% 94%"
     primaryColor: "152 60% 36%"
     image: "lessons/deutsch/open-learn-feedback/thumbnail.svg"
+    labels: ["Open Learn"]
     coach:
       email: "open-learn@felixboehm.it"
