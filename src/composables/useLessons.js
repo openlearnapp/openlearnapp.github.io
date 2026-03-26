@@ -478,14 +478,14 @@ export function useLessons() {
 
       // Construct lessons.yaml URL
       let lessonsUrl
-      if (resolvedWorkshop.startsWith('http://') || resolvedWorkshop.startsWith('https://')) {
-        // Workshop is a URL (resolved from slug or direct)
+      if (resolvedWorkshop !== workshop) {
+        // Workshop was resolved from slug map (remote or built-in workshop-* source)
         lessonsUrl = `${resolvedWorkshop}/lessons.yaml`
       } else if (lang.startsWith('http://') || lang.startsWith('https://')) {
         // Language is a URL, workshop is a folder
         lessonsUrl = `${lang}/${workshop}/lessons.yaml`
       } else {
-        // Both are folders
+        // Both are local folders under lessons/
         lessonsUrl = `lessons/${lang}/${workshop}/lessons.yaml`
       }
 
@@ -528,14 +528,14 @@ export function useLessons() {
       if (source.type === 'url') {
         // Lesson is a URL
         lessonPath = `${source.path}/content.yaml`
-      } else if (resolvedWorkshop.startsWith('http://') || resolvedWorkshop.startsWith('https://')) {
-        // Workshop is a URL (resolved from slug), lesson is a folder
+      } else if (resolvedWorkshop !== workshop) {
+        // Workshop was resolved from slug map (remote or built-in workshop-* source)
         lessonPath = `${resolvedWorkshop}/${source.path}/content.yaml`
       } else if (lang.startsWith('http://') || lang.startsWith('https://')) {
         // Language is a URL, others are folders
         lessonPath = `${lang}/${workshop}/${source.path}/content.yaml`
       } else {
-        // All are folders
+        // All are local folders under lessons/
         lessonPath = `lessons/${lang}/${workshop}/${source.path}/content.yaml`
       }
 
