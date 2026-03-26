@@ -45,7 +45,7 @@
             :class="activeFilter === label
               ? 'bg-primary text-primary-foreground'
               : 'bg-accent text-muted-foreground hover:text-foreground'">
-            {{ label === 'local-dev' ? '🔧 dev' : label }}
+            {{ label === 'local-dev' ? '🔧 local-dev' : label }}
             <span class="ml-1 opacity-60">{{ labelCount(label) }}</span>
           </button>
         </div>
@@ -114,7 +114,7 @@
                 :class="activeFilter === label
                   ? 'bg-primary/20 text-primary font-medium'
                   : 'bg-accent text-muted-foreground hover:text-foreground'">
-                {{ label === 'local-dev' ? '🔧 dev' : label }}
+                {{ label === 'local-dev' ? '🔧 local-dev' : label }}
               </button>
             </div>
 
