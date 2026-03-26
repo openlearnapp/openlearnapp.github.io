@@ -93,19 +93,7 @@
               </button>
             </div>
 
-            <div v-if="isActive(ws)" class="mb-2">
-              <Badge
-                @click.stop="deactivateWorkshop(ws)"
-                class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700 cursor-pointer hover:opacity-70 transition">
-                {{ isDE ? 'Aktiv' : 'Active' }} ✕
-              </Badge>
-            </div>
-
-            <p v-if="getWorkshopDescription(ws)" class="text-sm text-muted-foreground leading-relaxed mb-2">
-              {{ getWorkshopDescription(ws) }}
-            </p>
-
-            <div v-if="getWorkshopLabels(ws).length > 0" class="flex flex-wrap gap-1.5 mb-3">
+            <div v-if="getWorkshopLabels(ws).length > 0" class="flex flex-wrap gap-1.5 mb-2">
               <button
                 v-for="label in getWorkshopLabels(ws)"
                 :key="label"
@@ -118,22 +106,27 @@
               </button>
             </div>
 
-            <div v-if="isRemoteWorkshop(learning, ws)" class="flex items-center justify-between">
+            <div v-if="isActive(ws)" class="mb-2">
+              <Badge
+                @click.stop="deactivateWorkshop(ws)"
+                class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700 cursor-pointer hover:opacity-70 transition">
+                {{ isDE ? 'Aktiv' : 'Active' }} ✕
+              </Badge>
+            </div>
+
+            <p v-if="getWorkshopDescription(ws)" class="text-sm text-muted-foreground leading-relaxed mb-3">
+              {{ getWorkshopDescription(ws) }}
+            </p>
+
+            <div v-if="isRemoteWorkshop(learning, ws)" class="flex items-center">
               <a
                 :href="getWorkshopSourceUrl(ws)"
                 target="_blank"
                 rel="noopener"
                 @click.stop
-                class="text-xs text-muted-foreground/50 hover:text-primary truncate max-w-[60%] transition">
+                class="text-xs text-muted-foreground/50 hover:text-primary truncate transition">
                 {{ getWorkshopSourceLabel(ws) }}
               </a>
-              <button
-                v-if="!isDefaultWorkshop(ws)"
-                @click.stop="removeSource(ws)"
-                class="p-1 rounded text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition text-xs"
-                title="Remove">
-                Remove
-              </button>
             </div>
           </div>
         </Card>
