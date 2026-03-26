@@ -222,29 +222,35 @@ function isWorkshopMatchingFilter(ws, filter) {
   return getWorkshopLabels(ws).includes(filter)
 }
 
+const filteredWorkshops = computed(() => {
+  if (!activeFilter.value) return workshops.value
+  return workshops.value.filter(ws => isWorkshopMatchingFilter(ws, activeFilter.value))
+})
+
+// Labels are collected from filtered workshops (narrows down as you filter)
+// The active filter itself is always shown so you can deselect it
 const allLabels = computed(() => {
   const labels = new Set()
-  // Add "active" as virtual label if any workshop is active
-  if (workshops.value.some(ws => isActive(ws))) {
+  const source = filteredWorkshops.value
+  if (source.some(ws => isActive(ws)) || activeFilter.value === 'active') {
     labels.add('active')
   }
-  for (const ws of workshops.value) {
+  for (const ws of source) {
     for (const label of getWorkshopLabels(ws)) {
       labels.add(label)
     }
+  }
+  // Always include the active filter so it can be deselected
+  if (activeFilter.value && activeFilter.value !== 'active') {
+    labels.add(activeFilter.value)
   }
   const sorted = [...labels].filter(l => l !== 'active').sort()
   if (labels.has('active')) sorted.unshift('active')
   return sorted
 })
 
-const filteredWorkshops = computed(() => {
-  if (!activeFilter.value) return workshops.value
-  return workshops.value.filter(ws => isWorkshopMatchingFilter(ws, activeFilter.value))
-})
-
 function labelCount(label) {
-  return workshops.value.filter(ws => isWorkshopMatchingFilter(ws, label)).length
+  return filteredWorkshops.value.filter(ws => isWorkshopMatchingFilter(ws, label)).length
 }
 
 const availableWorkshops = computed(() => {
