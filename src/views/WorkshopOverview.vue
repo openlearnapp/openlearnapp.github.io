@@ -29,7 +29,7 @@
             :class="activeFilter === label
               ? 'bg-primary text-primary-foreground'
               : 'bg-accent text-muted-foreground hover:text-foreground'">
-            {{ label === 'local-dev' ? '🔧 local-dev' : label === 'active' ? (isDE ? 'Aktiv' : 'Active') : label }}
+            {{ getDisplayLabel(label) }}
             <span class="ml-1 opacity-60">{{ labelCount(label) }}</span>
           </button>
         </div>
@@ -95,7 +95,7 @@
                 :class="activeFilter === label
                   ? 'bg-primary/20 text-primary font-medium'
                   : 'bg-accent text-muted-foreground hover:text-foreground'">
-                {{ label === 'local-dev' ? '🔧 local-dev' : label }}
+                {{ getDisplayLabel(label) }}
               </button>
             </div>
 
@@ -217,9 +217,11 @@ function getWorkshopLabels(workshop) {
   return meta.labels || []
 }
 
+// Filter matching: "IT" matches workshops with "IT" or "IT/Linux" etc.
 function isWorkshopMatchingFilter(ws, filter) {
   if (filter === 'active') return isActive(ws)
-  return getWorkshopLabels(ws).includes(filter)
+  const labels = getWorkshopLabels(ws)
+  return labels.some(l => l === filter || l.startsWith(filter + '/'))
 }
 
 const filteredWorkshops = computed(() => {
@@ -227,25 +229,58 @@ const filteredWorkshops = computed(() => {
   return workshops.value.filter(ws => isWorkshopMatchingFilter(ws, activeFilter.value))
 })
 
-// Labels are collected from filtered workshops (narrows down as you filter)
-// The active filter itself is always shown so you can deselect it
+// Hierarchical labels: show top-level by default, sub-labels when filtered
+// e.g. labels: ["IT", "IT/Linux"] → default shows "IT", filter "IT" reveals "Linux"
+function getDisplayLabel(label) {
+  if (label === 'active') return isDE.value ? 'Aktiv' : 'Active'
+  if (label === 'local-dev') return '🔧 local-dev'
+  // If it's a sub-label under the active filter, show only the suffix
+  if (activeFilter.value && label.startsWith(activeFilter.value + '/')) {
+    return label.slice(activeFilter.value.length + 1)
+  }
+  return label
+}
+
 const allLabels = computed(() => {
   const labels = new Set()
   const source = filteredWorkshops.value
+
   if (source.some(ws => isActive(ws)) || activeFilter.value === 'active') {
     labels.add('active')
   }
+
   for (const ws of source) {
     for (const label of getWorkshopLabels(ws)) {
       labels.add(label)
     }
   }
+
   // Always include the active filter so it can be deselected
   if (activeFilter.value && activeFilter.value !== 'active') {
     labels.add(activeFilter.value)
   }
-  const sorted = [...labels].filter(l => l !== 'active').sort()
-  if (labels.has('active')) sorted.unshift('active')
+
+  // Filter to appropriate level:
+  // - No active filter: show only top-level (no /) + special labels
+  // - With active filter: show the active filter + its direct children
+  const visible = [...labels].filter(l => {
+    if (l === 'active' || l === 'local-dev') return true
+    if (l === activeFilter.value) return true
+    if (!activeFilter.value) return !l.includes('/')
+    // Show direct children of active filter
+    if (l.startsWith(activeFilter.value + '/')) {
+      const rest = l.slice(activeFilter.value.length + 1)
+      return !rest.includes('/') // only direct children, not deeper
+    }
+    // Also show other top-level labels still present in results
+    return !l.includes('/')
+  })
+
+  const special = ['active', 'local-dev']
+  const sorted = visible.filter(l => !special.includes(l)).sort()
+  // Prepend special labels (active, local-dev) in order if present
+  if (visible.includes('local-dev')) sorted.unshift('local-dev')
+  if (visible.includes('active')) sorted.unshift('active')
   return sorted
 })
 

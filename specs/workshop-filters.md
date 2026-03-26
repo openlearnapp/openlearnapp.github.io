@@ -16,24 +16,38 @@ workshops:
     code: en-US
     title: Englisch lernen
     labels: ["Sprache"]
+  - folder: linux
+    code: de-DE
+    title: Linux Grundlagen
+    labels: ["IT", "IT/Linux", "IT/DevOps"]
   - folder: docker
     code: de-DE
     title: Docker Grundlagen
-    labels: ["IT"]
+    labels: ["IT", "IT/Docker", "IT/DevOps"]
 ```
 
 Labels are free-form strings. Workshop creators choose their own labels. There is no controlled vocabulary — the platform collects all labels it encounters and shows them as filter options.
+
+### Hierarchical Labels
+
+Labels support hierarchy using `/` as separator. Top-level labels (without `/`) act as categories. Sub-labels (with `/`) appear when their parent category is filtered:
+
+- `"IT"` — top-level category, always visible
+- `"IT/Linux"`, `"IT/Docker"` — sub-labels, only shown when "IT" is active
+- Filtering by `"IT"` matches workshops with `"IT"` or any `"IT/*"` sub-label
+- Sub-labels are displayed without their prefix (e.g. "Linux" instead of "IT/Linux")
 
 ## Filter UI
 
 The workshop overview page shows a horizontal row of filter chips above the workshop cards:
 
-- **"Alle"** chip is always first and selected by default — shows all workshops
-- One chip per unique label found across all visible workshops
-- Tapping a chip filters the list to workshops that have that label
-- Only one filter active at a time (single-select, not multi-select)
+- Computed labels (`active`, `local-dev`) always appear first
+- One chip per unique label found across visible workshops
+- By default, only top-level labels are shown (no `/` in name)
+- When a filter is active, its sub-labels appear as additional chips
+- Tapping a chip filters the list; tapping again deselects
+- Only one filter active at a time (single-select)
 - The count of matching workshops is shown next to the chip
-- In dev mode, a "🔧 local-dev" chip appears automatically
 
 ## Dev Mode: Automatic "local-dev" Label
 
