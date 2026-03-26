@@ -1,95 +1,74 @@
 <template>
   <div
     :class="[
-      'group relative rounded-xl border transition-all duration-200 cursor-pointer overflow-hidden',
+      'group relative rounded-2xl transition-all duration-300 cursor-pointer overflow-hidden',
+      'hover:scale-[1.015] hover:shadow-xl',
       isNext
-        ? 'border-primary shadow-lg shadow-primary/10 bg-primary/5 dark:bg-primary/10'
+        ? 'ring-2 ring-primary shadow-lg shadow-primary/20 bg-white dark:bg-slate-800/90'
         : isCompleted
-          ? 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-950/40'
-          : 'border-border hover:border-primary/40 hover:shadow-md bg-card'
+          ? 'ring-2 ring-green-400 dark:ring-green-500 bg-white dark:bg-slate-800/90'
+          : 'ring-1 ring-black/[0.06] dark:ring-white/[0.08] hover:ring-primary/40 bg-white dark:bg-slate-800/80 hover:shadow-lg'
     ]"
     @click="$emit('open', lesson.number)">
 
-    <!-- Top row: Thumbnail + Main info -->
-    <div class="flex items-stretch">
-      <!-- Thumbnail -->
-      <div v-if="lesson.image" class="w-24 sm:w-32 flex-shrink-0 overflow-hidden">
-        <img
-          :src="imageUrl"
-          :alt="lesson.title"
-          class="w-full h-full object-cover" />
+    <!-- Header Image (16:9 aspect ratio, full width) -->
+    <div v-if="imageUrl" class="relative aspect-video w-full overflow-hidden bg-slate-900">
+      <img
+        :src="imageUrl"
+        :alt="lesson.title"
+        class="w-full h-full object-contain" />
+      <!-- Gradient overlay for text readability -->
+      <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent"></div>
+      <!-- Lesson number on image -->
+      <div class="absolute bottom-2 left-3 flex items-center gap-2">
+        <span class="text-xl font-black text-white/90 drop-shadow-md">{{ lesson.number }}</span>
+        <span v-if="isNext" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground shadow">
+          {{ nextLabel }}
+        </span>
       </div>
-
-      <!-- Content -->
-      <div class="flex-1 p-4 min-w-0">
-        <div class="flex items-start gap-3">
-          <!-- Lesson number -->
-          <div :class="[
-            'text-2xl font-bold flex-shrink-0 leading-none mt-0.5',
-            isNext ? 'text-primary' : isCompleted ? 'text-green-600 dark:text-green-400' : 'text-primary/70'
-          ]">
-            {{ lesson.number }}
-          </div>
-
-          <!-- Title + description -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <h3 :class="[
-                'text-base font-semibold truncate',
-                isCompleted ? 'text-green-700 dark:text-green-300' : 'text-foreground'
-              ]">
-                {{ lesson.title }}
-              </h3>
-              <!-- Next lesson badge -->
-              <span v-if="isNext" class="flex-shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
-                {{ nextLabel }}
-              </span>
-            </div>
-            <p v-if="lesson.description" class="text-sm text-muted-foreground mt-0.5 line-clamp-2">
-              {{ lesson.description }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Actions (right side) -->
-      <div class="flex flex-col items-center justify-center gap-1 px-3 flex-shrink-0">
-        <!-- Favorite toggle -->
+      <!-- Actions on image -->
+      <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           @click.stop="$emit('toggle-favorite', lesson.number)"
-          :title="isFavorite ? removeFavoriteLabel : addFavoriteLabel"
-          :class="[
-            'p-1.5 rounded-lg transition-colors',
-            isFavorite
-              ? 'text-amber-500 hover:text-amber-600'
-              : 'text-muted-foreground/30 hover:text-amber-400'
-          ]">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
+          :class="['p-1.5 rounded-full backdrop-blur-sm transition-colors', isFavorite ? 'text-amber-400 bg-black/40' : 'text-white/60 bg-black/30 hover:text-amber-400']">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
         </button>
-
-        <!-- Completed toggle -->
         <button
           @click.stop="$emit('toggle-completed', lesson.number)"
-          :title="isCompleted ? markIncompleteLabel : markCompleteLabel"
-          :class="[
-            'p-1.5 rounded-lg transition-colors',
-            isCompleted
-              ? 'text-green-500 hover:text-green-600'
-              : 'text-muted-foreground/30 hover:text-green-400'
-          ]">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path v-if="isCompleted" d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-            <polyline v-if="isCompleted" points="22 4 12 14.01 9 11.01" />
-            <circle v-else cx="12" cy="12" r="10" />
-          </svg>
+          :class="['p-1.5 rounded-full backdrop-blur-sm transition-colors', isCompleted ? 'text-green-400 bg-black/40' : 'text-white/60 bg-black/30 hover:text-green-400']">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path v-if="isCompleted" d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline v-if="isCompleted" points="22 4 12 14.01 9 11.01" /><circle v-else cx="12" cy="12" r="10" /></svg>
         </button>
       </div>
     </div>
 
+    <!-- No-image header -->
+    <div v-else class="flex items-center justify-between px-4 pt-4">
+      <div class="flex items-center gap-2">
+        <span :class="['text-2xl font-black', isNext ? 'text-primary' : isCompleted ? 'text-green-500' : 'text-primary/50']">{{ lesson.number }}</span>
+        <span v-if="isNext" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground">{{ nextLabel }}</span>
+      </div>
+      <div class="flex gap-1">
+        <button @click.stop="$emit('toggle-favorite', lesson.number)" :class="['p-1.5 rounded-lg transition-colors', isFavorite ? 'text-amber-500' : 'text-muted-foreground/30 hover:text-amber-400']">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+        </button>
+        <button @click.stop="$emit('toggle-completed', lesson.number)" :class="['p-1.5 rounded-lg transition-colors', isCompleted ? 'text-green-500' : 'text-muted-foreground/30 hover:text-green-400']">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path v-if="isCompleted" d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline v-if="isCompleted" points="22 4 12 14.01 9 11.01" /><circle v-else cx="12" cy="12" r="10" /></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Title + Description -->
+    <div class="px-4 pt-3">
+      <h3 :class="['text-[15px] font-bold leading-snug', isCompleted ? 'text-green-700 dark:text-green-300' : 'text-foreground']">
+        {{ lesson.title }}
+      </h3>
+      <p v-if="lesson.description" class="text-[13px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+        {{ lesson.description }}
+      </p>
+    </div>
+
     <!-- Bottom row: Stats + Labels -->
-    <div class="px-4 pb-3 pt-0">
+    <div class="px-4 pb-3.5 pt-2">
       <!-- Stats row -->
       <div class="flex items-center gap-3 text-xs text-muted-foreground">
         <!-- Sections -->
