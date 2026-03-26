@@ -244,6 +244,40 @@ export function useLessons() {
     }
   }
 
+  // Dev mode: load workshops from sibling directories (served by Vite plugin)
+  async function loadLocalWorkshops(content, codes) {
+    try {
+      const res = await fetch('/__local-workshops.json')
+      if (!res.ok) return
+      const { workshops } = await res.json()
+      if (!workshops?.length) return
+
+      console.log(`🔧 Loading ${workshops.length} local workshop(s)...`)
+
+      for (const workshopName of workshops) {
+        const baseUrl = `/__local/${workshopName}`
+        const sourceUrl = `${baseUrl}/index.yaml`
+        await loadContentSource(sourceUrl, content, codes)
+
+        // Mark local workshops in metadata with 🔧 prefix
+        for (const lang of Object.keys(content)) {
+          if (!workshopMeta.value[lang]) continue
+          for (const slug of Object.keys(workshopMeta.value[lang])) {
+            const workshopUrl = workshopSlugMap.value[lang]?.[slug]
+            if (workshopUrl?.startsWith('/__local/')) {
+              const meta = workshopMeta.value[lang][slug]
+              if (meta.title && !meta.title.startsWith('🔧')) {
+                meta.title = `🔧 ${meta.title}`
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // Not in dev mode or no local workshops
+    }
+  }
+
   async function loadAvailableContent() {
     try {
       console.log('📚 Loading available languages...')
@@ -280,6 +314,11 @@ export function useLessons() {
       const contentSources = getAllContentSources()
       for (const sourceUrl of contentSources) {
         await loadContentSource(sourceUrl, content, codes)
+      }
+
+      // In dev mode, load local workshop directories as additional sources
+      if (import.meta.env.DEV) {
+        await loadLocalWorkshops(content, codes)
       }
 
       availableContent.value = content
