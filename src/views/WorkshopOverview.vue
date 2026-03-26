@@ -45,7 +45,7 @@
             :class="activeFilter === label
               ? 'bg-primary text-primary-foreground'
               : 'bg-accent text-muted-foreground hover:text-foreground'">
-            {{ label === 'local-dev' ? '🔧 local-dev' : label }}
+            {{ label === 'local-dev' ? '🔧 local-dev' : label === 'active' ? (isDE ? 'Aktiv' : 'Active') : label }}
             <span class="ml-1 opacity-60">{{ labelCount(label) }}</span>
           </button>
         </div>
@@ -95,7 +95,14 @@
               </div>
             </div>
 
-            <div v-if="getWorkshopLabels(ws).length > 0" class="flex flex-wrap gap-1.5 mb-2">
+            <div v-if="getWorkshopLabels(ws).length > 0 || isActive(ws)" class="flex flex-wrap gap-1.5 mb-2">
+              <span v-if="isActive(ws)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all"
+                :class="activeFilter === 'active'
+                  ? 'bg-green-200 dark:bg-green-800/40 text-green-800 dark:text-green-300 font-medium'
+                  : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'">
+                <button @click.stop="activeFilter = activeFilter === 'active' ? null : 'active'">{{ isDE ? 'Aktiv' : 'Active' }}</button>
+                <button @click.stop="deactivateWorkshop(ws)" class="hover:text-red-500 transition" title="Remove active">✕</button>
+              </span>
               <button
                 v-for="label in getWorkshopLabels(ws)"
                 :key="label"
@@ -106,14 +113,6 @@
                   : 'bg-accent text-muted-foreground hover:text-foreground'">
                 {{ label === 'local-dev' ? '🔧 local-dev' : label }}
               </button>
-            </div>
-
-            <div v-if="isActive(ws)" class="mb-2">
-              <Badge
-                @click.stop="deactivateWorkshop(ws)"
-                class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700 cursor-pointer hover:opacity-70 transition">
-                {{ isDE ? 'Aktiv' : 'Active' }} ✕
-              </Badge>
             </div>
 
             <p v-if="getWorkshopDescription(ws)" class="text-sm text-muted-foreground leading-relaxed mb-3">
@@ -234,23 +233,34 @@ function getWorkshopLabels(workshop) {
   return meta.labels || []
 }
 
+function isWorkshopMatchingFilter(ws, filter) {
+  if (filter === 'active') return isActive(ws)
+  return getWorkshopLabels(ws).includes(filter)
+}
+
 const allLabels = computed(() => {
   const labels = new Set()
+  // Add "active" as virtual label if any workshop is active
+  if (workshops.value.some(ws => isActive(ws))) {
+    labels.add('active')
+  }
   for (const ws of workshops.value) {
     for (const label of getWorkshopLabels(ws)) {
       labels.add(label)
     }
   }
-  return [...labels].sort()
+  const sorted = [...labels].filter(l => l !== 'active').sort()
+  if (labels.has('active')) sorted.unshift('active')
+  return sorted
 })
 
 const filteredWorkshops = computed(() => {
   if (!activeFilter.value) return workshops.value
-  return workshops.value.filter(ws => getWorkshopLabels(ws).includes(activeFilter.value))
+  return workshops.value.filter(ws => isWorkshopMatchingFilter(ws, activeFilter.value))
 })
 
 function labelCount(label) {
-  return workshops.value.filter(ws => getWorkshopLabels(ws).includes(label)).length
+  return workshops.value.filter(ws => isWorkshopMatchingFilter(ws, label)).length
 }
 
 const availableWorkshops = computed(() => {
