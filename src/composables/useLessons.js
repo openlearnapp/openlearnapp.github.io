@@ -19,10 +19,10 @@ function parseSource(source) {
   }
   if (typeof source === 'object') {
     if (source.folder) {
-      return { type: 'folder', path: source.folder, code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null }
+      return { type: 'folder', path: source.folder, code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null, labels: source.labels || [] }
     }
     if (source.url) {
-      return { type: 'url', path: resolveUrl(source.url), code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null }
+      return { type: 'url', path: resolveUrl(source.url), code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null, labels: source.labels || [] }
     }
   }
   return null
