@@ -245,6 +245,7 @@ export function useLessons() {
   }
 
   // Dev mode: load workshops from sibling directories (served by Vite plugin)
+  // Uses a "local-dev:" prefix on slugs so local and remote versions both appear
   async function loadLocalWorkshops(content, codes) {
     try {
       const res = await fetch('/__local-workshops.json')
@@ -256,21 +257,66 @@ export function useLessons() {
 
       for (const workshopName of workshops) {
         const baseUrl = `/__local/${workshopName}`
-        const sourceUrl = `${baseUrl}/index.yaml`
-        await loadContentSource(sourceUrl, content, codes)
+        const fetchUrl = `${baseUrl}/index.yaml`
 
-        // Mark local workshops in metadata with 🔧 prefix
-        for (const lang of Object.keys(content)) {
-          if (!workshopMeta.value[lang]) continue
-          for (const slug of Object.keys(workshopMeta.value[lang])) {
-            const workshopUrl = workshopSlugMap.value[lang]?.[slug]
-            if (workshopUrl?.startsWith('/__local/')) {
-              const meta = workshopMeta.value[lang][slug]
-              if (meta.title && !meta.title.startsWith('🔧')) {
-                meta.title = `🔧 ${meta.title}`
+        try {
+          const response = await fetch(fetchUrl)
+          if (!response.ok) continue
+          const text = await response.text()
+          const data = yaml.load(text)
+
+          for (const lang of data.languages) {
+            const source = parseSource(lang)
+            if (!source) continue
+            const langKey = source.path
+            if (!content[langKey]) {
+              content[langKey] = {}
+            }
+
+            // Load workshops for this language
+            let workshopsData = null
+            for (const filename of ['workshops.yaml', 'topics.yaml']) {
+              try {
+                const wsRes = await fetch(`${baseUrl}/${langKey}/${filename}`)
+                if (!wsRes.ok) continue
+                workshopsData = yaml.load(await wsRes.text())
+                break
+              } catch { continue }
+            }
+            if (!workshopsData) continue
+
+            const entries = workshopsData.workshops || workshopsData.topics || []
+            for (const entry of entries) {
+              const ws = parseSource(entry)
+              if (!ws) continue
+
+              // Prefix slug with "local-dev:" so it doesn't collide with remote
+              const localSlug = `local-dev:${ws.path}`
+              const workshopUrl = `${baseUrl}/${langKey}/${ws.path}`
+              content[langKey][localSlug] = []
+
+              if (!workshopSlugMap.value[langKey]) workshopSlugMap.value[langKey] = {}
+              workshopSlugMap.value[langKey][localSlug] = workshopUrl
+
+              if (!workshopCodes.value[langKey]) workshopCodes.value[langKey] = {}
+              workshopCodes.value[langKey][localSlug] = ws.code || null
+
+              if (!workshopMeta.value[langKey]) workshopMeta.value[langKey] = {}
+              const imageUrl = ws.image ? `${baseUrl}/${langKey}/${ws.image}` : null
+              workshopMeta.value[langKey][localSlug] = {
+                title: `🔧 ${ws.title || ws.path}`,
+                description: ws.description || null,
+                coach: ws.coach || null,
+                color: ws.color || null,
+                primaryColor: ws.primaryColor || null,
+                image: imageUrl
               }
+
+              console.log(`  🔧 Local: ${langKey}/${localSlug} → ${workshopUrl}`)
             }
           }
+        } catch (e) {
+          console.warn(`⚠️ Error loading local workshop ${workshopName}:`, e)
         }
       }
     } catch {
