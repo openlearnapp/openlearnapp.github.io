@@ -436,14 +436,18 @@ export function useLessons() {
         if (!workshopMeta.value[lang]) {
           workshopMeta.value[lang] = {}
         }
+        const builtinLabels = [...(source.labels || [])]
+        if (import.meta.env.DEV && !builtinLabels.includes('local-dev')) {
+          builtinLabels.push('local-dev')
+        }
         workshopMeta.value[lang][key] = {
-          title: source.title || null,
+          title: import.meta.env.DEV ? `🔧 ${source.title || key}` : (source.title || null),
           description: source.description || null,
           coach: source.coach || null,
           color: source.color || null,
           primaryColor: source.primaryColor || null,
           image: source.image || null,
-          labels: source.labels || []
+          labels: builtinLabels
         }
 
         console.log(`  ✓ Workshop: ${key} (${source.type}) (${source.code || 'no code'})`)
