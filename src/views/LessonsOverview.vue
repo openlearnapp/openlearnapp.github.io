@@ -1,18 +1,28 @@
 <template>
   <div>
     <!-- Source indicator for remote topics -->
-    <div v-if="!isLoading && isRemote" class="mb-4 flex items-center justify-between text-sm">
+    <div v-if="!isLoading && (isRemote || lessons.length > 0)" class="mb-4 flex items-center justify-between text-sm">
       <div>
         <span v-if="workshopDescription" class="text-muted-foreground">{{ workshopDescription }}</span>
         <span v-if="workshopDescription && sourceLabel" class="text-muted-foreground/40 mx-2">·</span>
         <a v-if="sourceLabel" :href="sourceUrl" target="_blank" rel="noopener" class="text-muted-foreground/60 hover:text-primary transition">{{ sourceLabel }}</a>
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        @click="copyShareLink">
-        {{ copied ? $t('lesson.copied') : $t('lesson.share') }}
-      </Button>
+      <button
+        v-if="!workshopOffline && !downloadStatus"
+        @click="startDownload"
+        :disabled="!online"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-muted-foreground/20 text-muted-foreground hover:border-primary hover:text-primary transition text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        {{ isDE ? 'Offline' : 'Download' }}
+      </button>
+      <div v-else-if="downloadStatus?.status === 'downloading'" class="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+        {{ downloadStatus.progress }}/{{ downloadStatus.total }}
+      </div>
+      <div v-else-if="workshopOffline" class="flex items-center gap-1 text-sm text-emerald-600 dark:text-emerald-400">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        {{ isDE ? 'Offline' : 'Offline' }}
+      </div>
     </div>
 
     <!-- Progress bar -->
@@ -138,7 +148,6 @@ import { useProgress } from '../composables/useProgress'
 import { useAssessments } from '../composables/useAssessments'
 import { useOffline } from '../composables/useOffline'
 import { formatLangName } from '../utils/formatters'
-import { Button } from '@/components/ui/button'
 import ProgressBar from '@/components/ProgressBar.vue'
 import LessonCard from '@/components/LessonCard.vue'
 import LearningPath from '@/components/LearningPath.vue'
@@ -159,7 +168,6 @@ const { isOnline: online, isWorkshopOffline, getDownloadStatus, downloadWorkshop
 
 const lessons = ref([])
 const isLoading = ref(true)
-const copied = ref(false)
 const showIOSInstall = ref(false)
 let deferredInstallPrompt = null
 
@@ -256,16 +264,6 @@ function getAnsweredCount(lesson) {
 
 function handleReorder(orderedNumbers) {
   reorderFavorites(learning.value, workshop.value, orderedNumbers)
-}
-
-async function copyShareLink() {
-  const base = window.location.href.replace(/#.*$/, '')
-  const url = `${base}#/${learning.value}/${workshop.value}/lessons`
-  try {
-    await navigator.clipboard.writeText(url)
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
-  } catch {}
 }
 
 function resolveLessonImage(lesson) {
