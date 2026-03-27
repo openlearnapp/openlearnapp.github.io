@@ -627,47 +627,63 @@ function handleTap(e) {
   }
 }
 
-// Toggle pause
-function togglePause() {
-  paused.value = !paused.value
-  if (paused.value) {
+// Explicit pause / play (no toggle — direction-bound)
+function pausePlayback() {
+  if (!paused.value) {
+    paused.value = true
     clearAutoAdvance()
     if (currentAudio.value) {
       currentAudio.value.pause()
     }
-    syncScrollToState()
-  } else {
-    playCurrentAudio()
-    syncScrollToState()
+    scrollToTop()
   }
 }
 
-// Sync scroll position to play/pause state
-let isAutoScrolling = false
-function syncScrollToState() {
-  isAutoScrolling = true
-  window.scrollTo({ top: paused.value ? 0 : 100, behavior: 'smooth' })
-  setTimeout(() => { isAutoScrolling = false }, 400)
+function resumePlayback() {
+  if (paused.value) {
+    paused.value = false
+    playCurrentAudio()
+    scrollToBottom()
+  }
 }
 
-// Scroll-based play/pause: two states only — top (paused) / bottom (playing)
-const SCROLL_THRESHOLD = 30
-let lastScrollY = 0
-let scrollDebounce = null
+function togglePause() {
+  if (paused.value) resumePlayback()
+  else pausePlayback()
+}
+
+// Scroll position sync
+let isAutoScrolling = false
+function scrollToTop() {
+  isAutoScrolling = true
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  setTimeout(() => { isAutoScrolling = false }, 500)
+}
+
+function scrollToBottom() {
+  isAutoScrolling = true
+  window.scrollTo({ top: 100, behavior: 'smooth' })
+  setTimeout(() => { isAutoScrolling = false }, 500)
+}
+
+// Scroll-based play/pause: direction-bound
+// Scroll down → play, Scroll up → pause
+let lastScrollY = window.scrollY || 0
 function handleScroll() {
   if (isAutoScrolling) return
   if (state.value !== 'narrating') return
 
-  // Debounce: snap to state after scroll settles
-  if (scrollDebounce) clearTimeout(scrollDebounce)
-  scrollDebounce = setTimeout(() => {
-    const scrollY = window.scrollY
-    if (scrollY > SCROLL_THRESHOLD && paused.value) {
-      togglePause()
-    } else if (scrollY <= SCROLL_THRESHOLD && !paused.value) {
-      togglePause()
-    }
-  }, 100)
+  const scrollY = window.scrollY
+  const delta = scrollY - lastScrollY
+  lastScrollY = scrollY
+
+  if (delta > 5 && paused.value) {
+    // Scrolling down → play
+    resumePlayback()
+  } else if (delta < -5 && !paused.value) {
+    // Scrolling up → pause
+    pausePlayback()
+  }
 }
 
 // Enable body scroll for iOS URL bar collapse
@@ -676,10 +692,10 @@ function enableBodyScroll() {
   savedBodyHeight = document.body.style.height
   document.body.style.overflow = 'auto'
   document.body.style.height = '200lvh'
-  // Start scrolled down slightly
+  // Start scrolled down slightly (playing state)
   nextTick(() => {
-    window.scrollTo(0, 1)
-    lastScrollY = 1
+    window.scrollTo(0, 100)
+    lastScrollY = 100
   })
 }
 
