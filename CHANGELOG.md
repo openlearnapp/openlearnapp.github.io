@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-03-27
+
+### Features
+
+#### Offline Workshop Downloads (#111)
+- Add PWA service worker via vite-plugin-pwa for app shell caching
+- Workshop metadata (titles, thumbnails, lesson lists) cached automatically
+- Download button on lessons overview to save full workshop for offline use
+- Progress indicator during download, offline badge on completed workshops
+- Offline indicator in navigation bar when disconnected
+- Storage management in Settings to view/remove cached workshops
+- Network-first strategy: fresh content when online, cached when offline
+
+### Fixes
+
+#### Workshop Lesson Discovery (#108, #109)
+- Fix lesson path resolution for built-in workshop-* sources
+- Fix image, video, and audio path resolution for workshop-* sources
+- Add E2E test verifying images load from correct paths
+
 ## 2026-03-25
 
 ### Features

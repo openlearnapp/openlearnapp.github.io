@@ -169,16 +169,42 @@
         </div>
       </CardContent>
     </Card>
+
+    <!-- Offline Workshops Section -->
+    <Card v-if="offlineWorkshopList.length > 0 || storageUsage > 0">
+      <CardHeader>
+        <CardTitle class="text-2xl">{{ isDE ? 'Offline-Workshops' : 'Offline Workshops' }}</CardTitle>
+      </CardHeader>
+      <CardContent class="space-y-4">
+        <p class="text-sm text-muted-foreground">
+          {{ isDE
+            ? `${formatBytes(storageUsage)} verwendet`
+            : `${formatBytes(storageUsage)} used` }}
+        </p>
+
+        <div v-if="offlineWorkshopList.length === 0" class="text-sm text-muted-foreground">
+          {{ isDE ? 'Keine Workshops heruntergeladen.' : 'No workshops downloaded.' }}
+        </div>
+
+        <div v-for="key in offlineWorkshopList" :key="key" class="flex items-center justify-between py-2 border-b border-border last:border-0">
+          <span class="text-sm font-medium">{{ formatWorkshopKey(key) }}</span>
+          <Button variant="outline" size="sm" @click="handleRemoveOffline(key)">
+            {{ isDE ? 'Entfernen' : 'Remove' }}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useSettings } from '../composables/useSettings'
 import { useProgress } from '../composables/useProgress'
 import { useAssessments } from '../composables/useAssessments'
+import { useOffline } from '../composables/useOffline'
 import { useGun } from '../composables/useGun'
 import { formatLangName } from '../utils/formatters'
 import { Button } from '@/components/ui/button'
@@ -193,6 +219,38 @@ const { settings } = useSettings()
 const { progress, getProgress, mergeProgress } = useProgress()
 const { assessments, getAssessments, mergeAssessments } = useAssessments()
 const { isLoggedIn, username: gunUser, isSyncing } = useGun()
+const { getOfflineWorkshops, removeWorkshop, getStorageEstimate } = useOffline()
+
+const storageUsage = ref(0)
+const isDE = computed(() => settings.value.language === 'deutsch' || navigator.language?.startsWith('de'))
+
+const offlineWorkshopList = computed(() => getOfflineWorkshops())
+
+function formatWorkshopKey(key) {
+  const [lang, ws] = key.split('/')
+  return `${formatLangName(ws || key)} (${formatLangName(lang)})`
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+async function handleRemoveOffline(key) {
+  const [lang, ws] = key.split('/')
+  await removeWorkshop(lang, ws)
+  await updateStorageUsage()
+}
+
+async function updateStorageUsage() {
+  const estimate = await getStorageEstimate()
+  storageUsage.value = estimate.usage
+}
+
+onMounted(() => {
+  updateStorageUsage()
+})
 
 const importMessage = ref('')
 const importMessageError = ref(false)

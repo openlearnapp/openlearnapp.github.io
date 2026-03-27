@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 import fs from 'fs'
 
@@ -72,7 +73,89 @@ export default defineConfig(({ command }) => ({
   plugins: [
     vue(),
     // Local workshop dev: auto-detect sibling workshop-* directories
-    ...(command === 'serve' ? [localWorkshopsPlugin()] : [])
+    ...(command === 'serve' ? [localWorkshopsPlugin()] : []),
+    VitePWA({
+      registerType: 'autoUpdate',
+      // Include workshop metadata YAML in precache alongside app shell
+      includeAssets: [
+        'favicon.svg',
+        'lessons/index.yaml',
+        'default-sources.yaml'
+      ],
+      workbox: {
+        // Precache built app assets
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Runtime caching for workshop metadata (always cached, stale-while-revalidate)
+        runtimeCaching: [
+          {
+            // Workshop index + metadata YAML files (small, cache aggressively)
+            urlPattern: /\/(workshop-[^/]+\/(?:index\.yaml|[^/]+\/workshops\.yaml|[^/]+\/[^/]+\/lessons\.yaml))/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'workshop-metadata',
+              expiration: { maxEntries: 200, maxAgeSeconds: 7 * 24 * 60 * 60 }
+            }
+          },
+          {
+            // Workshop thumbnails (SVG/PNG on the overview pages)
+            urlPattern: /\/(workshop-[^/]+\/[^/]+\/[^/]+\/thumbnail\.(svg|png|jpg))/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'workshop-metadata',
+              expiration: { maxEntries: 100, maxAgeSeconds: 7 * 24 * 60 * 60 }
+            }
+          },
+          {
+            // External workshop metadata from open-learn.app
+            urlPattern: /^https:\/\/open-learn\.app\/workshop-[^/]+\/(index\.yaml|[^/]+\/workshops\.yaml|[^/]+\/[^/]+\/lessons\.yaml)/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'workshop-metadata-external',
+              expiration: { maxEntries: 200, maxAgeSeconds: 7 * 24 * 60 * 60 }
+            }
+          },
+          {
+            // External workshop thumbnails
+            urlPattern: /^https:\/\/open-learn\.app\/workshop-[^/]+\/[^/]+\/[^/]+\/thumbnail\.(svg|png|jpg)/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'workshop-metadata-external',
+              expiration: { maxEntries: 100, maxAgeSeconds: 7 * 24 * 60 * 60 }
+            }
+          },
+          {
+            // On-demand workshop content (lesson YAML, images, audio)
+            // Pre-populated by useOffline.downloadWorkshop(), served cache-first when offline
+            urlPattern: /\/(workshop-[^/]+\/[^/]+\/[^/]+\/[^/]+\/(content\.yaml|images\/|audio\/))/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'workshop-content',
+              expiration: { maxEntries: 5000, maxAgeSeconds: 30 * 24 * 60 * 60 }
+            }
+          },
+          {
+            // External workshop content from open-learn.app
+            urlPattern: /^https:\/\/open-learn\.app\/workshop-[^/]+\/[^/]+\/[^/]+\/[^/]+\/(content\.yaml|images\/|audio\/)/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'workshop-content',
+              expiration: { maxEntries: 5000, maxAgeSeconds: 30 * 24 * 60 * 60 }
+            }
+          }
+        ]
+      },
+      manifest: {
+        name: 'Open Learn',
+        short_name: 'Open Learn',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#000000',
+        theme_color: '#000000',
+        icons: [
+          { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }
+        ]
+      }
+    })
   ],
   base: '/',
   server: {
