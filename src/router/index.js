@@ -99,4 +99,29 @@ const router = createRouter({
   }
 })
 
+// Redirect returning users from Home to their last language's workshop overview
+// In PWA (standalone) mode, always skip Home
+router.beforeEach((to) => {
+  if (to.name !== 'home') return true
+
+  const lastLang = localStorage.getItem('selectedLanguage')
+  if (!lastLang) return true // First-time visitor, show Home
+
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+  const hasVisited = localStorage.getItem('hasVisitedBefore')
+
+  if (isStandalone || hasVisited) {
+    return { name: 'workshop-overview', params: { learning: lastLang } }
+  }
+
+  return true
+})
+
+// Track that the user has visited before
+router.afterEach((to) => {
+  if (to.name === 'workshop-overview' || to.name === 'lessons-overview') {
+    localStorage.setItem('hasVisitedBefore', 'true')
+  }
+})
+
 export default router

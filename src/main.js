@@ -7,6 +7,7 @@ import { useSettings } from './composables/useSettings'
 import { useProgress } from './composables/useProgress'
 import { useAssessments } from './composables/useAssessments'
 import { useGun } from './composables/useGun'
+import { useManifest } from './composables/useManifest'
 
 // Initialize and load settings, progress, and assessments before mounting the app
 useSettings().loadSettings()
@@ -15,6 +16,9 @@ useProgress().loadProgress()
 const { loadAssessments, loadSentHistory } = useAssessments()
 loadAssessments()
 loadSentHistory()
+
+// Initialize default PWA manifest
+useManifest().setDefaultManifest()
 
 const app = createApp(App)
 app.use(router)

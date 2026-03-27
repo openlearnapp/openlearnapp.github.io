@@ -97,13 +97,13 @@
       </div>
     </div>
 
-    <!-- Install as app button -->
+    <!-- Install single workshop as app -->
     <div v-if="!isLoading && lessons.length > 0 && !isStandalone" class="mt-3 flex justify-center">
       <button
         @click="installApp"
         class="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-muted-foreground/20 text-muted-foreground hover:border-primary hover:text-primary transition text-sm font-medium">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        {{ isDE ? 'Als App installieren' : 'Install as App' }}
+        {{ isDE ? `„${workshopTitle}" als App` : `Install "${workshopTitle}" as App` }}
       </button>
     </div>
 
@@ -118,7 +118,7 @@
     <div v-if="showIOSInstall" class="fixed inset-0 z-50 bg-black/60 flex items-end justify-center p-4" @click.self="showIOSInstall = false">
       <div class="bg-background rounded-2xl p-6 max-w-sm w-full mb-8 shadow-xl">
         <h3 class="font-semibold text-lg text-foreground mb-3">
-          {{ isDE ? 'Als App installieren' : 'Install as App' }}
+          {{ isDE ? `„${workshopTitle}" als App` : `Install "${workshopTitle}"` }}
         </h3>
         <p class="text-muted-foreground text-sm mb-4">
           {{ isDE
@@ -147,6 +147,7 @@ import { useLessons } from '../composables/useLessons'
 import { useProgress } from '../composables/useProgress'
 import { useAssessments } from '../composables/useAssessments'
 import { useOffline } from '../composables/useOffline'
+import { useManifest } from '../composables/useManifest'
 import { formatLangName } from '../utils/formatters'
 import ProgressBar from '@/components/ProgressBar.vue'
 import LessonCard from '@/components/LessonCard.vue'
@@ -165,6 +166,7 @@ const {
 } = useProgress()
 const { getAssessments } = useAssessments()
 const { isOnline: online, isWorkshopOffline, getDownloadStatus, downloadWorkshop } = useOffline()
+const { setWorkshopManifest: applyWorkshopManifest, setDefaultManifest } = useManifest()
 
 const lessons = ref([])
 const isLoading = ref(true)
@@ -297,19 +299,7 @@ function openLesson(number) {
 }
 
 function setWorkshopManifest() {
-  const manifest = {
-    name: workshopTitle.value,
-    short_name: workshopTitle.value,
-    start_url: `/#/${learning.value}/${workshop.value}/lessons`,
-    display: 'standalone',
-    background_color: '#000000',
-    theme_color: '#000000',
-    icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }]
-  }
-  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const link = document.querySelector('link[rel="manifest"]')
-  if (link) link.href = url
+  applyWorkshopManifest(workshopTitle.value, learning.value, workshop.value)
 }
 
 async function installApp() {
@@ -368,5 +358,6 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
   window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+  setDefaultManifest()
 })
 </script>

@@ -148,16 +148,26 @@
         </div>
       </div>
 
+      <!-- Install full app -->
+      <div v-if="!isStandalone" class="mt-8 flex justify-center">
+        <button
+          @click="installFullApp"
+          class="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-muted-foreground/20 text-muted-foreground hover:border-primary hover:text-primary transition text-sm font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          {{ isDE ? '„Open Learn" als App installieren' : 'Install "Open Learn" as App' }}
+        </button>
+      </div>
     </div>
 
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useLessons } from '../composables/useLessons'
 import { useOffline } from '../composables/useOffline'
+import { useManifest } from '../composables/useManifest'
 import { useLanguage } from '../composables/useLanguage'
 import { formatLangName } from '../utils/formatters'
 import { Card } from '@/components/ui/card'
@@ -170,6 +180,12 @@ const route = useRoute()
 const { availableContent, isLoading, loadAvailableContent, loadWorkshopsForLanguage, removeContentSource, isRemoteWorkshop, isDefaultSource, getSourceForSlug, getWorkshopMeta, getContentSources } = useLessons()
 const { selectedLanguage, setLanguage } = useLanguage()
 const { isWorkshopOffline } = useOffline()
+const { setDefaultManifest } = useManifest()
+
+const isStandalone = computed(() =>
+  window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+)
+let deferredInstallPrompt = null
 
 const activeFilter = ref(null)
 const copiedWorkshop = ref(null)
@@ -448,7 +464,23 @@ function cleanupLegacySources() {
   }
 }
 
+function handleBeforeInstallPrompt(e) {
+  e.preventDefault()
+  deferredInstallPrompt = e
+}
+
+async function installFullApp() {
+  setDefaultManifest()
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt()
+    await deferredInstallPrompt.userChoice
+    deferredInstallPrompt = null
+  }
+}
+
 onMounted(async () => {
+  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+  setDefaultManifest()
   cleanupLegacySources()
   // Show notification if redirected from add source with language mismatch
   if (route.query.added && route.query.availableIn) {
@@ -473,5 +505,9 @@ onMounted(async () => {
     console.log(`🎨 [WorkshopOverview] ${ws}: color="${meta.color}", primaryColor="${meta.primaryColor}"`)
   }
   emit('update-title', 'Workshops')
+})
+
+onUnmounted(() => {
+  window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 })
 </script>
