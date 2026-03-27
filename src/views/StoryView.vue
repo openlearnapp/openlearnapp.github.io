@@ -50,6 +50,24 @@
       <div class="text-white text-2xl animate-pulse">Loading story...</div>
     </div>
 
+    <!-- Finished state -->
+    <div v-else-if="state === 'finished'" class="flex-1 flex flex-col items-center justify-center gap-8 px-6">
+      <div class="text-4xl">&#10024;</div>
+      <div class="text-white text-2xl font-bold text-center">Story complete</div>
+      <div class="flex flex-col gap-3 w-full max-w-xs">
+        <button
+          @click="restartFromBeginning"
+          class="w-full px-6 py-3 rounded-xl bg-white/10 text-white text-lg font-medium hover:bg-white/20 transition">
+          Restart from Lesson 1
+        </button>
+        <button
+          @click="goToOverview"
+          class="w-full px-6 py-3 rounded-xl bg-white/5 text-white/60 text-sm hover:bg-white/10 transition">
+          Back to overview
+        </button>
+      </div>
+    </div>
+
     <!-- Story content -->
     <template v-else>
       <div class="flex-1 relative overflow-hidden" @click="handleTap($event)">
@@ -666,9 +684,10 @@ function scrollToBottom() {
   setTimeout(() => { isAutoScrolling = false }, 500)
 }
 
-// Scroll-based play/pause: direction-bound
+// Scroll-based play/pause: direction-bound, snapped to two positions only
 // Scroll down → play, Scroll up → pause
 let lastScrollY = window.scrollY || 0
+let snapTimer = null
 function handleScroll() {
   if (isAutoScrolling) return
   if (state.value !== 'narrating') return
@@ -678,11 +697,16 @@ function handleScroll() {
   lastScrollY = scrollY
 
   if (delta > 5 && paused.value) {
-    // Scrolling down → play
     resumePlayback()
   } else if (delta < -5 && !paused.value) {
-    // Scrolling up → pause
     pausePlayback()
+  } else {
+    // Snap to nearest locked position after scroll settles
+    if (snapTimer) clearTimeout(snapTimer)
+    snapTimer = setTimeout(() => {
+      if (paused.value) scrollToTop()
+      else scrollToBottom()
+    }, 150)
   }
 }
 
@@ -915,7 +939,21 @@ function advanceLesson() {
       params: { learning: learning.value, workshop: workshop.value, number: nextLesson.number }
     })
   } else {
-    goToOverview()
+    // Story complete — stay in story mode, show finished screen
+    clearAutoAdvance()
+    stopSpeaking()
+    state.value = 'finished'
+    restoreBodyScroll()
+  }
+}
+
+function restartFromBeginning() {
+  const firstLesson = lessons.value.reduce((min, l) => l.number < min.number ? l : min, lessons.value[0])
+  if (firstLesson) {
+    router.replace({
+      name: 'story-view',
+      params: { learning: learning.value, workshop: workshop.value, number: firstLesson.number }
+    })
   }
 }
 
