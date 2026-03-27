@@ -55,6 +55,10 @@
       <div class="flex-1 relative overflow-hidden" @click="handleTap($event)">
         <!-- Background -->
         <div v-if="isAssessmentState" class="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
+        <!-- Section title on assessment screens -->
+        <div v-if="isAssessmentState && currentSection?.title" class="absolute top-16 left-0 right-0 px-6 pointer-events-none z-[1]">
+          <p class="text-white/30 text-sm tracking-wider text-center">{{ currentSection.title }}</p>
+        </div>
         <template v-else>
           <!-- Display image (lesson intro image or section image) -->
           <img
@@ -67,7 +71,7 @@
           <div v-else class="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
 
           <!-- Section title (left-aligned, directly below image) -->
-          <div v-if="currentSection?.title && displayImage && state === 'narrating'" class="absolute bottom-28 left-0 right-0 px-6 pointer-events-none">
+          <div v-if="currentSection?.title && displayImage" class="absolute bottom-28 left-0 right-0 px-6 pointer-events-none">
             <p class="text-white/50 text-sm tracking-wider">{{ currentSection.title }}</p>
           </div>
         </template>
@@ -368,7 +372,7 @@ function stopSpeaking() {
 }
 
 // Navigate to a goto target
-function navigateGoto(goto) {
+async function navigateGoto(goto) {
   if (!goto) {
     advanceExample()
     return
@@ -382,16 +386,14 @@ function navigateGoto(goto) {
       name: 'story-view',
       params: { learning: learning.value, workshop: workshop.value, number: targetLesson }
     })
-  } else if (targetLesson) {
-    currentSectionIndex.value = targetSection
-    currentExampleIndex.value = 0
-    imageLoaded.value = false
-    showCurrentExample()
   } else {
-    // goto has only section
+    const sectionChanged = targetSection !== currentSectionIndex.value
     currentSectionIndex.value = targetSection
     currentExampleIndex.value = 0
     imageLoaded.value = false
+    if (sectionChanged) {
+      await playSectionIntro()
+    }
     showCurrentExample()
   }
 }
@@ -416,8 +418,10 @@ async function playCurrentAudio() {
         }
       })
     } catch {
-      // Browser blocked autoplay (e.g. after reload) — show play button
-      paused.value = true
+      // Browser blocked autoplay — auto-advance anyway if we were playing
+      if (!paused.value) {
+        scheduleAutoAdvance(2000)
+      }
     }
   } else {
     scheduleAutoAdvance(2000)
@@ -863,13 +867,24 @@ function useHelp() {
   }
 }
 
-function advanceSection() {
+async function playSectionIntro() {
+  const section = currentSection.value
+  if (section?.title) {
+    state.value = 'narrating'
+    await delay(300)
+    await playAudioWithFallback('section-title', section.title)
+    await delay(400)
+  }
+}
+
+async function advanceSection() {
   if (!currentLesson.value?.sections) return
   const nextSectionIdx = currentSectionIndex.value + 1
   if (nextSectionIdx < currentLesson.value.sections.length) {
     currentSectionIndex.value = nextSectionIdx
     currentExampleIndex.value = 0
     imageLoaded.value = false
+    await playSectionIntro()
     showCurrentExample()
   } else {
     advanceLesson()
