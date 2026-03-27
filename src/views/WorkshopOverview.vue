@@ -59,6 +59,9 @@
             <div class="flex items-start gap-2 mb-2">
               <h3 class="font-semibold text-foreground text-lg group-hover:text-primary transition-colors leading-tight flex-1" :style="getWorkshopTitleStyle(ws)">
                 {{ getWorkshopTitle(ws) }}
+                <span v-if="isWorkshopOffline(learning, ws)" class="inline-flex items-center ml-1.5 align-middle" :title="isDE ? 'Offline verfügbar' : 'Available offline'">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </span>
               </h3>
               <div class="flex items-center gap-1 flex-shrink-0">
                 <button
@@ -154,6 +157,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useLessons } from '../composables/useLessons'
+import { useOffline } from '../composables/useOffline'
 import { useLanguage } from '../composables/useLanguage'
 import { formatLangName } from '../utils/formatters'
 import { Card } from '@/components/ui/card'
@@ -165,6 +169,7 @@ const route = useRoute()
 
 const { availableContent, isLoading, loadAvailableContent, loadWorkshopsForLanguage, removeContentSource, isRemoteWorkshop, isDefaultSource, getSourceForSlug, getWorkshopMeta, getContentSources } = useLessons()
 const { selectedLanguage, setLanguage } = useLanguage()
+const { isWorkshopOffline } = useOffline()
 
 const activeFilter = ref(null)
 const copiedWorkshop = ref(null)
