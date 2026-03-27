@@ -4,16 +4,30 @@
 
 Let learners download a complete workshop — lessons, audio, and images — so they can study without an internet connection. This enables learning on flights, in areas with poor connectivity, or anywhere data access is limited or expensive.
 
-## What Gets Downloaded
+## Two Layers of Caching
 
-A workshop download captures everything needed to use that workshop offline:
+Offline support has two distinct layers:
 
-- **Lesson content**: All YAML files (lesson list, content for every lesson).
-- **Audio files**: All MP3 files for every lesson in the workshop.
+### 1. App Shell + Workshop Metadata (always cached)
+
+Precached automatically after the first visit — no user action needed:
+
+- **App shell**: HTML, JavaScript, CSS, fonts — the entire platform UI.
+- **Language index**: Available interface languages (`index.yaml`).
+- **Default sources**: The list of workshop sources (`default-sources.yaml`).
+- **Workshop metadata**: Titles, descriptions, thumbnails, and lesson lists for all workshops (`workshops.yaml`, `lessons.yaml`, thumbnail images).
+
+This means the learner can always open the app, browse the Home page, select a language, see all workshops with their titles and thumbnails, and navigate to the lessons overview — even without a connection. These files are small (a few KB each) and cached alongside the app shell.
+
+### 2. Workshop Content (downloaded on demand)
+
+Downloaded only when the learner explicitly requests it:
+
+- **Lesson content**: All `content.yaml` files for every lesson in the workshop.
+- **Audio files**: All MP3 files for every lesson.
 - **Images**: All images referenced in lessons (headers, section images, example images).
-- **Workshop metadata**: Workshop title, description, thumbnail, and lesson structure.
 
-The app shell (HTML, JS, CSS) is cached separately and always available offline after the first visit.
+This is the heavy content — audio files alone can be 50–150 MB per workshop.
 
 ## User Flow
 
@@ -28,23 +42,30 @@ The app shell (HTML, JS, CSS) is cached separately and always available offline 
 
 ### Using a Workshop Offline
 
-When offline, the app works normally for downloaded workshops:
+When offline, the full app navigation works — Home, language selection, Workshop Overview, Settings — because the app shell and workshop metadata are always cached.
+
+For downloaded workshops:
 
 - Navigate between lessons, read content, view images, play audio.
 - Complete assessments and track progress (stored in localStorage as today).
 - All features that don't require network access continue to work.
 
-Workshops that have not been downloaded show as unavailable when offline.
+For workshops that have not been downloaded:
+
+- The workshop card is visible on the overview page (title, description, thumbnail all cached).
+- Tapping it shows a message like "Download this workshop to use offline" rather than failing silently.
+- The download button is disabled when offline.
 
 ### Managing Offline Workshops
 
 On the Settings page, learners can see which workshops are stored offline and how much storage each uses. They can remove individual workshops to free up space.
 
-## App Shell Caching
+## Service Worker
 
-The app itself (HTML, JavaScript, CSS, fonts) is cached via a service worker so the platform loads instantly — even without a connection. This is separate from workshop content: the app shell is always cached, workshop content is cached on demand.
+The service worker manages both caching layers. It is generated at build time by `vite-plugin-pwa` — no backend required.
 
-The service worker uses a cache-first strategy for app assets and updates in the background when the network is available.
+- **App shell + metadata**: Precached at build time, updated automatically on new deployments.
+- **Workshop content**: Cached into a separate named cache when the learner initiates a download. The service worker intercepts fetch requests and serves cached responses when offline.
 
 ## Storage
 
@@ -54,7 +75,7 @@ Before starting a download, the app checks available storage and warns the learn
 
 ## Cache Strategy
 
-- **App shell**: Precached at install time, updated on new deployments.
+- **App shell + metadata**: Precached at install time. Cache-first always — instant load. Updated in the background on new deployments.
 - **Workshop content**: Cached on demand when the learner initiates a download.
 - **Network-first for online use**: When online, the app fetches fresh content and updates the cache. This ensures learners always see the latest version when connected.
 - **Cache-first for offline use**: When offline, all requests fall back to cached content.
