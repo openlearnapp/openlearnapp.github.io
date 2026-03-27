@@ -37,9 +37,9 @@
             </div>
           </div>
 
-          <!-- Back to workshop overview (on lessons overview, hidden in PWA) -->
+          <!-- Back to workshop overview (on lessons overview, hidden in single-workshop PWA) -->
           <Button
-            v-if="route.name === 'lessons-overview' && !isStandalone"
+            v-if="route.name === 'lessons-overview' && !isSingleWorkshopPwa"
             variant="ghost"
             size="icon"
             @click="goToWorkshopOverview"
@@ -300,9 +300,10 @@ const learningLanguages = computed(() => {
 const isHomePage = computed(() => route.name === 'home')
 const isStoryMode = computed(() => route.meta?.storyMode === true)
 const isWorkshopOverview = computed(() => route.name === 'workshop-overview')
-const isStandalone = computed(() =>
-  window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
-)
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+// Single-workshop PWA: launched with a workshop-specific start_url (e.g. /#/deutsch/portugiesisch/lessons)
+// Full-app PWA: launched from / — show full navigation
+const isSingleWorkshopPwa = isStandalone && /^#\/[^/]+\/[^/]+\/lessons/.test(window.location.hash)
 const isWorkshopSubpage = computed(() =>
   ['lesson-detail', 'lessons-overview', 'learning-items', 'assessment-results', 'coach'].includes(route.name)
 )
