@@ -20,6 +20,8 @@ const languageFlags = {
   '\u4E2D\u6587': '\u{1F1E8}\u{1F1F3}',
   '\u65E5\u672C\u8A9E': '\u{1F1EF}\u{1F1F5}',
   '\uD55C\uAD6D\uC5B4': '\u{1F1F0}\u{1F1F7}',
+  '\u0939\u093F\u0928\u094D\u0926\u0940': '\u{1F1EE}\u{1F1F3}',
+  '\u0443\u043A\u0440\u0430\u0457\u043D\u0441\u044C\u043A\u0430': '\u{1F1FA}\u{1F1E6}',
 }
 
 function setLanguage(lang) {
