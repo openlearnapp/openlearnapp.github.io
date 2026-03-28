@@ -136,7 +136,8 @@ export function useLessons() {
 
   // Load a remote content source's languages and workshops
   // sourceUrl is the full URL to index.yaml (e.g. https://user.github.io/repo/index.yaml)
-  async function loadContentSource(sourceUrl, content, codes) {
+  // targetLang: if set, only load workshop details for this language (others just discovered)
+  async function loadContentSource(sourceUrl, content, codes, targetLang) {
     try {
       // If URL doesn't end with .yaml, append /index.yaml
       let fetchUrl = sourceUrl
@@ -144,7 +145,7 @@ export function useLessons() {
         fetchUrl = sourceUrl.replace(/\/$/, '') + '/index.yaml'
       }
 
-      console.log(`📡 Loading content source: ${fetchUrl}`)
+      console.log(`📡 Loading content source: ${fetchUrl}${targetLang ? ` (lang: ${targetLang})` : ''}`)
       const response = await fetch(fetchUrl)
       if (!response.ok) {
         console.warn(`⚠️ Failed to fetch ${fetchUrl}: ${response.status}`)
@@ -170,6 +171,9 @@ export function useLessons() {
         if (!codes[langKey]) {
           codes[langKey] = source.code || null
         }
+
+        // Skip workshop details for languages the user hasn't selected
+        if (targetLang && langKey !== targetLang) continue
 
         // Load workshops for this language from the remote source
         // Try workshops.yaml first, fallback to topics.yaml for backwards compatibility
@@ -247,7 +251,7 @@ export function useLessons() {
 
   // Dev mode: load workshops from sibling directories (served by Vite plugin)
   // Uses a "local-dev:" prefix on slugs so local and remote versions both appear
-  async function loadLocalWorkshops(content, codes) {
+  async function loadLocalWorkshops(content, codes, targetLang) {
     try {
       const res = await fetch('/__local-workshops.json')
       if (!res.ok) return
@@ -273,6 +277,9 @@ export function useLessons() {
             if (!content[langKey]) {
               content[langKey] = {}
             }
+
+            // Skip workshop details for languages the user hasn't selected
+            if (targetLang && langKey !== targetLang) continue
 
             // Load workshops for this language
             let workshopsData = null
@@ -326,9 +333,22 @@ export function useLessons() {
     }
   }
 
-  async function loadAvailableContent() {
+  // targetLang: if set, only load workshop details for this language
+  let loadingPromise = null
+  async function loadAvailableContent(targetLang) {
+    // Prevent duplicate concurrent calls
+    if (loadingPromise) return loadingPromise
+    loadingPromise = doLoadAvailableContent(targetLang)
     try {
-      console.log('📚 Loading available languages...')
+      await loadingPromise
+    } finally {
+      loadingPromise = null
+    }
+  }
+
+  async function doLoadAvailableContent(targetLang) {
+    try {
+      console.log(`📚 Loading available content${targetLang ? ` (lang: ${targetLang})` : ''}...`)
       isLoading.value = true
       const response = await fetch('lessons/index.yaml')
 
@@ -360,23 +380,43 @@ export function useLessons() {
       // Load default sources from YAML, then merge with user-added
       await loadDefaultSources()
       const contentSources = getAllContentSources()
-      for (const sourceUrl of contentSources) {
-        await loadContentSource(sourceUrl, content, codes)
-      }
+
+      // Load all content sources in parallel (#118)
+      await Promise.all(
+        contentSources.map(sourceUrl => loadContentSource(sourceUrl, content, codes, targetLang))
+      )
 
       // In dev mode, load local workshop directories as additional sources
       if (import.meta.env.DEV) {
-        await loadLocalWorkshops(content, codes)
+        await loadLocalWorkshops(content, codes, targetLang)
       }
 
       availableContent.value = content
       languageCodes.value = codes
+      if (targetLang) loadedSourceLangs.add(targetLang)
       isLoading.value = false
-      console.log('✅ Languages loaded successfully')
+      console.log('✅ Content loaded successfully')
     } catch (error) {
       console.error('❌ Error loading available content:', error)
       isLoading.value = false
     }
+  }
+
+  // Load workshop details for a new language from already-known sources
+  const loadedSourceLangs = new Set()
+  async function loadSourcesForLanguage(lang) {
+    if (loadedSourceLangs.has(lang)) return
+    console.log(`📡 Loading source workshop details for language: ${lang}`)
+    const contentSources = getAllContentSources()
+    await Promise.all(
+      contentSources.map(sourceUrl =>
+        loadContentSource(sourceUrl, availableContent.value, languageCodes.value, lang)
+      )
+    )
+    if (import.meta.env.DEV) {
+      await loadLocalWorkshops(availableContent.value, languageCodes.value, lang)
+    }
+    loadedSourceLangs.add(lang)
   }
 
   async function loadWorkshopsForLanguage(lang) {
@@ -386,12 +426,15 @@ export function useLessons() {
       // Ensure languages are loaded first
       if (!availableContent.value[lang]) {
         console.log('⚠️ Languages not loaded yet, loading now...')
-        await loadAvailableContent()
+        await loadAvailableContent(lang)
 
         if (!availableContent.value[lang]) {
           throw new Error(`Language ${lang} not found in available content`)
         }
       }
+
+      // Load workshop details from external sources for this language (if not yet loaded)
+      await loadSourcesForLanguage(lang)
 
       // Try workshops.yaml first, fallback to topics.yaml for backwards compatibility
       let data = null
@@ -580,16 +623,18 @@ export function useLessons() {
 
       console.log(`📖 Found ${lessonFiles.length} lesson files to load`)
 
-      const lessons = []
-      for (const filename of lessonFiles) {
-        const lesson = await loadLesson(lang, workshop, filename)
-        if (lesson) {
-          // Add filename (without .yaml extension) to lesson object for audio path
-          const source = parseSource(filename)
-          lesson._filename = source ? source.path.replace(/\.yaml$/, '') : filename.replace(/\.yaml$/, '')
-          lessons.push(lesson)
-        }
-      }
+      // Load all lessons in parallel (#119)
+      const loaded = await Promise.all(
+        lessonFiles.map(async (filename) => {
+          const lesson = await loadLesson(lang, workshop, filename)
+          if (lesson) {
+            const source = parseSource(filename)
+            lesson._filename = source ? source.path.replace(/\.yaml$/, '') : filename.replace(/\.yaml$/, '')
+          }
+          return lesson
+        })
+      )
+      const lessons = loaded.filter(Boolean)
 
       const sortedLessons = lessons.sort((a, b) => a.number - b.number)
       console.log(`✅ All lessons loaded and sorted: ${sortedLessons.length} lessons`)
