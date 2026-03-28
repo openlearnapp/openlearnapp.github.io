@@ -253,8 +253,8 @@ describe('useLessons', () => {
         return Promise.resolve({ ok: false, status: 404 })
       })
 
-      // Load everything to populate slug map
-      await lessons.loadAvailableContent()
+      // Load everything to populate slug map (pass targetLang to load workshop details)
+      await lessons.loadAvailableContent('deutsch')
 
       // Verify slug map was populated
       const resolved = lessons.resolveWorkshopKey('deutsch', 'my-topic')
@@ -339,7 +339,7 @@ describe('useLessons', () => {
         return Promise.resolve({ ok: false, status: 404 })
       })
 
-      await lessons.loadAvailableContent()
+      await lessons.loadAvailableContent('deutsch')
       fetchCalls.length = 0
 
       const lesson = await lessons.loadLesson('deutsch', 'my-topic', '01-intro')
