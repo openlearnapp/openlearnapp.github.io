@@ -460,12 +460,15 @@ function handleKeydown(e) {
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeydown)
-  await loadAvailableContent()
-  // Load workshops for route language or stored language
+  // Determine target language from route or stored preference
   const routeLang = route.params.learning
   const stored = localStorage.getItem('lastLearningLanguage')
-  const lang = routeLang || (stored && learningLanguages.value.includes(stored) ? stored : null)
-  if (lang) {
+  const lang = routeLang || stored || null
+
+  // Load content — only fetch workshop details for the selected language
+  await loadAvailableContent(lang)
+
+  if (lang && learningLanguages.value.includes(lang)) {
     setLanguage(lang)
     await loadWorkshopsForLanguage(lang)
   }
