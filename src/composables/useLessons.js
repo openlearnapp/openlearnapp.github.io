@@ -351,7 +351,7 @@ export function useLessons() {
     try {
       console.log(`📚 Loading available content${targetLang ? ` (lang: ${targetLang})` : ''}...`)
       isLoading.value = true
-      const response = await fetch('lessons/index.yaml')
+      const response = await fetch('languages.yaml')
 
       if (!response.ok) {
         throw new Error(`Failed to fetch index.yaml: ${response.status}`)
@@ -378,18 +378,21 @@ export function useLessons() {
         console.log(`  ✓ Language: ${key} (${source.type}) (${source.code || 'no code'})`)
       }
 
-      // Load default sources from YAML, then merge with user-added
-      await loadDefaultSources()
-      const contentSources = getAllContentSources()
+      // Only load workshop sources if a target language is selected
+      // Home page (no language) just needs the language list from index.yaml
+      if (targetLang) {
+        await loadDefaultSources()
+        const contentSources = getAllContentSources()
 
-      // Load all content sources in parallel (#118)
-      await Promise.all(
-        contentSources.map(sourceUrl => loadContentSource(sourceUrl, content, codes, targetLang))
-      )
+        // Load all content sources in parallel (#118)
+        await Promise.all(
+          contentSources.map(sourceUrl => loadContentSource(sourceUrl, content, codes, targetLang))
+        )
 
-      // In dev mode, load local workshop directories as additional sources
-      if (import.meta.env.DEV) {
-        await loadLocalWorkshops(content, codes, targetLang)
+        // In dev mode, load local workshop directories as additional sources
+        if (import.meta.env.DEV) {
+          await loadLocalWorkshops(content, codes, targetLang)
+        }
       }
 
       availableContent.value = content
@@ -434,68 +437,8 @@ export function useLessons() {
         }
       }
 
-      // Load workshop details from external sources for this language (if not yet loaded)
+      // Load workshop details from sources for this language (if not yet loaded)
       await loadSourcesForLanguage(lang)
-
-      // Try workshops.yaml first, fallback to topics.yaml for backwards compatibility
-      let data = null
-      for (const filename of ['workshops.yaml', 'topics.yaml']) {
-        let workshopsUrl
-        if (lang.startsWith('http://') || lang.startsWith('https://')) {
-          workshopsUrl = `${lang}/${filename}`
-        } else {
-          workshopsUrl = `lessons/${lang}/${filename}`
-        }
-
-        const response = await fetch(workshopsUrl)
-        if (response.ok) {
-          const text = await response.text()
-          data = yaml.load(text)
-          console.log(`📖 Loaded workshops data for ${lang} from ${filename}:`, data)
-          break
-        }
-      }
-
-      if (!data) {
-        throw new Error(`Failed to fetch workshops for ${lang}`)
-      }
-
-      // Initialize workshop codes storage for this language if needed
-      if (!workshopCodes.value[lang]) {
-        workshopCodes.value[lang] = {}
-      }
-
-      const entries = data.workshops || data.topics || []
-      for (const entry of entries) {
-        const source = parseSource(entry)
-        if (!source) {
-          console.warn(`⚠️ Invalid workshop source:`, entry)
-          continue
-        }
-
-        const key = source.path
-        availableContent.value[lang][key] = []
-        workshopCodes.value[lang][key] = source.code || null
-
-        if (!workshopMeta.value[lang]) {
-          workshopMeta.value[lang] = {}
-        }
-        const builtinLabels = [...(source.labels || [])]
-        if (import.meta.env.DEV && !builtinLabels.includes('local-dev')) {
-          builtinLabels.push('local-dev')
-        }
-        workshopMeta.value[lang][key] = {
-          title: import.meta.env.DEV ? `🔧 ${source.title || key}` : (source.title || null),
-          description: source.description || null,
-          coach: source.coach || null,
-          color: source.color || null,
-          primaryColor: source.primaryColor || null,
-          image: source.image || null,
-          labels: builtinLabels
-        }
-
-        console.log(`  ✓ Workshop: ${key} (${source.type}) (${source.code || 'no code'})`)
-      }
 
       console.log(`✅ Workshops loaded for ${lang}`)
     } catch (error) {
@@ -529,8 +472,9 @@ export function useLessons() {
         // Language is a URL, workshop is a folder
         lessonsUrl = `${lang}/${workshop}/lessons.yaml`
       } else {
-        // Both are local folders under lessons/
-        lessonsUrl = `lessons/${lang}/${workshop}/lessons.yaml`
+        // Fallback for unresolved local workshops
+        console.warn(`⚠️ Workshop ${workshop} not in slug map, trying direct path`)
+        lessonsUrl = `${workshop}/lessons.yaml`
       }
 
       const response = await fetch(lessonsUrl)
@@ -579,8 +523,8 @@ export function useLessons() {
         // Language is a URL, others are folders
         lessonPath = `${lang}/${workshop}/${source.path}/content.yaml`
       } else {
-        // All are local folders under lessons/
-        lessonPath = `lessons/${lang}/${workshop}/${source.path}/content.yaml`
+        // Fallback for unresolved local workshops
+        lessonPath = `${workshop}/${source.path}/content.yaml`
       }
 
       const response = await fetch(lessonPath)
