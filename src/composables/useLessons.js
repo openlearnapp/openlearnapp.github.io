@@ -172,8 +172,9 @@ export function useLessons() {
           codes[langKey] = source.code || null
         }
 
-        // Skip workshop details for languages the user hasn't selected
-        if (targetLang && langKey !== targetLang) continue
+        // Only load workshop details for the target language
+        // If no targetLang, skip all workshop details (language discovery only)
+        if (!targetLang || langKey !== targetLang) continue
 
         // Load workshops for this language from the remote source
         // Try workshops.yaml first, fallback to topics.yaml for backwards compatibility
@@ -278,8 +279,8 @@ export function useLessons() {
               content[langKey] = {}
             }
 
-            // Skip workshop details for languages the user hasn't selected
-            if (targetLang && langKey !== targetLang) continue
+            // Only load workshop details for the target language
+            if (!targetLang || langKey !== targetLang) continue
 
             // Load workshops for this language
             let workshopsData = null
