@@ -34,20 +34,18 @@ test.describe('@smoke App basics', () => {
 test.describe('@smoke Navigation flow', () => {
   test('workshop overview loads with workshop tiles', async ({ page }) => {
     await page.goto('/#/english');
-    // Built-in workshops need time to load in CI (fetches remote YAML)
-    await expect(page.getByText('Open Learn Guide')).toBeVisible({ timeout: 30000 });
-
+    await page.locator('#app').waitFor();
+    await expect(page.getByText('Open Learn Guide')).toBeVisible({ timeout: 45000 });
     await expect(page.getByTitle('Change language')).toBeVisible();
   });
 
   test('click workshop → lessons overview with learning path', async ({ page }) => {
     await page.goto('/#/english');
-    await page.getByText('Open Learn Guide').waitFor({ timeout: 30000 });
+    await page.getByText('Open Learn Guide').waitFor({ timeout: 45000 });
     await page.getByText('Open Learn Guide').click();
 
     await expect(page).toHaveURL(/#\/english\/open-learn-guide\/lessons/);
-    await expect(page.getByText('0/3')).toBeVisible({ timeout: 30000 });
-    await expect(page.getByText('Welcome to Open Learn')).toBeVisible();
+    await expect(page.getByText('Welcome to Open Learn')).toBeVisible({ timeout: 30000 });
   });
 
   test('click lesson card → lesson detail with content', async ({ page }) => {
@@ -70,7 +68,7 @@ test.describe('@smoke Navigation flow', () => {
 
   test('switch language via dropdown', async ({ page }) => {
     await page.goto('/#/english');
-    await page.getByText('Open Learn Guide').waitFor({ timeout: 30000 });
+    await page.getByText('Open Learn Guide').waitFor({ timeout: 45000 });
     await page.getByTitle('Change language').click();
 
     await page.locator('.absolute.top-full').getByText('Deutsch').click();

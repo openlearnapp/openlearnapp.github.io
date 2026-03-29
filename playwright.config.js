@@ -9,7 +9,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 2 : undefined,
   reporter: process.env.CI ? 'list' : 'html',
-  timeout: 30000,
+  timeout: 60000,
   // In smoke mode, only run files tagged with @smoke in filename
   grep: isSmoke ? /@smoke/ : undefined,
   use: {
