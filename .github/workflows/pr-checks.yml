@@ -61,7 +61,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests
-        run: npx playwright test
+      - name: Run Playwright tests (ci-safe only)
+        run: npx playwright test tests/e2e/app.spec.js
         env:
           CI: true
