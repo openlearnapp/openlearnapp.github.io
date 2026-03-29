@@ -59,15 +59,40 @@ The spec review checks:
 - Are there architectural concerns?
 - Are dependencies met?
 
-### 4. Implement — One Feature, One PR
+### 4. Implement — Local-First, One Issue = One PR
 
-Create a PR that implements the approved spec (or includes the spec — see step 3):
+**Local-first workflow — always test before pushing:**
 
-- **One feature per PR** — don't bundle unrelated changes
-- **Reference the issue** — `feat: coach chat UI (Issue #7)`
+1. Create a feature branch (`feat/` or `fix/`)
+2. Implement the complete issue (spec + dev-plan + code + tests + changelog)
+3. Run `pnpm dev` and test locally in the browser
+4. Share the local test URL with the team: `http://localhost:5173/#/[route]`
+5. Wait for confirmation that it looks good
+6. Only then: commit, push, and create the PR
+
+**One issue = one PR (complete):**
+
+- Each GitHub issue gets exactly **one PR** that resolves it completely
+- The PR includes everything: spec update, dev-plan, implementation, tests, changelog
+- Do not split an issue across multiple PRs
+- Do not bundle multiple issues into one PR
+
+**PR contents:**
+
+- **Reference the issue** — `feat: coach chat UI (#7)`
 - **Include tests** for new logic
-- **Update docs** if the feature changes how things work (CLAUDE.md, README, feature docs)
+- **Update docs** if the feature changes how things work
 - **Update CHANGELOG.md** with an entry under the current date
+- **Test instructions** in the PR body with local URLs:
+
+```markdown
+## Test
+git checkout feat/my-feature && pnpm dev
+
+Open:
+- http://localhost:5173/#/english/open-learn-guide/lessons
+- http://localhost:5173/#/settings
+```
 
 ### 5. Review — Code Review
 
@@ -77,6 +102,7 @@ The PR is reviewed for:
 - Is the code clean and consistent with the project?
 - Are there tests?
 - Is the scope contained (no scope creep)?
+- Has it been tested locally first?
 
 ## What Belongs in a Single PR?
 
@@ -135,9 +161,12 @@ How-to guides for developers and workshop creators. Not product truth, but pract
 
 Before opening a PR, check:
 
+- [ ] Has it been tested locally with `pnpm dev`?
+- [ ] Does the PR resolve the complete issue (not partial)?
 - [ ] Is there a spec in `specs/` for this feature?
-- [ ] Is the PR scoped to one feature or fix?
+- [ ] Is the PR scoped to one issue?
 - [ ] Are tests included for new logic?
 - [ ] Are docs updated where needed?
 - [ ] Is CHANGELOG.md updated?
 - [ ] Does `pnpm build` pass?
+- [ ] Does the PR body include test instructions with local URLs?

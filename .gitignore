@@ -8,4 +8,4 @@ playwright-report/
 playwright/.cache/
 .playwright-mcp/
 .playwright-cli/
-.playwright/
+.playwright/.claude/
