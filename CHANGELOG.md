@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-03-30
+
+### Features
+
+#### Lesson Detail Visual Redesign (#99)
+- Numbered circles for section navigation and headings
+- Explanation blocks with left accent border
+- Example cards with individual borders, shadow, and hover effect
+- Assessment examples highlighted in violet, correct answers in green
+- Learning items as sky-blue badges with dashed separator
+- Labels as colored pill badges
+
+### Fixes
+
+#### Nav Bar SVG Icons (#92)
+- Replace emoji icons with SVG Lucide icons in header
+- Consistent w-10 button sizing to prevent layout jumping
+
+#### Lesson Overview Redesign (#93)
+- Left accent bar on lesson cards (color by status)
+- fadeInUp animation, glow effect on active lesson, hover-lift
+- Segmented progress bar per lesson
+
+#### CI Smoke Tests (#132)
+- 16 smoke tests for navigation, learning path, assessments, settings
+- Workshop-dependent tests skip in CI, run locally
+- Playwright browser cache for faster CI
+
 ## 2026-03-27
 
 ### Features
