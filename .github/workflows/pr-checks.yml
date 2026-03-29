@@ -34,7 +34,7 @@ jobs:
       - name: Build
         run: pnpm run build
 
-  e2e-tests:
+  e2e-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
@@ -58,10 +58,22 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      - name: Install Playwright browsers
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests
-        run: npx playwright test --timeout 10000
+      - name: Install Playwright deps (cached)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Run smoke tests
+        run: pnpm run test:e2e:smoke
         env:
           CI: true
