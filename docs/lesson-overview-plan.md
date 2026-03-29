@@ -76,23 +76,29 @@ Getrennt von bestehendem `progress` (Item-Level) um keine Migration zu brauchen.
 - Tailwind: `bg-primary` für gefüllten Teil, `bg-muted` für Rest, abgerundete Ecken
 
 **LessonCard.vue:**
-- Kompakte Karte (eine Zeile): Thumbnail links, Titel + Beschreibung rechts
-- Props: `lesson`, `status`, `isFavorite`, `isNext`
-- Status-Indikator: Kein Icon (offen), Punkt (besucht), Häkchen (erledigt)
-- Favorit-Toggle: Stern-Icon
-- Erledigt-Toggle: Checkbox/Button
-- "Nächste Lektion" Variante: farbiger Rahmen, "Weiterlernen"-Label
-- Erledigte Karten: leicht abgeblendet (opacity)
+- Eigenständige Karte mit Rand und Schatten: `border`, `shadow-md`, `rounded-2xl`
+- Layout: Großes Thumbnail links (w-24/w-28, volle Höhe), Titel + Description + Stats Mitte, Buttons rechts
+- Explizite Hintergrundfarben: `bg-white` (Light) / `dark:bg-zinc-800/90` (Dark)
+- Hover-Effekt: `hover:-translate-y-1 hover:shadow-xl` — Karte hebt sich an
+- Zeile 1: Titel (text-base, font-semibold, truncate) + "Continue"-Badge wenn isNext
+- Zeile 2: Description (text-sm, line-clamp-2) — jede Karte beschreibt die Lektion
+- Zeile 3: Stats kondensiert ("4 Abschnitte · 12 Beispiele · 3 Quizzes") + Audio/Video-Icons
+- Zeile 4 (optional): Fortschrittsbalken (h-1.5) wenn Fortschritt vorhanden
+- "Nächste Lektion": ring-2 ring-primary/60, border-primary/40, shadow-lg
+- Erledigte Karten: grüner Rand (border-green-500/40), grüner Hintergrund (bg-green-50 / dark:bg-green-950/30)
+- Aktionen (Stern + Check): **immer sichtbar** bei allen Karten, vertikal rechts gestapelt, kein Hover-Verstecken
+- Kein Hover-Effekt auf den Buttons selbst
 
 ### Schritt 3: LearningPath + LessonsOverview Umbau
 
 **LearningPath.vue:**
-- Vertikale Linie (CSS) mit Knotenpunkten pro Lektion
-- Desktop: Karten alternierend links/rechts vom Pfad
-- Mobile: Linie links, Karten rechts
+- Vertikale Linie (CSS) mit kompakten Knotenpunkten pro Lektion
+- Linie immer links, Karten immer rechts — auf allen Bildschirmgrößen gleich
+- Abstände: space-y-6, gap-4
+- Node-Dots: w-10 h-10 mit Nummer, Häkchen oder Punkt
+- Pfadlinie auf left-5
 - Erledigte Pfad-Abschnitte: ausgefüllte Linie (primary, sanfter Gradient)
 - Offene Abschnitte: gestrichelte graue Linie
-- Knotenpunkte: Kreis mit Status-Farbe (grau/blau/grün)
 
 **LessonsOverview.vue Umbau:**
 - Grid entfernen → LearningPath einsetzen

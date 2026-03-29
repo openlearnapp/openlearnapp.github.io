@@ -43,10 +43,10 @@
             variant="ghost"
             size="icon"
             @click="goToWorkshopOverview"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             :title="$t('home.workshops')"
             :aria-label="$t('home.workshops')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
           </Button>
 
           <!-- Back to lessons (on lesson detail and other workshop subpages) -->
@@ -55,10 +55,10 @@
             variant="ghost"
             size="icon"
             @click="goBackToLessons"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             :title="$t('nav.backToLessons')"
             :aria-label="$t('nav.backToLessons')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
           </Button>
         </div>
 
@@ -80,11 +80,12 @@
             size="icon"
             @click="togglePlayPause"
             :disabled="isLoadingAudio"
-            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
+            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             :title="isLoadingAudio ? $t('nav.loading') : (isPlaying ? $t('nav.pause') : $t('nav.play'))"
             :aria-label="isLoadingAudio ? $t('nav.loadingAudio') : (isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio'))">
-            <span v-if="isLoadingAudio" class="animate-spin">⏳</span>
-            <span v-else>{{ isPlaying ? '⏸' : '▶️' }}</span>
+            <svg v-if="isLoadingAudio" class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            <svg v-else-if="isPlaying" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
           </Button>
 
           <!-- Story mode button (visible on lesson/overview pages) -->
@@ -93,10 +94,10 @@
             variant="ghost"
             size="icon"
             @click="enterStoryMode"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             title="Story Mode"
             aria-label="Story Mode">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </Button>
 
           <!-- Mobile: single toggle button cycling lesson → items → results -->
@@ -105,11 +106,12 @@
             variant="ghost"
             size="icon"
             @click="cycleView"
-            class="md:hidden bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 flex-shrink-0"
-            :class="toggleButtonTextClass"
+            class="md:hidden bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             :title="toggleButtonTitle"
             :aria-label="toggleButtonTitle">
-            <span>{{ toggleButtonIcon }}</span>
+            <span v-if="toggleButtonMode === 'number'" class="text-sm font-bold">{{ fromLessonNumber }}</span>
+            <svg v-else-if="toggleButtonMode === 'items'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
           </Button>
 
           <!-- Desktop: individual buttons (hidden on mobile) -->
@@ -119,12 +121,11 @@
             variant="ghost"
             size="icon"
             @click="isOnResultsPage ? goBackToLesson() : goToResults()"
-            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 flex-shrink-0"
-            :class="isOnResultsPage && fromLessonNumber ? 'text-lg font-bold' : 'text-2xl'"
+            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             :title="isOnResultsPage ? $t('nav.backToLessons') : $t('nav.assessmentResults')"
             :aria-label="isOnResultsPage ? $t('nav.backToLessons') : $t('nav.assessmentResults')">
-            <span v-if="isOnResultsPage && fromLessonNumber">{{ fromLessonNumber }}</span>
-            <span v-else>📋</span>
+            <span v-if="isOnResultsPage && fromLessonNumber" class="text-sm font-bold">{{ fromLessonNumber }}</span>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
           </Button>
 
           <!-- Coach button -->
@@ -133,10 +134,10 @@
             variant="ghost"
             size="icon"
             @click="goToCoach"
-            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
+            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             :title="$t('nav.coach')"
             :aria-label="$t('nav.coach')">
-            🤖
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
           </Button>
 
           <!-- Items / Lesson# toggle button -->
@@ -145,19 +146,18 @@
             variant="ghost"
             size="icon"
             @click="isOnItemsPage ? goBackToLesson() : goToItems()"
-            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 flex-shrink-0"
-            :class="isOnItemsPage && fromLessonNumber ? 'text-lg font-bold' : 'text-2xl'"
+            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             :title="isOnItemsPage ? $t('nav.backToLessons') : $t('nav.learningItems')"
             :aria-label="isOnItemsPage ? $t('nav.backToLessons') : $t('nav.learningItems')">
-            <span v-if="isOnItemsPage && fromLessonNumber">{{ fromLessonNumber }}</span>
-            <span v-else>📚</span>
+            <span v-if="isOnItemsPage && fromLessonNumber" class="text-sm font-bold">{{ fromLessonNumber }}</span>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </Button>
 
           <!-- Profile avatar (hidden on mobile, visible on desktop when logged in) -->
           <button
             v-if="!isHomePage && isGunLoggedIn && route.name !== 'profile'"
             @click="goToProfile"
-            class="hidden md:flex flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 border-white/60 hover:border-white transition"
+            class="hidden md:flex flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 border-white/50 hover:border-white transition"
             :title="$t('nav.profile')"
             :aria-label="$t('nav.profile')">
             <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -167,28 +167,18 @@
             </svg>
           </button>
 
-          <!-- Settings button (hidden on home and settings pages) -->
+          <!-- Settings / Done button (always occupies same slot to prevent jumping) -->
           <Button
-            v-if="!isHomePage && route.name !== 'settings'"
+            v-if="!isHomePage"
             variant="ghost"
             size="icon"
-            @click="goToSettings"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl hover:rotate-90 flex-shrink-0"
-            :title="$t('nav.settings')"
-            :aria-label="$t('nav.settings')">
-            ⚙️
-          </Button>
-
-          <!-- Done button (visible only on settings page) -->
-          <Button
-            v-if="route.name === 'settings'"
-            variant="ghost"
-            size="icon"
-            @click="goBack"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
-            :title="$t('nav.done')"
-            :aria-label="$t('nav.done')">
-            ✓
+            @click="route.name === 'settings' ? goBack() : goToSettings()"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0 transition-transform duration-300"
+            :class="route.name !== 'settings' ? 'hover:rotate-90' : ''"
+            :title="route.name === 'settings' ? $t('nav.done') : $t('nav.settings')"
+            :aria-label="route.name === 'settings' ? $t('nav.done') : $t('nav.settings')">
+            <svg v-if="route.name !== 'settings'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </Button>
 
           <!-- Workshops button (visible on profile page) -->
@@ -197,10 +187,10 @@
             variant="ghost"
             size="icon"
             @click="goToWorkshopOverview"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-12 h-12 text-2xl flex-shrink-0"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             :title="$t('home.workshops')"
             :aria-label="$t('home.workshops')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
           </Button>
         </div>
       </div>
@@ -409,22 +399,17 @@ const canShowToggleButton = computed(() => {
   return ['lesson-detail', 'lessons-overview', 'learning-items', 'assessment-results'].includes(route.name)
 })
 
-const toggleButtonIcon = computed(() => {
-  // Show icon for the NEXT view in the cycle
-  if (route.name === 'learning-items') return '📋'       // next: results
-  if (route.name === 'assessment-results') return fromLessonNumber.value || '🔢' // next: lesson
-  return '🔤'                                            // next: items (vocab)
+const toggleButtonMode = computed(() => {
+  if (route.name === 'learning-items') return 'results'
+  if (route.name === 'assessment-results' && fromLessonNumber.value) return 'number'
+  if (route.name === 'assessment-results') return 'items'
+  return 'items'
 })
 
 const toggleButtonTitle = computed(() => {
   if (route.name === 'learning-items') return 'Results'
   if (route.name === 'assessment-results') return 'Lesson'
   return 'Items'
-})
-
-const toggleButtonTextClass = computed(() => {
-  if (route.name === 'assessment-results' && fromLessonNumber.value) return 'text-lg font-bold'
-  return 'text-2xl'
 })
 
 function toggleLanguageMenu() {
