@@ -30,11 +30,13 @@
       <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           @click.stop="$emit('toggle-favorite', lesson.number)"
+          :title="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
           :class="['p-1.5 rounded-full backdrop-blur-sm transition-colors', isFavorite ? 'text-amber-400 bg-black/40' : 'text-white/60 bg-black/30 hover:text-amber-400']">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
         </button>
         <button
           @click.stop="$emit('toggle-completed', lesson.number)"
+          :title="isCompleted ? 'Completed' : 'Mark as completed'"
           :class="['p-1.5 rounded-full backdrop-blur-sm transition-colors', isCompleted ? 'text-green-400 bg-black/40' : 'text-white/60 bg-black/30 hover:text-green-400']">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path v-if="isCompleted" d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline v-if="isCompleted" points="22 4 12 14.01 9 11.01" /><circle v-else cx="12" cy="12" r="10" /></svg>
         </button>
@@ -48,10 +50,10 @@
         <span v-if="isNext" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground">{{ nextLabel }}</span>
       </div>
       <div class="flex gap-1">
-        <button @click.stop="$emit('toggle-favorite', lesson.number)" :class="['p-1.5 rounded-lg transition-colors', isFavorite ? 'text-amber-500' : 'text-muted-foreground/30 hover:text-amber-400']">
+        <button @click.stop="$emit('toggle-favorite', lesson.number)" :title="isFavorite ? 'Remove from favorites' : 'Add to favorites'" :class="['p-1.5 rounded-lg transition-colors', isFavorite ? 'text-amber-500' : 'text-muted-foreground/30 hover:text-amber-400']">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
         </button>
-        <button @click.stop="$emit('toggle-completed', lesson.number)" :class="['p-1.5 rounded-lg transition-colors', isCompleted ? 'text-green-500' : 'text-muted-foreground/30 hover:text-green-400']">
+        <button @click.stop="$emit('toggle-completed', lesson.number)" :title="isCompleted ? 'Completed' : 'Mark as completed'" :class="['p-1.5 rounded-lg transition-colors', isCompleted ? 'text-green-500' : 'text-muted-foreground/30 hover:text-green-400']">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path v-if="isCompleted" d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline v-if="isCompleted" points="22 4 12 14.01 9 11.01" /><circle v-else cx="12" cy="12" r="10" /></svg>
         </button>
       </div>

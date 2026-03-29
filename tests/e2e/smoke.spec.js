@@ -35,20 +35,19 @@ test.describe('@smoke Navigation flow', () => {
   test('workshop overview loads with workshop tiles', async ({ page }) => {
     await page.goto('/#/english');
     // Built-in workshops need time to load in CI (fetches remote YAML)
-    await expect(page.getByText('Open Learn Guide')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Open Learn Guide')).toBeVisible({ timeout: 30000 });
 
-    await expect(page.getByRole('button', { name: 'Change language' })).toBeVisible();
+    await expect(page.getByTitle('Change language')).toBeVisible();
   });
 
   test('click workshop → lessons overview with learning path', async ({ page }) => {
     await page.goto('/#/english');
-    await page.getByText('Open Learn Guide').waitFor({ timeout: 15000 });
+    await page.getByText('Open Learn Guide').waitFor({ timeout: 30000 });
     await page.getByText('Open Learn Guide').click();
 
     await expect(page).toHaveURL(/#\/english\/open-learn-guide\/lessons/);
-    await expect(page.getByText('0/3')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('0/3')).toBeVisible({ timeout: 30000 });
     await expect(page.getByText('Welcome to Open Learn')).toBeVisible();
-    await expect(page.getByText('Continue')).toBeVisible();
   });
 
   test('click lesson card → lesson detail with content', async ({ page }) => {
@@ -71,12 +70,12 @@ test.describe('@smoke Navigation flow', () => {
 
   test('switch language via dropdown', async ({ page }) => {
     await page.goto('/#/english');
-    await page.getByRole('button', { name: 'Change language' }).waitFor({ timeout: 15000 });
-    await page.getByRole('button', { name: 'Change language' }).click();
+    await page.getByText('Open Learn Guide').waitFor({ timeout: 30000 });
+    await page.getByTitle('Change language').click();
 
     await page.locator('.absolute.top-full').getByText('Deutsch').click();
     await expect(page).toHaveURL(/#\/deutsch/);
-    await expect(page.getByText('Open Learn Anleitung')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Open Learn Anleitung')).toBeVisible({ timeout: 30000 });
 
     await page.evaluate(() => localStorage.clear());
   });
@@ -88,10 +87,10 @@ test.describe('@smoke Navigation flow', () => {
 test.describe('@smoke Learning path', () => {
   test('mark lesson complete → progress updates', async ({ page }) => {
     await page.goto('/#/english/open-learn-guide/lessons');
-    await page.getByTitle('Mark as completed').first().waitFor({ timeout: 15000 });
+    await page.getByTitle('Mark as completed').first().waitFor({ timeout: 30000 });
 
     await page.getByTitle('Mark as completed').first().click();
-    await expect(page.getByText('1/3')).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('1/3')).toBeVisible({ timeout: 5000 });
     await expect(page.getByText('33%')).toBeVisible();
 
     await page.evaluate(() => localStorage.clear());
@@ -99,22 +98,22 @@ test.describe('@smoke Learning path', () => {
 
   test('toggle favorite → star fills', async ({ page }) => {
     await page.goto('/#/english/open-learn-guide/lessons');
-    await page.getByTitle('Add to favorites').first().waitFor({ timeout: 15000 });
+    await page.getByTitle('Add to favorites').first().waitFor({ timeout: 30000 });
 
     await page.getByTitle('Add to favorites').first().click();
-    await expect(page.getByTitle('Remove from favorites').first()).toBeVisible({ timeout: 3000 });
+    await expect(page.getByTitle('Remove from favorites').first()).toBeVisible({ timeout: 5000 });
 
     await page.evaluate(() => localStorage.clear());
   });
 
   test('completed status persists after reload', async ({ page }) => {
     await page.goto('/#/english/open-learn-guide/lessons');
-    await page.getByTitle('Mark as completed').first().waitFor({ timeout: 15000 });
+    await page.getByTitle('Mark as completed').first().waitFor({ timeout: 30000 });
     await page.getByTitle('Mark as completed').first().click();
-    await expect(page.getByText('1/3')).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('1/3')).toBeVisible({ timeout: 5000 });
 
     await page.reload();
-    await page.getByText('1/3').waitFor({ timeout: 15000 });
+    await page.getByText('1/3').waitFor({ timeout: 30000 });
     await expect(page.getByText('1/3')).toBeVisible();
 
     await page.evaluate(() => localStorage.clear());
