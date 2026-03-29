@@ -18,14 +18,19 @@ Das Ziel: Die Übersicht wird zum **Lernpfad** — sie zeigt klar den Fortschrit
 
 ## Neues Verhalten
 
-### 1. Layout: Eine Lektion pro Zeile
+### 1. Layout: Horizontale Karten mit großem Thumbnail
 
-Weg vom Grid. Jede Lektion bekommt eine Zeile über die volle Breite.
+Weg vom Grid. Jede Lektion ist eine eigenständige Karte mit klarer Trennung vom Hintergrund.
 
-- Kompaktere Karten (weniger Höhe als heute)
-- Bild links als Thumbnail (nicht als großes Banner), Titel + Beschreibung rechts
-- Lesson-Nummer weiterhin prominent sichtbar
-- Auf Mobile: Bild oben, Text darunter (volle Breite, kompakt)
+- Großes Thumbnail links (w-24/w-28, volle Höhe der Karte), Titel + Description + Stats in der Mitte, Aktions-Buttons rechts
+- Jede Karte hat einen sichtbaren Rand und Schatten (`border`, `shadow-md`) — hebt sich klar vom Hintergrund ab in Light und Dark Mode
+- Explizite Hintergrundfarben: `bg-white` (Light) / `bg-zinc-800` (Dark) — kein generisches `bg-card`
+- Hover-Effekt auf der ganzen Karte: hebt sich an (`hover:-translate-y-1 hover:shadow-xl`)
+- "Nächste Lektion"-Karte mit Primary-Ring und -Schatten
+- Description (max 2 Zeilen) sichtbar — jede Karte sagt, was die Lektion beinhaltet
+- Stats kondensiert in einer Zeile: "4 Abschnitte · 12 Beispiele · 3 Quizzes"
+- Aktionen (Favorit, Erledigt) **immer sichtbar** auf allen Geräten — vertikal gestapelt rechts, kein Hover-Verstecken
+- Kein Hover-Effekt auf den Buttons selbst
 
 ### 2. Lesson-Status
 
@@ -35,7 +40,7 @@ Jede Lektion hat einen von drei Zuständen:
 |--------|-----------|---------------------|
 | **Offen** | Noch nicht besucht | Normal, kein Indikator |
 | **Besucht** | Mindestens einmal geöffnet | Dezenter Indikator (z.B. kleiner Punkt) |
-| **Erledigt** | Vom Nutzer manuell markiert | Häkchen-Symbol, Karte leicht abgeblendet |
+| **Erledigt** | Vom Nutzer manuell markiert | Häkchen-Symbol, grüner Rand und Hintergrund (`bg-green-50` / `dark:bg-green-950/30`) |
 
 **Wichtig:** "Erledigt" wird **nur manuell** vom Nutzer gesetzt — nicht automatisch. Der Nutzer entscheidet selbst, wann eine Lektion für ihn abgeschlossen ist. Das Markieren geschieht direkt in der Übersicht über einen Button/Toggle auf der Karte.
 
@@ -92,7 +97,7 @@ Neue Daten in localStorage:
 
 ## Entscheidungen
 
-1. **Grafischer Pfad**: Ja — eine vertikale Linie verbindet die Lektionen visuell. Erledigte Abschnitte der Linie sind farbig ausgefüllt (primary color, sanfter Gradient), offene Abschnitte gestrichelt/grau. An jedem Knotenpunkt sitzt ein Kreis-Indikator (offen/besucht/erledigt). Karten liegen abwechselnd links und rechts des Pfads (Desktop) für ein modernes, aufgeräumtes Layout. Auf Mobile: Linie links, Karten rechts. Der Stil ist clean und minimalistisch — keine Spielelemente, sondern ein eleganter visueller Fortschrittsindikator.
+1. **Grafischer Pfad**: Ja — eine vertikale Linie verbindet die Lektionen visuell. Erledigte Abschnitte der Linie sind farbig ausgefüllt (primary color, sanfter Gradient), offene Abschnitte gestrichelt/grau. An jedem Knotenpunkt sitzt ein Kreis-Indikator (w-10 h-10, offen/besucht/erledigt). Die Linie verläuft durchgehend links, Karten liegen rechts davon — auf allen Bildschirmgrößen gleich. Karten sind eigenständige Elemente mit Rand und Schatten, die sich klar vom Hintergrund abheben. Hover hebt die Karte leicht an. Der Stil ist clean und minimalistisch — keine Spielelemente, sondern ein eleganter visueller Fortschrittsindikator.
 2. **Fortschrittsbalken**: Ja — oben auf der Seite wird der Gesamtfortschritt angezeigt (z.B. "4/10 Lektionen erledigt" mit visueller Leiste).
 3. **Drag & Drop**: Ja — Favoriten können per Drag & Drop umsortiert werden. Touch-Support (long press → drag) für Mobile. Reihenfolge wird in localStorage gespeichert.
 
