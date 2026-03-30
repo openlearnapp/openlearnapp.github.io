@@ -411,6 +411,7 @@ export function useLessons() {
   async function loadSourcesForLanguage(lang) {
     if (loadedSourceLangs.has(lang)) return
     console.log(`📡 Loading source workshop details for language: ${lang}`)
+    await loadDefaultSources()
     const contentSources = getAllContentSources()
     await Promise.all(
       contentSources.map(sourceUrl =>
