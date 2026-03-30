@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-03-30
+
+### Features
+
+#### Section-Bilder für Workshops (#144)
+- Section-level SVG images (640×160, Terminal-Card-Stil) in LessonDetail
+- Workshop-linux-grundlagen: 192 SVGs für 12 Lektionen × 4 Sprachen
+
+### Fixes
+
+#### Workshops laden nicht bei direktem URL-Zugriff (#145, #146)
+- `loadDefaultSources()` wurde nicht aufgerufen bei direkter Navigation zu `/#/deutsch`
+
+#### Lesson-Bilder Pfad-Auflösung (#153, #154)
+- `_filename` auf Lesson-Objekt setzen statt Fallback auf `XX-lesson`
+- Doppel-Slash bei lokalen Workshop-Pfaden (`/__local/...`) verhindern
+
 ## 2026-03-27
 
 ### Features
