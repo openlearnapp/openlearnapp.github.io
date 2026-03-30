@@ -26,11 +26,14 @@
         </Badge>
       </div>
 
-      <nav v-if="filteredSections.length > 1" class="mb-5 p-4 bg-muted rounded-lg">
-        <h3 class="text-sm font-semibold text-muted-foreground mb-2">{{ $t('lesson.sections') }}</h3>
-        <ol class="list-decimal list-inside space-y-1">
-          <li v-for="(section, idx) in filteredSections" :key="idx">
-            <a :href="`#section-${idx}`" class="text-primary hover:underline" @click.prevent="scrollToSection(idx)">
+      <nav v-if="filteredSections.length > 1" class="mb-6 p-4 bg-muted/50 rounded-xl border border-border/50">
+        <h3 class="text-sm font-semibold text-muted-foreground mb-3">{{ $t('lesson.sections') }}</h3>
+        <ol class="space-y-2">
+          <li v-for="(section, idx) in filteredSections" :key="idx" class="flex items-center gap-3">
+            <span class="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold">
+              {{ idx + 1 }}
+            </span>
+            <a :href="`#section-${idx}`" class="text-sm text-foreground hover:text-primary transition-colors" @click.prevent="scrollToSection(idx)">
               {{ section.title }}
             </a>
           </li>
@@ -42,11 +45,16 @@
         v-for="(section, idx) in filteredSections"
         :key="idx"
         :id="`section-${idx}`"
-        :class="activeLabel ? 'p-0 mb-3 border-0 shadow-none' : 'p-5 mb-5'">
+        :class="activeLabel ? 'p-0 mb-3 border-0 shadow-none' : 'p-5 mb-6 border border-border/50 shadow-sm'">
         <CardHeader v-if="!activeLabel" class="p-0 pb-4">
-          <CardTitle class="text-2xl text-primary">
-            {{ section.title }}
-          </CardTitle>
+          <div class="flex items-center gap-3">
+            <span class="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-primary/15 text-primary text-lg font-bold">
+              {{ idx + 1 }}
+            </span>
+            <CardTitle class="text-2xl text-primary">
+              {{ section.title }}
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent class="p-0">
           <div v-if="section.video && !activeLabel" class="mb-4">
@@ -102,7 +110,7 @@
 
           <div
             v-if="section.explanation && !activeLabel"
-            class="bg-muted p-4 rounded mb-4 prose prose-sm dark:prose-invert max-w-none"
+            class="bg-muted/60 p-4 rounded-lg mb-4 border-l-4 border-primary/30 prose prose-sm dark:prose-invert max-w-none"
             v-html="DOMPurify.sanitize(marked(section.explanation))">
           </div>
 
