@@ -542,6 +542,7 @@ export function useLessons() {
         console.log(`  ✓ Lesson loaded: #${lesson.number} - ${lesson.title}`)
         // Store the source path for audio loading
         lesson._source = source
+        lesson._filename = source.path
       } else {
         console.error(`  ❌ Failed to parse lesson: ${filenameOrSource}`)
       }

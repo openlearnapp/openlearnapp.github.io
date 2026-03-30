@@ -358,7 +358,7 @@ function resolveLessonAssetPath(assetPath) {
   const filename = lesson.value?._filename || `${String(lesson.value?.number).padStart(2, '0')}-lesson`
   const resolvedWorkshop = resolveWorkshopKey(learning.value, workshop.value)
   if (resolvedWorkshop !== workshop.value) {
-    const prefix = resolvedWorkshop.startsWith('http://') || resolvedWorkshop.startsWith('https://') ? '' : baseUrl
+    const prefix = resolvedWorkshop.startsWith('http://') || resolvedWorkshop.startsWith('https://') || resolvedWorkshop.startsWith('/') ? '' : baseUrl
     return `${prefix}${resolvedWorkshop}/${filename}/${assetPath}`
   }
   return `${baseUrl}lessons/${learning.value}/${workshop.value}/${filename}/${assetPath}`
