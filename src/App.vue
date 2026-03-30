@@ -63,7 +63,7 @@
         </div>
 
         <!-- Title (grows to fill available space) -->
-        <h1 class="text-xl md:text-3xl font-bold flex-grow truncate px-3 flex items-center gap-2">
+        <h1 class="text-lg sm:text-xl md:text-3xl font-bold flex-grow truncate px-3 flex items-center gap-2">
           <span class="truncate">{{ pageTitle }}</span>
           <span v-if="!online" class="flex-shrink-0 inline-flex items-center gap-1 bg-white/20 text-white/80 text-xs font-medium px-2 py-0.5 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="22" y1="2" y2="22"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 4.17-2.65"/><path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"/><path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"/><path d="M5 12.86a10 10 0 0 1 5.17-2.94"/></svg>
@@ -94,7 +94,7 @@
             variant="ghost"
             size="icon"
             @click="enterStoryMode"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
+            class="hidden sm:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             title="Story Mode"
             aria-label="Story Mode">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
