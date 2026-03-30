@@ -17,6 +17,10 @@
 - `_filename` auf Lesson-Objekt setzen statt Fallback auf `XX-lesson`
 - Doppel-Slash bei lokalen Workshop-Pfaden (`/__local/...`) verhindern
 
+#### Nav-Titel abgeschnitten auf Mobile (#149)
+- Kleinere Schriftgröße auf kleinen Screens (text-lg statt text-xl)
+- Story-Button auf sehr kleinen Screens ausgeblendet für mehr Titelplatz
+
 ## 2026-03-27
 
 ### Features
