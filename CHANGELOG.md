@@ -21,6 +21,10 @@
 - Kleinere Schriftgröße auf kleinen Screens (text-lg statt text-xl)
 - Story-Button auf sehr kleinen Screens ausgeblendet für mehr Titelplatz
 
+#### Show loading state instead of "no workshops" while loading (#150)
+- Add local loading indicator in WorkshopOverview while workshops are being fetched
+- Prevents "Keine Workshops verfügbar" from flashing before content loads
+
 ## 2026-03-27
 
 ### Features

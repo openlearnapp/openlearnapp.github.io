@@ -120,6 +120,12 @@
         </Card>
       </div>
 
+      <!-- Loading workshops -->
+      <div v-else-if="workshopsLoading" class="text-center py-8">
+        <div class="inline-block w-6 h-6 border-3 border-primary/30 border-t-primary rounded-full animate-spin mb-3"></div>
+        <p class="text-muted-foreground text-sm">{{ isDE ? 'Workshops laden...' : 'Loading workshops...' }}</p>
+      </div>
+
       <!-- No workshops -->
       <p v-else class="text-muted-foreground text-center py-8">
         {{ t('noWorkshops') }}
@@ -187,6 +193,7 @@ const isStandalone = computed(() =>
 )
 let deferredInstallPrompt = null
 
+const workshopsLoading = ref(true)
 const activeFilter = ref(null)
 const copiedWorkshop = ref(null)
 const addedNotice = ref(null)
@@ -499,6 +506,7 @@ onMounted(async () => {
   if (learning.value) {
     await loadWorkshopsForLanguage(learning.value)
   }
+  workshopsLoading.value = false
   // Debug: log colors for all workshops
   for (const ws of workshops.value) {
     const meta = getWorkshopMeta(learning.value, ws)
