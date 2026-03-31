@@ -360,7 +360,7 @@ const sceneContent = computed(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .scene-container { width: 100%; border-radius: 0.6rem; overflow: visible; }
 .scene-svg { width: 100%; height: auto; border-radius: 0.6rem; display: block; }
 .scene-breakout { overflow: visible; }
