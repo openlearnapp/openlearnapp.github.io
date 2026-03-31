@@ -1,18 +1,20 @@
 number: 3
 title: "Das alte Haus"
-description: "Mila entdeckt ein geheimnisvolles Haus."
+description: "Mila entdeckt ein geheimnisvolles Haus voller Geschichten."
 image: "images/house.svg"
 sections:
   - title: "Das Haus im Wald"
     image: "images/house.svg"
     examples:
-      - q: "Mila ging den schmalen Weg entlang und entdeckte ein altes Haus."
+      - q: "Mila ging den schmalen Weg entlang und entdeckte ein altes Haus zwischen den Baeumen. Es sah aus wie aus einem Maerchenbuch — mit krummen Waenden, einem Schornstein aus dem blauer Rauch aufstieg, und einem Garten voller leuchtender Blumen."
         voice: narrator
-      - q: "Die Tuer stand offen und warmes Licht schien heraus."
+      - q: "Die Tuer stand einen Spalt offen und warmes, goldenes Licht schien heraus. Es roch nach frisch gebackenem Kuchen und heissem Kakao."
         voice: narrator
-      - q: "'Komm herein, kleines Maedchen,' sagte eine freundliche Stimme."
+      - q: "Mila zoegerte einen Moment. Sollte sie wirklich einfach hineingehen? Aber die Neugier war staerker als die Vorsicht."
+        voice: narrator
+      - q: "'Komm herein, kleines Maedchen,' sagte eine freundliche Stimme von drinnen. 'Ich habe dich erwartet. Der Tee ist schon fertig.'"
         voice: grandma
-      - q: "Drinnen sass eine alte Frau mit einem grossen Buch voller Geschichten."
+      - q: "Drinnen sass eine alte Frau in einem gemuetlichen Sessel. Sie hatte silberweisses Haar und ein warmes Laecheln. Auf ihrem Schoss lag ein riesiges Buch mit einem goldenen Einband."
         voice: narrator
       - q: "Was hatte die alte Frau?"
         type: input
@@ -27,9 +29,13 @@ sections:
   - title: "Die Geschichten"
     image: "images/house.svg"
     examples:
-      - q: "'Jede Geschichte fuehrt in eine neue Welt,' sagte sie laechelnd."
+      - q: "'Dieses Buch ist etwas ganz Besonderes,' sagte die alte Frau und strich liebevoll ueber den goldenen Einband. 'Jede Geschichte darin fuehrt in eine neue Welt.'"
         voice: grandma
-      - q: "Mila setzte sich neben die alte Frau und begann zu lesen."
+      - q: "'Aber aufgepasst — wer eine Geschichte liest, erlebt sie auch! Man muss mutig sein, um die Seiten umzublaettern.'"
+        voice: grandma
+      - q: "Mila setzte sich neben die alte Frau. Das Buch oeffnete sich von selbst und die Buchstaben auf der ersten Seite begannen zu leuchten. Ein warmer Wind wehte aus den Seiten und Mila konnte das Meer rauschen hoeren."
         voice: narrator
-      - q: "Und so begann ein neues Abenteuer..."
+      - q: "'Bereit fuer ein Abenteuer?' fragte die alte Frau und zwinkerte."
+        voice: grandma
+      - q: "Mila nickte aufgeregt, nahm einen tiefen Atemzug und begann zu lesen. Und so begann ein neues, grosses Abenteuer..."
         voice: narrator

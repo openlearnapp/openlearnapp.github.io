@@ -1,18 +1,24 @@
 number: 2
 title: "Am Fluss"
-description: "Mila folgt dem Geraeusch zum Fluss."
+description: "Mila folgt dem Geraeusch zum Fluss und trifft einen besonderen Freund."
 image: "images/river.svg"
 sections:
   - title: "Der Fluss"
     image: "images/river.svg"
     examples:
-      - q: "Mila folgte dem Pfad durch den Wald bis sie einen glitzernden Fluss erreichte."
+      - q: "Mila folgte dem schmalen Pfad durch den Wald. Die Baeume standen so dicht beieinander, dass ihre Aeste ein gruenes Dach bildeten. Sonnenstrahlen fielen wie goldene Faeden hindurch."
         voice: narrator
-      - q: "Am Ufer sass ein kleiner Frosch, der sie anschaute."
+      - q: "Nach einer Weile hoerte sie das Plaetschern von Wasser. Der Pfad wurde breiter und ploetzlich stand sie vor einem wunderschoenen Fluss, der zwischen grossen Steinen dahinfloss."
         voice: narrator
-      - q: "'Hallo! Ich bin Fridolin,' sagte der Frosch."
+      - q: "Das Wasser war so klar, dass Mila die bunten Kieselsteine auf dem Grund sehen konnte. Kleine Fische schwammen hin und her und Libellen tanzten ueber der Oberflaeche."
+        voice: narrator
+      - q: "Am Ufer, auf einem grossen flachen Stein, sass ein kleiner gruener Frosch. Er hatte grosse freundliche Augen und trug eine winzige blaue Muetze auf dem Kopf."
+        voice: narrator
+      - q: "'Hallo! Ich bin Fridolin,' sagte der Frosch und verbeugte sich hoeflich. 'Ich warte schon den ganzen Morgen auf dich!'"
         voice: fridolin
-      - q: "'Wenn du mir hilfst, zeige ich dir etwas Wunderbares!'"
+      - q: "'Auf mich?' fragte Mila ueberrascht. 'Woher wusstest du, dass ich komme?'"
+        voice: narrator
+      - q: "'Der Wind hat es mir erzaehlt,' antwortete Fridolin und zwinkerte. 'Wenn du mir hilfst, zeige ich dir etwas ganz Wunderbares — etwas, das noch kein Mensch je gesehen hat!'"
         voice: fridolin
       - q: "Wie heisst der Frosch?"
         type: select
@@ -26,6 +32,8 @@ sections:
   - title: "Was weisst du?"
     image: "images/river.svg"
     examples:
+      - q: "Fridolin klatschte begeistert in seine kleinen gruenen Haende. 'Richtig! Du hoerst gut zu. Das ist eine wichtige Eigenschaft fuer ein Abenteuer.'"
+        voice: fridolin
       - q: "Was hat Mila am Fluss gesehen?"
         type: multiple-choice
         goto_correct: { lesson: 2, section: 2 }
@@ -40,7 +48,9 @@ sections:
   - title: "Ein neuer Freund"
     image: "images/river.svg"
     examples:
-      - q: "Mila laechelte. Sie hatte einen neuen Freund gefunden."
+      - q: "Mila laechelte breit. Sie hatte einen neuen Freund gefunden — einen sprechenden Frosch mit einer blauen Muetze! So etwas passierte nicht jeden Tag."
         voice: narrator
-      - q: "Zusammen machten sie sich auf den Weg tiefer in den Wald."
+      - q: "'Komm,' sagte Fridolin und huepfte voraus, 'ich zeige dir den Weg. Aber Vorsicht — im tiefen Wald ist nicht alles so, wie es scheint. Manche Dinge sind verzaubert!'"
+        voice: fridolin
+      - q: "Zusammen machten sie sich auf den Weg tiefer in den Wald. Fridolin huepfte von Stein zu Stein und Mila folgte ihm, waehrend die Melodie, die sie heute Morgen gehoert hatte, immer lauter wurde."
         voice: narrator

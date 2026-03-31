@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 z-[100] bg-black flex flex-col" style="height: 100lvh">
+  <div class="fixed inset-0 z-[100] flex flex-col story-bg" style="height: 100lvh">
     <!-- Exit button (top-left, press-and-hold 2s) -->
     <button
       class="absolute top-4 left-4 z-[110] w-14 h-14 rounded-full bg-black/50 text-white flex items-center justify-center transition-all"
@@ -71,36 +71,87 @@
     <!-- Story content -->
     <template v-else>
       <div class="flex-1 relative overflow-hidden" @click="handleTap($event)">
-        <!-- Background -->
-        <div v-if="isAssessmentState" class="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
-        <!-- Section title on assessment screens -->
-        <div v-if="isAssessmentState && currentSection?.title" class="absolute top-16 left-0 right-0 px-6 pointer-events-none z-[1]">
-          <p class="text-white/30 text-sm tracking-wider text-center">{{ currentSection.title }}</p>
-        </div>
-        <template v-else>
-          <!-- Display image (lesson intro image or section image) -->
-          <img
-            v-if="displayImage"
-            :src="displayImage"
-            :alt="currentSection?.title || ''"
-            class="absolute inset-0 w-full h-full object-contain p-4 pb-32 pt-16 transition-opacity duration-700"
-            :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
-            @load="imageLoaded = true" />
-          <div v-else class="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
 
-          <!-- Section title (left-aligned, directly below image) -->
-          <div v-if="currentSection?.title && displayImage" class="absolute bottom-28 left-0 right-0 px-6 pointer-events-none">
-            <p class="text-white/50 text-sm tracking-wider">{{ currentSection.title }}</p>
+        <!-- Assessment background -->
+        <div v-if="isAssessmentState" class="absolute inset-0 story-bg" />
+        <div v-if="isAssessmentState && currentSection?.title" class="absolute top-16 left-0 right-0 px-6 pointer-events-none z-[1]">
+          <p class="text-amber-200/40 text-sm tracking-wider text-center font-serif">{{ currentSection.title }}</p>
+        </div>
+
+        <!-- Book layout for narration -->
+        <template v-if="!isAssessmentState">
+          <!-- Layout: image-beside (desktop, image left + text right) -->
+          <div v-if="layoutVariant === 'image-beside'" class="absolute inset-0 flex">
+            <div class="w-1/2 h-full relative">
+              <img
+                v-if="displayImage"
+                :src="displayImage"
+                :alt="currentSection?.title || ''"
+                class="absolute inset-0 w-full h-full object-contain p-6 transition-opacity duration-700"
+                :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
+                @load="imageLoaded = true" />
+            </div>
+            <div class="w-1/2 h-full flex flex-col justify-center px-8 py-12">
+              <p v-if="currentSection?.title && !showingIntro" class="text-amber-200/50 text-xs tracking-[0.2em] uppercase mb-4 font-sans">{{ currentSection.title }}</p>
+              <p v-if="!showingIntro" class="story-text text-xl leading-[1.8]">{{ currentNarrationText }}</p>
+              <p v-else class="story-text text-2xl md:text-3xl font-semibold text-center">{{ currentLesson?.title }}</p>
+            </div>
           </div>
+
+          <!-- Layout: image-text (mobile, image top + text bottom) -->
+          <template v-else-if="layoutVariant === 'image-text'">
+            <div class="absolute inset-0 flex flex-col">
+              <div class="flex-1 relative min-h-0">
+                <img
+                  v-if="displayImage"
+                  :src="displayImage"
+                  :alt="currentSection?.title || ''"
+                  class="absolute inset-0 w-full h-full object-contain p-4 pt-14 transition-opacity duration-700"
+                  :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
+                  @load="imageLoaded = true" />
+              </div>
+              <div class="story-text-panel px-6 py-5 pb-8">
+                <p v-if="currentSection?.title && !showingIntro" class="text-amber-200/40 text-xs tracking-[0.2em] uppercase mb-2 font-sans">{{ currentSection.title }}</p>
+                <p v-if="!showingIntro" class="story-text text-lg md:text-xl leading-[1.8]">{{ currentNarrationText }}</p>
+                <p v-else class="story-text text-2xl font-semibold text-center">{{ currentLesson?.title }}</p>
+              </div>
+            </div>
+          </template>
+
+          <!-- Layout: text-only (no image, centered book page) -->
+          <template v-else-if="layoutVariant === 'text-only'">
+            <div class="absolute inset-0 flex items-center justify-center px-6">
+              <div class="story-page max-w-lg w-full p-8 md:p-12">
+                <p v-if="currentSection?.title && !showingIntro" class="text-amber-200/40 text-xs tracking-[0.2em] uppercase mb-4 font-sans text-center">{{ currentSection.title }}</p>
+                <p v-if="!showingIntro" class="story-text text-xl md:text-2xl leading-[1.8] text-center">{{ currentNarrationText }}</p>
+                <p v-else class="story-text text-2xl md:text-3xl font-semibold text-center">{{ currentLesson?.title }}</p>
+              </div>
+            </div>
+          </template>
+
+          <!-- Layout: image-only (fullscreen image, minimal text overlay) -->
+          <template v-else>
+            <img
+              v-if="displayImage"
+              :src="displayImage"
+              :alt="currentSection?.title || ''"
+              class="absolute inset-0 w-full h-full object-contain p-4 pb-24 pt-16 transition-opacity duration-700"
+              :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
+              @load="imageLoaded = true" />
+            <div v-if="!showingIntro && currentNarrationText" class="absolute bottom-0 left-0 right-0 px-6 pb-8 pt-12 bg-gradient-to-t from-[#1a1a2e] via-[#1a1a2e]/60 to-transparent">
+              <p class="story-text text-lg leading-[1.7]">{{ currentNarrationText }}</p>
+            </div>
+            <div v-if="showingIntro" class="absolute inset-0 flex items-center justify-center p-6 pointer-events-none">
+              <p class="story-text text-2xl md:text-3xl font-semibold text-center">{{ currentLesson?.title }}</p>
+            </div>
+          </template>
         </template>
 
         <!-- Choice cards overlay (select/multiple-choice) -->
-        <div v-if="state === 'choosing'" class="absolute inset-0 bg-black/90 flex items-center justify-center p-6">
+        <div v-if="state === 'choosing'" class="absolute inset-0 story-bg flex items-center justify-center p-6">
           <div class="flex flex-col items-center gap-6 max-w-2xl w-full">
-            <!-- Question text -->
-            <p class="text-white text-xl md:text-2xl text-center leading-relaxed">{{ currentNarrationText }}</p>
-            <p v-if="isMultiChoice" class="text-white/50 text-sm">Select all correct answers</p>
-            <!-- Options -->
+            <p class="story-text text-xl md:text-2xl text-center leading-relaxed">{{ currentNarrationText }}</p>
+            <p v-if="isMultiChoice" class="text-amber-200/50 text-sm font-sans">Select all correct answers</p>
             <div class="grid gap-4 w-full" :class="choiceOptions.length <= 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3'">
               <button
                 v-for="(option, idx) in choiceOptions"
@@ -116,73 +167,58 @@
                   :src="resolveOptionImage(option.image)"
                   :alt="option.text"
                   class="w-full aspect-[4/3] object-cover" />
-                <div v-else class="w-full aspect-[4/3] bg-gradient-to-b from-primary/40 to-primary/20 flex items-center justify-center">
+                <div v-else class="w-full aspect-[4/3] bg-gradient-to-b from-amber-900/30 to-amber-950/20 flex items-center justify-center">
                   <span class="text-6xl">{{ idx === 0 ? '🌊' : idx === 1 ? '🏠' : '🌲' }}</span>
                 </div>
                 <div class="p-4 text-center">
-                  <span class="text-white text-lg font-semibold">{{ option.text }}</span>
+                  <span class="text-amber-50 text-lg font-semibold font-serif">{{ option.text }}</span>
                 </div>
               </button>
             </div>
-            <!-- Help button -->
             <button
               v-if="optionFeedback === null && multiWrong === null"
               @click.stop="useHelp"
-              class="mt-2 px-5 py-2 rounded-full bg-white/10 border border-white/20 text-white/50 text-sm hover:bg-white/20 hover:text-white/80 transition-all">
+              class="mt-2 px-5 py-2 rounded-full bg-amber-200/10 border border-amber-200/20 text-amber-200/50 text-sm hover:bg-amber-200/20 hover:text-amber-200/80 transition-all">
               💡
             </button>
           </div>
         </div>
 
         <!-- Text input overlay -->
-        <div v-if="state === 'input'" class="absolute inset-0 bg-black/90 flex items-center justify-center p-6" @click.stop>
+        <div v-if="state === 'input'" class="absolute inset-0 story-bg flex items-center justify-center p-6" @click.stop>
           <div class="flex flex-col items-center gap-6 max-w-lg w-full">
-            <p class="text-white text-xl md:text-2xl text-center leading-relaxed">{{ currentNarrationText }}</p>
+            <p class="story-text text-xl md:text-2xl text-center leading-relaxed">{{ currentNarrationText }}</p>
             <div v-if="!showingHelp" class="w-full relative">
               <input
                 ref="inputRef"
                 v-model="inputAnswer"
                 @keydown.enter="submitInput"
-                class="w-full px-6 py-4 text-xl rounded-2xl bg-white/10 border-2 text-white placeholder-white/40 focus:outline-none transition-colors"
-                :class="inputFeedback === null ? 'border-white/30 focus:border-white' :
+                class="w-full px-6 py-4 text-xl rounded-2xl bg-amber-200/5 border-2 text-amber-50 placeholder-amber-200/30 focus:outline-none transition-colors font-serif"
+                :class="inputFeedback === null ? 'border-amber-200/20 focus:border-amber-200/60' :
                          inputFeedback === true ? 'border-green-400 bg-green-500/20' :
                          'border-red-400 bg-red-500/20'"
                 placeholder="Antwort eingeben..."
                 autocomplete="off" />
             </div>
-            <!-- Show answer when help is used -->
-            <p v-if="showingHelp" class="text-yellow-300 text-xl md:text-2xl text-center leading-relaxed">{{ helpAnswer }}</p>
+            <p v-if="showingHelp" class="text-amber-300 text-xl md:text-2xl text-center leading-relaxed font-serif">{{ helpAnswer }}</p>
             <div class="flex items-center gap-3">
               <button
                 v-if="!showingHelp"
                 @click.stop="submitInput"
-                class="px-8 py-3 rounded-full bg-white/20 border-2 border-white/40 text-white text-lg font-semibold hover:bg-white/30 transition-all active:scale-95">
+                class="px-8 py-3 rounded-full bg-amber-200/10 border-2 border-amber-200/30 text-amber-50 text-lg font-semibold hover:bg-amber-200/20 transition-all active:scale-95 font-serif">
                 OK
               </button>
               <button
                 v-if="!showingHelp && inputFeedback === null"
                 @click.stop="useHelp"
-                class="px-5 py-3 rounded-full bg-white/10 border border-white/20 text-white/50 text-sm hover:bg-white/20 hover:text-white/80 transition-all">
+                class="px-5 py-3 rounded-full bg-amber-200/10 border border-amber-200/20 text-amber-200/50 text-sm hover:bg-amber-200/20 hover:text-amber-200/80 transition-all">
                 💡
               </button>
             </div>
-            <p v-if="inputFeedback === false" class="text-red-300 text-sm">Versuch es nochmal...</p>
+            <p v-if="inputFeedback === false" class="text-red-300 text-sm font-sans">Versuch es nochmal...</p>
           </div>
         </div>
 
-        <!-- Narration text overlay -->
-        <div v-if="state === 'narrating' && !showingIntro"
-          class="absolute left-0 right-0 p-6"
-          :class="currentSectionImage
-            ? 'bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent pb-10 pt-16'
-            : 'inset-0 flex items-center justify-center'">
-          <p class="text-white text-xl md:text-2xl leading-relaxed" :class="!currentSectionImage && 'text-center'">{{ currentNarrationText }}</p>
-        </div>
-
-        <!-- Intro title overlay (centered) -->
-        <div v-if="showingIntro" class="absolute inset-0 flex items-center justify-center p-6 pointer-events-none">
-          <p class="text-white text-2xl md:text-3xl font-semibold text-center leading-relaxed">{{ currentLesson?.title }}</p>
-        </div>
       </div>
     </template>
   </div>
@@ -195,6 +231,7 @@ import { useLessons } from '../composables/useLessons'
 import { useAudio } from '../composables/useAudio'
 import { useSettings } from '../composables/useSettings'
 import { useAssessments } from '../composables/useAssessments'
+import { useTextLayout } from '../composables/useTextLayout'
 
 const router = useRouter()
 const route = useRoute()
@@ -204,6 +241,7 @@ const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
 const { initializeAudio, cleanup, hasAudio, playSingleItem, readingQueue, currentAudio } = useAudio()
 const { settings } = useSettings()
 const { saveAnswer } = useAssessments()
+const { getLayoutVariant } = useTextLayout()
 
 // State machine: loading | narrating | choosing | input
 const state = ref('loading')
@@ -273,6 +311,10 @@ const currentExample = computed(() => {
 
 const currentNarrationText = computed(() => {
   return currentExample.value?.q || ''
+})
+
+const layoutVariant = computed(() => {
+  return getLayoutVariant(currentNarrationText.value, !!currentSectionImage.value)
 })
 
 const currentVoice = computed(() => {
@@ -1012,3 +1054,26 @@ onUnmounted(() => {
   cleanup()
 })
 </script>
+
+<style scoped>
+.story-bg {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.story-text {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #f5e6d3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.story-text-panel {
+  background: linear-gradient(to top, #1a1a2e, #1a1a2e 80%, transparent);
+}
+
+.story-page {
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(245, 230, 211, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+</style>
