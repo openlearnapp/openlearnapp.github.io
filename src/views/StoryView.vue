@@ -72,51 +72,83 @@
     <template v-else>
       <div class="flex-1 relative overflow-hidden" @click="handleTap($event)">
 
+        <!-- Atmospheric background layer -->
+        <div class="absolute inset-0 pointer-events-none z-0" :class="`scene-bg scene-${sceneType}`">
+          <!-- Floating particles -->
+          <div v-for="n in 20" :key="n"
+            class="particle"
+            :class="`particle-${sceneType}`"
+            :style="particleStyle(n)" />
+          <!-- Scene-specific decorations -->
+          <svg v-if="sceneType === 'forest'" class="scene-deco scene-deco-trees" viewBox="0 0 800 200" preserveAspectRatio="none">
+            <path d="M0,200 Q100,120 200,180 Q300,100 400,160 Q500,80 600,150 Q700,110 800,180 L800,200Z" fill="rgba(34,80,50,0.15)" class="tree-wave" />
+            <path d="M0,200 Q150,140 300,190 Q450,130 600,170 Q750,120 800,190 L800,200Z" fill="rgba(34,80,50,0.08)" class="tree-wave-2" />
+          </svg>
+          <svg v-if="sceneType === 'water'" class="scene-deco scene-deco-waves" viewBox="0 0 800 100" preserveAspectRatio="none">
+            <path d="M0,50 Q100,20 200,50 Q300,80 400,50 Q500,20 600,50 Q700,80 800,50 L800,100 L0,100Z" fill="rgba(56,120,180,0.08)" class="water-wave" />
+            <path d="M0,60 Q100,30 200,60 Q300,90 400,60 Q500,30 600,60 Q700,90 800,60 L800,100 L0,100Z" fill="rgba(56,120,180,0.05)" class="water-wave-2" />
+          </svg>
+          <div v-if="sceneType === 'house'" class="scene-deco scene-deco-glow" />
+        </div>
+
         <!-- Assessment background -->
-        <div v-if="isAssessmentState" class="absolute inset-0 story-bg" />
         <div v-if="isAssessmentState && currentSection?.title" class="absolute top-16 left-0 right-0 px-6 pointer-events-none z-[1]">
           <p class="text-amber-200/40 text-sm tracking-wider text-center font-serif">{{ currentSection.title }}</p>
         </div>
 
-        <!-- Book page layout: all examples of current section on paginated pages -->
+        <!-- Book page layout -->
         <template v-if="!isAssessmentState">
-          <!-- Intro: lesson title centered -->
+          <!-- Intro: lesson title with dramatic entrance -->
           <div v-if="showingIntro" class="absolute inset-0 flex items-center justify-center p-6 pointer-events-none">
-            <p class="story-text text-2xl md:text-3xl font-semibold text-center">{{ currentLesson?.title }}</p>
+            <div class="intro-title">
+              <p class="story-text text-3xl md:text-4xl font-semibold text-center leading-relaxed intro-text-glow">
+                {{ currentLesson?.title }}
+              </p>
+            </div>
           </div>
 
           <!-- Book page -->
-          <div v-else class="absolute inset-0 flex items-center justify-center p-4 md:p-8">
-            <div class="book-page w-full max-w-2xl h-full max-h-[85vh] flex flex-col overflow-hidden">
-              <!-- Section title -->
-              <h2 class="text-amber-200/60 text-xs tracking-[0.2em] uppercase font-sans px-6 pt-5 pb-3 flex-shrink-0">
-                {{ currentSection?.title }}
-              </h2>
+          <div v-else class="absolute inset-0 flex items-center justify-center p-4 md:p-8 z-[1]">
+            <div class="book-page w-full max-w-2xl h-full max-h-[85vh] flex flex-col overflow-hidden" :key="`page-${currentSectionIndex}-${currentPage}`">
+              <!-- Section title with decorative line -->
+              <div class="px-6 pt-5 pb-3 flex-shrink-0 flex items-center gap-3">
+                <div class="h-px flex-1 bg-gradient-to-r from-transparent" :class="sceneTitleLineColor" />
+                <h2 class="text-xs tracking-[0.25em] uppercase font-sans whitespace-nowrap" :class="sceneTitleColor">
+                  {{ currentSection?.title }}
+                </h2>
+                <div class="h-px flex-1 bg-gradient-to-l from-transparent" :class="sceneTitleLineColor" />
+              </div>
 
-              <!-- Content area with float image -->
+              <!-- Content area -->
               <div class="flex-1 overflow-hidden px-6 pb-4 relative" ref="pageContentRef">
                 <div class="h-full overflow-hidden">
-                  <!-- All paragraphs for the visible page -->
                   <div ref="textFlowRef" class="story-text-flow">
-                    <!-- Float image on first page -->
-                    <img
-                      v-if="displayImage && currentPage === 0"
-                      :src="displayImage"
-                      :alt="currentSection?.title || ''"
-                      class="book-float-image transition-opacity duration-500"
-                      :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
-                      @load="imageLoaded = true" />
+                    <!-- Float image on first page with 3D pop-out effect -->
+                    <div v-if="displayImage && currentPage === 0" class="book-image-wrapper">
+                      <img
+                        :src="displayImage"
+                        :alt="currentSection?.title || ''"
+                        class="book-float-image"
+                        :class="imageLoaded ? 'image-loaded' : 'image-loading'"
+                        @load="imageLoaded = true" />
+                      <div class="image-glow" :class="`glow-${sceneType}`" />
+                    </div>
 
-                    <template v-for="(para, pIdx) in visibleParagraphs" :key="pIdx">
-                      <!-- Story/narration paragraph -->
-                      <p v-if="!para.hasAnswer" class="story-text text-lg md:text-xl leading-[1.9] mb-4"
-                        :class="{ 'story-text-highlight': pIdx === highlightedParagraph }">
-                        {{ para.q }}
+                    <template v-for="(para, pIdx) in visibleParagraphs" :key="`${currentPage}-${pIdx}`">
+                      <!-- Story/narration paragraph with staggered animation -->
+                      <p v-if="!para.hasAnswer"
+                        class="story-para text-lg md:text-xl leading-[1.9] mb-4"
+                        :class="{ 'para-highlight': pIdx === highlightedParagraph }"
+                        :style="{ animationDelay: `${pIdx * 150}ms` }">
+                        <template v-for="(word, wIdx) in splitWords(para.q)" :key="wIdx">
+                          <span class="story-word" :class="getWordClass(word)"
+                            :style="{ animationDelay: `${pIdx * 150 + wIdx * 20}ms` }">{{ word }}</span>{{ ' ' }}
+                        </template>
                       </p>
-                      <!-- Language example paragraph (q + a) -->
-                      <div v-else class="mb-5">
-                        <p class="story-text text-lg md:text-xl leading-[1.7] font-semibold">{{ para.q }}</p>
-                        <p class="story-text text-base md:text-lg leading-[1.7] opacity-60 italic">{{ para.a }}</p>
+                      <!-- Language example with styled blocks -->
+                      <div v-else class="mb-5 example-block" :style="{ animationDelay: `${pIdx * 150}ms` }">
+                        <p class="story-para text-lg md:text-xl leading-[1.7] font-semibold example-q">{{ para.q }}</p>
+                        <p class="story-para text-base md:text-lg leading-[1.7] opacity-50 italic example-a">{{ para.a }}</p>
                       </div>
                     </template>
                   </div>
@@ -125,17 +157,17 @@
 
               <!-- Page indicator + nav -->
               <div v-if="totalPages > 1" class="flex items-center justify-between px-6 py-3 flex-shrink-0 border-t border-amber-200/10">
-                <button
-                  @click.stop="prevPage"
-                  :disabled="currentPage === 0"
-                  class="text-amber-200/40 hover:text-amber-200/80 transition disabled:opacity-20 disabled:cursor-default px-2 py-1">
+                <button @click.stop="prevPage" :disabled="currentPage === 0"
+                  class="page-nav-btn disabled:opacity-20 disabled:cursor-default">
                   ← zurück
                 </button>
-                <span class="text-amber-200/30 text-sm font-sans">{{ currentPage + 1 }} / {{ totalPages }}</span>
-                <button
-                  @click.stop="nextPage"
-                  :disabled="currentPage >= totalPages - 1"
-                  class="text-amber-200/40 hover:text-amber-200/80 transition disabled:opacity-20 disabled:cursor-default px-2 py-1">
+                <div class="flex items-center gap-1.5">
+                  <span v-for="p in totalPages" :key="p"
+                    class="w-2 h-2 rounded-full transition-all duration-300"
+                    :class="p - 1 === currentPage ? 'bg-amber-200/60 scale-125' : 'bg-amber-200/15'" />
+                </div>
+                <button @click.stop="nextPage" :disabled="currentPage >= totalPages - 1"
+                  class="page-nav-btn disabled:opacity-20 disabled:cursor-default">
                   weiter →
                 </button>
               </div>
@@ -367,6 +399,68 @@ function prevPage() {
   if (currentPage.value > 0) {
     currentPage.value--
   }
+}
+
+// Scene detection — determines atmosphere, particles, colors
+const sceneType = computed(() => {
+  const image = currentSection.value?.image || currentLesson.value?.image || ''
+  const title = (currentSection.value?.title || '').toLowerCase()
+  const text = sectionParagraphs.value.map(p => p.q).join(' ').toLowerCase()
+
+  if (image.includes('river') || image.includes('fluss') || title.includes('fluss') || text.includes('fluss') || text.includes('wasser')) return 'water'
+  if (image.includes('house') || image.includes('haus') || title.includes('haus') || text.includes('haus') || text.includes('geschicht')) return 'house'
+  return 'forest' // default
+})
+
+const sceneTitleColor = computed(() => ({
+  forest: 'text-emerald-300/50',
+  water: 'text-sky-300/50',
+  house: 'text-amber-300/50'
+}[sceneType.value]))
+
+const sceneTitleLineColor = computed(() => ({
+  forest: 'via-emerald-400/20 to-emerald-400/20',
+  water: 'via-sky-400/20 to-sky-400/20',
+  house: 'via-amber-400/20 to-amber-400/20'
+}[sceneType.value]))
+
+// Particle positioning — each particle gets unique random-looking position
+function particleStyle(n) {
+  const seed = n * 7.3
+  const left = ((seed * 13.7) % 100)
+  const top = ((seed * 17.3) % 100)
+  const size = 3 + ((seed * 3.1) % 6)
+  const dur = 8 + ((seed * 2.7) % 12)
+  const delay = ((seed * 1.3) % 8)
+  return {
+    left: `${left}%`,
+    top: `${top}%`,
+    width: `${size}px`,
+    height: `${size}px`,
+    animationDuration: `${dur}s`,
+    animationDelay: `-${delay}s`
+  }
+}
+
+// Keyword highlighting — special words get scene-colored accents
+const sceneKeywords = {
+  forest: ['wald', 'baum', 'baeume', 'blaetter', 'pfad', 'moos', 'gruen', 'voegel', 'natur'],
+  water: ['fluss', 'wasser', 'ufer', 'frosch', 'fridolin', 'glitzern', 'plaetschern', 'fische', 'see'],
+  house: ['haus', 'tuer', 'licht', 'buch', 'geschichten', 'feuer', 'warm', 'sessel', 'kuchen', 'kakao']
+}
+
+function splitWords(text) {
+  if (!text) return []
+  return text.split(/(\s+)/).filter(w => w.trim())
+}
+
+function getWordClass(word) {
+  const lower = word.toLowerCase().replace(/[.,!?'"]/g, '')
+  const scene = sceneType.value
+  if (sceneKeywords[scene]?.some(kw => lower.includes(kw))) {
+    return `keyword-${scene}`
+  }
+  return ''
 }
 
 const currentVoice = computed(() => {
@@ -1117,46 +1211,208 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* === Scene Backgrounds === */
 .story-bg {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+.scene-bg { position: absolute; inset: 0; overflow: hidden; }
+.scene-forest { background: linear-gradient(160deg, #0a1a12 0%, #0f2318 30%, #1a1a2e 70%, #0f1a28 100%); }
+.scene-water { background: linear-gradient(160deg, #0a1520 0%, #0f1e30 30%, #1a1a2e 70%, #0a1828 100%); }
+.scene-house { background: linear-gradient(160deg, #1a150a 0%, #1e1810 30%, #1a1a2e 70%, #1a1510 100%); }
+
+/* === Floating Particles === */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  animation: particleFloat linear infinite;
+}
+.particle-forest {
+  background: radial-gradient(circle, rgba(80, 200, 100, 0.6), rgba(80, 200, 100, 0));
+  animation-name: particleLeaf;
+}
+.particle-water {
+  background: radial-gradient(circle, rgba(100, 180, 255, 0.5), rgba(100, 180, 255, 0));
+  animation-name: particleBubble;
+}
+.particle-house {
+  background: radial-gradient(circle, rgba(255, 200, 80, 0.6), rgba(255, 200, 80, 0));
+  animation-name: particleFirefly;
+}
+
+@keyframes particleLeaf {
+  0% { opacity: 0; transform: translate(0, -20px) rotate(0deg) scale(0.5); }
+  10% { opacity: 0.7; }
+  90% { opacity: 0.3; }
+  100% { opacity: 0; transform: translate(30px, 100vh) rotate(360deg) scale(1); }
+}
+@keyframes particleBubble {
+  0% { opacity: 0; transform: translate(0, 20px) scale(0.3); }
+  10% { opacity: 0.5; }
+  50% { transform: translate(15px, -20px) scale(1); opacity: 0.6; }
+  90% { opacity: 0.2; }
+  100% { opacity: 0; transform: translate(-10px, -60px) scale(0.5); }
+}
+@keyframes particleFirefly {
+  0% { opacity: 0; transform: scale(0.5); }
+  20% { opacity: 0.8; transform: scale(1.2); }
+  50% { opacity: 0.3; transform: translate(20px, -15px) scale(0.8); }
+  80% { opacity: 0.9; transform: translate(-10px, 10px) scale(1.1); }
+  100% { opacity: 0; transform: translate(5px, -5px) scale(0.5); }
+}
+
+/* === Scene Decorations === */
+.scene-deco { position: absolute; pointer-events: none; }
+.scene-deco-trees { bottom: 0; left: 0; right: 0; height: 200px; }
+.scene-deco-waves { bottom: 0; left: 0; right: 0; height: 100px; }
+.scene-deco-glow {
+  position: absolute; top: 15%; right: 10%;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(255, 180, 60, 0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: glowPulse 4s ease-in-out infinite;
+}
+
+.tree-wave { animation: treesSway 6s ease-in-out infinite; transform-origin: bottom; }
+.tree-wave-2 { animation: treesSway 8s ease-in-out infinite reverse; transform-origin: bottom; }
+.water-wave { animation: wavesFlow 4s ease-in-out infinite; }
+.water-wave-2 { animation: wavesFlow 5s ease-in-out infinite reverse; }
+
+@keyframes treesSway { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.05) translateX(5px); } }
+@keyframes wavesFlow { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(15px); } }
+@keyframes glowPulse { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
+
+/* === Intro Title === */
+.intro-title { animation: introAppear 1.5s ease-out; }
+.intro-text-glow {
+  font-family: Georgia, serif;
+  color: #f5e6d3;
+  text-shadow: 0 0 30px rgba(255, 200, 100, 0.3), 0 0 60px rgba(255, 200, 100, 0.1), 0 2px 4px rgba(0,0,0,0.5);
+}
+@keyframes introAppear {
+  0% { opacity: 0; transform: scale(0.9) translateY(20px); filter: blur(8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+/* === Book Page === */
+.book-page {
+  background: rgba(15, 18, 30, 0.88);
+  border: 1px solid rgba(245, 230, 211, 0.06);
+  border-radius: 1rem;
+  box-shadow: 0 12px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(245, 230, 211, 0.04);
+  animation: pageAppear 0.6s ease-out;
+}
+@keyframes pageAppear {
+  0% { opacity: 0; transform: translateX(30px) scale(0.98); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* === Float Image with 3D Pop === */
+.book-image-wrapper {
+  float: left;
+  width: 45%;
+  margin: 0 1.2rem 0.8rem 0;
+  position: relative;
+  perspective: 600px;
+}
+.book-float-image {
+  width: 100%;
+  max-height: 38vh;
+  object-fit: contain;
+  border-radius: 0.6rem;
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.image-loading { opacity: 0; transform: rotateY(-8deg) scale(0.9); }
+.image-loaded { opacity: 1; transform: rotateY(0deg) scale(1); animation: imageFloat 6s ease-in-out infinite; }
+.image-glow {
+  position: absolute; inset: -10%; border-radius: 1rem;
+  pointer-events: none; z-index: -1; opacity: 0.4;
+  animation: imageGlowPulse 4s ease-in-out infinite;
+}
+.glow-forest { background: radial-gradient(ellipse, rgba(80, 200, 100, 0.15), transparent 70%); }
+.glow-water { background: radial-gradient(ellipse, rgba(100, 180, 255, 0.15), transparent 70%); }
+.glow-house { background: radial-gradient(ellipse, rgba(255, 180, 60, 0.15), transparent 70%); }
+
+@keyframes imageFloat {
+  0%, 100% { transform: translateY(0) rotateY(0deg); }
+  50% { transform: translateY(-4px) rotateY(1deg); }
+}
+@keyframes imageGlowPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
+
+@media (max-width: 640px) {
+  .book-image-wrapper { width: 40%; }
+  .book-float-image { max-height: 28vh; }
+}
+
+/* === Text Flow === */
+.story-text-flow {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #f5e6d3;
+}
+
+/* === Paragraph Animation === */
+.story-para {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #f5e6d3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  animation: paraSlideIn 0.5s ease-out both;
+}
+@keyframes paraSlideIn {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* === Word-by-word appearance === */
+.story-word {
+  display: inline;
+  animation: wordAppear 0.3s ease-out both;
+}
+@keyframes wordAppear {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+/* === Keyword Highlights === */
+.keyword-forest { color: #86efac; text-shadow: 0 0 8px rgba(80, 200, 100, 0.3); }
+.keyword-water { color: #93c5fd; text-shadow: 0 0 8px rgba(100, 180, 255, 0.3); }
+.keyword-house { color: #fcd34d; text-shadow: 0 0 8px rgba(255, 200, 80, 0.3); }
+
+/* === Active paragraph highlight === */
+.para-highlight {
+  color: #fef3c7 !important;
+  text-shadow: 0 0 12px rgba(255, 220, 100, 0.2), 0 1px 3px rgba(0, 0, 0, 0.3);
+  border-left: 2px solid rgba(255, 220, 100, 0.3);
+  padding-left: 0.75rem;
+  transition: all 0.4s ease;
+}
+
+/* === Example blocks (language workshops) === */
+.example-block {
+  animation: paraSlideIn 0.5s ease-out both;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(245, 230, 211, 0.06);
+}
+.example-q { letter-spacing: 0.01em; }
+.example-a { letter-spacing: 0.02em; }
+
+/* === Page nav buttons === */
+.page-nav-btn {
+  font-family: Georgia, serif;
+  font-size: 0.875rem;
+  color: rgba(245, 230, 211, 0.35);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+.page-nav-btn:hover:not(:disabled) {
+  color: rgba(245, 230, 211, 0.7);
+  background: rgba(245, 230, 211, 0.05);
 }
 
 .story-text {
   font-family: Georgia, 'Times New Roman', serif;
   color: #f5e6d3;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.book-page {
-  background: rgba(20, 20, 40, 0.85);
-  border: 1px solid rgba(245, 230, 211, 0.08);
-  border-radius: 1rem;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(245, 230, 211, 0.05);
-}
-
-.book-float-image {
-  float: left;
-  width: 45%;
-  max-height: 40vh;
-  object-fit: contain;
-  margin: 0 1rem 0.75rem 0;
-  border-radius: 0.5rem;
-}
-
-@media (max-width: 640px) {
-  .book-float-image {
-    width: 40%;
-    max-height: 30vh;
-  }
-}
-
-.story-text-flow {
-  font-family: Georgia, 'Times New Roman', serif;
-  color: #f5e6d3;
-}
-
-.story-text-highlight {
-  color: #fde68a;
-  transition: color 0.3s ease;
 }
 </style>
