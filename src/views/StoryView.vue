@@ -78,73 +78,69 @@
           <p class="text-amber-200/40 text-sm tracking-wider text-center font-serif">{{ currentSection.title }}</p>
         </div>
 
-        <!-- Book layout for narration -->
+        <!-- Book page layout: all examples of current section on paginated pages -->
         <template v-if="!isAssessmentState">
-          <!-- Layout: image-beside (desktop, image left + text right) -->
-          <div v-if="layoutVariant === 'image-beside'" class="absolute inset-0 flex">
-            <div class="w-1/2 h-full relative">
-              <img
-                v-if="displayImage"
-                :src="displayImage"
-                :alt="currentSection?.title || ''"
-                class="absolute inset-0 w-full h-full object-contain p-6 transition-opacity duration-700"
-                :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
-                @load="imageLoaded = true" />
-            </div>
-            <div class="w-1/2 h-full flex flex-col justify-center px-8 py-12">
-              <p v-if="currentSection?.title && !showingIntro" class="text-amber-200/50 text-xs tracking-[0.2em] uppercase mb-4 font-sans">{{ currentSection.title }}</p>
-              <p v-if="!showingIntro" class="story-text text-xl leading-[1.8]">{{ currentNarrationText }}</p>
-              <p v-else class="story-text text-2xl md:text-3xl font-semibold text-center">{{ currentLesson?.title }}</p>
-            </div>
+          <!-- Intro: lesson title centered -->
+          <div v-if="showingIntro" class="absolute inset-0 flex items-center justify-center p-6 pointer-events-none">
+            <p class="story-text text-2xl md:text-3xl font-semibold text-center">{{ currentLesson?.title }}</p>
           </div>
 
-          <!-- Layout: image-text (mobile, image top + text bottom) -->
-          <template v-else-if="layoutVariant === 'image-text'">
-            <div class="absolute inset-0 flex flex-col">
-              <div class="flex-1 relative min-h-0">
-                <img
-                  v-if="displayImage"
-                  :src="displayImage"
-                  :alt="currentSection?.title || ''"
-                  class="absolute inset-0 w-full h-full object-contain p-4 pt-14 transition-opacity duration-700"
-                  :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
-                  @load="imageLoaded = true" />
-              </div>
-              <div class="story-text-panel px-6 py-5 pb-8">
-                <p v-if="currentSection?.title && !showingIntro" class="text-amber-200/40 text-xs tracking-[0.2em] uppercase mb-2 font-sans">{{ currentSection.title }}</p>
-                <p v-if="!showingIntro" class="story-text text-lg md:text-xl leading-[1.8]">{{ currentNarrationText }}</p>
-                <p v-else class="story-text text-2xl font-semibold text-center">{{ currentLesson?.title }}</p>
-              </div>
-            </div>
-          </template>
+          <!-- Book page -->
+          <div v-else class="absolute inset-0 flex items-center justify-center p-4 md:p-8">
+            <div class="book-page w-full max-w-2xl h-full max-h-[85vh] flex flex-col overflow-hidden">
+              <!-- Section title -->
+              <h2 class="text-amber-200/60 text-xs tracking-[0.2em] uppercase font-sans px-6 pt-5 pb-3 flex-shrink-0">
+                {{ currentSection?.title }}
+              </h2>
 
-          <!-- Layout: text-only (no image, centered book page) -->
-          <template v-else-if="layoutVariant === 'text-only'">
-            <div class="absolute inset-0 flex items-center justify-center px-6">
-              <div class="story-page max-w-lg w-full p-8 md:p-12">
-                <p v-if="currentSection?.title && !showingIntro" class="text-amber-200/40 text-xs tracking-[0.2em] uppercase mb-4 font-sans text-center">{{ currentSection.title }}</p>
-                <p v-if="!showingIntro" class="story-text text-xl md:text-2xl leading-[1.8] text-center">{{ currentNarrationText }}</p>
-                <p v-else class="story-text text-2xl md:text-3xl font-semibold text-center">{{ currentLesson?.title }}</p>
+              <!-- Content area with float image -->
+              <div class="flex-1 overflow-hidden px-6 pb-4 relative" ref="pageContentRef">
+                <div class="h-full overflow-hidden">
+                  <!-- All paragraphs for the visible page -->
+                  <div ref="textFlowRef" class="story-text-flow">
+                    <!-- Float image on first page -->
+                    <img
+                      v-if="displayImage && currentPage === 0"
+                      :src="displayImage"
+                      :alt="currentSection?.title || ''"
+                      class="book-float-image transition-opacity duration-500"
+                      :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
+                      @load="imageLoaded = true" />
+
+                    <template v-for="(para, pIdx) in visibleParagraphs" :key="pIdx">
+                      <!-- Story/narration paragraph -->
+                      <p v-if="!para.hasAnswer" class="story-text text-lg md:text-xl leading-[1.9] mb-4"
+                        :class="{ 'story-text-highlight': pIdx === highlightedParagraph }">
+                        {{ para.q }}
+                      </p>
+                      <!-- Language example paragraph (q + a) -->
+                      <div v-else class="mb-5">
+                        <p class="story-text text-lg md:text-xl leading-[1.7] font-semibold">{{ para.q }}</p>
+                        <p class="story-text text-base md:text-lg leading-[1.7] opacity-60 italic">{{ para.a }}</p>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Page indicator + nav -->
+              <div v-if="totalPages > 1" class="flex items-center justify-between px-6 py-3 flex-shrink-0 border-t border-amber-200/10">
+                <button
+                  @click.stop="prevPage"
+                  :disabled="currentPage === 0"
+                  class="text-amber-200/40 hover:text-amber-200/80 transition disabled:opacity-20 disabled:cursor-default px-2 py-1">
+                  ← zurück
+                </button>
+                <span class="text-amber-200/30 text-sm font-sans">{{ currentPage + 1 }} / {{ totalPages }}</span>
+                <button
+                  @click.stop="nextPage"
+                  :disabled="currentPage >= totalPages - 1"
+                  class="text-amber-200/40 hover:text-amber-200/80 transition disabled:opacity-20 disabled:cursor-default px-2 py-1">
+                  weiter →
+                </button>
               </div>
             </div>
-          </template>
-
-          <!-- Layout: image-only (fullscreen image, minimal text overlay) -->
-          <template v-else>
-            <img
-              v-if="displayImage"
-              :src="displayImage"
-              :alt="currentSection?.title || ''"
-              class="absolute inset-0 w-full h-full object-contain p-4 pb-24 pt-16 transition-opacity duration-700"
-              :class="imageLoaded ? 'opacity-100' : 'opacity-0'"
-              @load="imageLoaded = true" />
-            <div v-if="!showingIntro && currentNarrationText" class="absolute bottom-0 left-0 right-0 px-6 pb-8 pt-12 bg-gradient-to-t from-[#1a1a2e] via-[#1a1a2e]/60 to-transparent">
-              <p class="story-text text-lg leading-[1.7]">{{ currentNarrationText }}</p>
-            </div>
-            <div v-if="showingIntro" class="absolute inset-0 flex items-center justify-center p-6 pointer-events-none">
-              <p class="story-text text-2xl md:text-3xl font-semibold text-center">{{ currentLesson?.title }}</p>
-            </div>
-          </template>
+          </div>
         </template>
 
         <!-- Choice cards overlay (select/multiple-choice) -->
@@ -313,9 +309,65 @@ const currentNarrationText = computed(() => {
   return currentExample.value?.q || ''
 })
 
-const layoutVariant = computed(() => {
-  return getLayoutVariant(currentNarrationText.value, !!currentSectionImage.value)
+// Book pagination state
+const currentPage = ref(0)
+const pageContentRef = ref(null)
+const textFlowRef = ref(null)
+const PARAGRAPHS_PER_PAGE = 5 // base estimate, adjusted by content length
+
+// All narration paragraphs of the current section (skip assessments)
+const sectionParagraphs = computed(() => {
+  if (!currentSection.value?.examples) return []
+  return currentSection.value.examples
+    .filter(ex => !ex.type || ex.type === 'qa')
+    .map(ex => ({
+      q: ex.q,
+      a: ex.a || null,
+      hasAnswer: !!ex.a,
+      voice: ex.voice || null
+    }))
 })
+
+// How many paragraphs fit per page (rough: shorter = more, longer = fewer)
+const paragraphsPerPage = computed(() => {
+  const paras = sectionParagraphs.value
+  if (paras.length === 0) return 1
+  const avgLen = paras.reduce((sum, p) => sum + (p.q?.length || 0), 0) / paras.length
+  if (avgLen > 150) return 3
+  if (avgLen > 80) return 4
+  return PARAGRAPHS_PER_PAGE
+})
+
+const totalPages = computed(() => {
+  return Math.max(1, Math.ceil(sectionParagraphs.value.length / paragraphsPerPage.value))
+})
+
+const visibleParagraphs = computed(() => {
+  const start = currentPage.value * paragraphsPerPage.value
+  return sectionParagraphs.value.slice(start, start + paragraphsPerPage.value)
+})
+
+// Which paragraph is currently being read (for audio highlight)
+const highlightedParagraph = computed(() => {
+  if (state.value !== 'narrating' || paused.value) return -1
+  const globalIdx = currentExampleIndex.value
+  const pageStart = currentPage.value * paragraphsPerPage.value
+  const localIdx = globalIdx - pageStart
+  if (localIdx >= 0 && localIdx < paragraphsPerPage.value) return localIdx
+  return -1
+})
+
+function nextPage() {
+  if (currentPage.value < totalPages.value - 1) {
+    currentPage.value++
+  }
+}
+
+function prevPage() {
+  if (currentPage.value > 0) {
+    currentPage.value--
+  }
+}
 
 const currentVoice = computed(() => {
   return currentExample.value?.voice || null
@@ -450,6 +502,7 @@ async function navigateGoto(goto) {
     const sectionChanged = targetSection !== currentSectionIndex.value
     currentSectionIndex.value = targetSection
     currentExampleIndex.value = 0
+    currentPage.value = 0
     imageLoaded.value = false
     if (sectionChanged) {
       await playSectionIntro()
@@ -526,6 +579,7 @@ async function loadAndStart() {
   currentLesson.value = lesson
   currentSectionIndex.value = 0
   currentExampleIndex.value = 0
+  currentPage.value = 0
 
   emit('update-title', lesson.title || '')
 
@@ -676,14 +730,20 @@ function handleTap(e) {
   clearAutoAdvance()
 
   if (isLeftSide) {
-    // Go back
-    if (currentExampleIndex.value > 0) {
+    // Go back: previous page, or previous example if on first page
+    if (currentPage.value > 0) {
+      prevPage()
+    } else if (currentExampleIndex.value > 0) {
       currentExampleIndex.value--
       showCurrentExample()
     }
   } else {
-    // Advance
-    advanceExample()
+    // Advance: next page first, then advance to next section/assessment
+    if (currentPage.value < totalPages.value - 1) {
+      nextPage()
+    } else {
+      advanceExample()
+    }
   }
 }
 
@@ -965,6 +1025,7 @@ async function advanceSection() {
   if (nextSectionIdx < currentLesson.value.sections.length) {
     currentSectionIndex.value = nextSectionIdx
     currentExampleIndex.value = 0
+    currentPage.value = 0
     imageLoaded.value = false
     await playSectionIntro()
     showCurrentExample()
@@ -1066,14 +1127,36 @@ onUnmounted(() => {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-.story-text-panel {
-  background: linear-gradient(to top, #1a1a2e, #1a1a2e 80%, transparent);
+.book-page {
+  background: rgba(20, 20, 40, 0.85);
+  border: 1px solid rgba(245, 230, 211, 0.08);
+  border-radius: 1rem;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(245, 230, 211, 0.05);
 }
 
-.story-page {
-  background: rgba(26, 26, 46, 0.8);
-  border: 1px solid rgba(245, 230, 211, 0.1);
-  border-radius: 1rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+.book-float-image {
+  float: left;
+  width: 45%;
+  max-height: 40vh;
+  object-fit: contain;
+  margin: 0 1rem 0.75rem 0;
+  border-radius: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .book-float-image {
+    width: 40%;
+    max-height: 30vh;
+  }
+}
+
+.story-text-flow {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #f5e6d3;
+}
+
+.story-text-highlight {
+  color: #fde68a;
+  transition: color 0.3s ease;
 }
 </style>
