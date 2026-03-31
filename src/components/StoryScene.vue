@@ -1,360 +1,474 @@
 <template>
-  <div class="scene-container" :class="`scene-${scene}`">
-    <!-- WALD: Mila steht am Waldrand, Bäume bewegen sich, Vögel fliegen -->
-    <svg v-if="scene === 'forest-intro'" viewBox="0 0 400 300" class="scene-svg">
-      <!-- Himmel -->
-      <defs>
-        <radialGradient id="sun-glow" cx="75%" cy="20%"><stop offset="0%" stop-color="#ffd700" stop-opacity="0.4"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a1a3e"/><stop offset="100%" stop-color="#0f2318"/></linearGradient>
-      </defs>
-      <rect width="400" height="300" fill="url(#sky)"/>
-      <circle cx="310" cy="55" r="80" fill="url(#sun-glow)"/>
-      <circle cx="310" cy="55" r="14" fill="#ffd700" opacity="0.9" class="sun-pulse"/>
-      <!-- Bäume hinten -->
-      <g class="trees-back">
-        <polygon points="50,280 70,120 90,280" fill="#1a4a2a" opacity="0.6"/>
-        <polygon points="120,280 145,100 170,280" fill="#1a4a2a" opacity="0.5"/>
-        <polygon points="200,280 220,130 240,280" fill="#1a4a2a" opacity="0.6"/>
-        <polygon points="300,280 325,110 350,280" fill="#1a4a2a" opacity="0.5"/>
-      </g>
-      <!-- Bäume vorne -->
-      <g class="trees-front">
-        <polygon points="20,300 55,90 90,300" fill="#2d6b3f"/>
-        <polygon points="80,300 110,140 140,300" fill="#267a3a"/>
-        <polygon points="330,300 360,100 390,300" fill="#2d6b3f"/>
-      </g>
-      <!-- Pfad -->
-      <path d="M180,300 Q200,260 210,240 Q230,200 260,180" stroke="#5a4a30" stroke-width="8" fill="none" opacity="0.4" stroke-linecap="round"/>
-      <!-- Mila -->
-      <g class="mila-walk" transform="translate(185, 230)">
-        <!-- Haare -->
-        <ellipse cx="0" cy="-28" rx="10" ry="12" fill="#8B5E3C"/>
-        <path d="M-8,-30 Q-12,-15 -10,-5" stroke="#8B5E3C" stroke-width="4" fill="none" class="hair-blow"/>
-        <!-- Kopf -->
-        <circle cx="0" cy="-30" r="9" fill="#FDDCB5"/>
-        <!-- Augen -->
-        <circle cx="-3" cy="-32" r="1.5" fill="#3a2a1a"/>
-        <circle cx="4" cy="-32" r="1.5" fill="#3a2a1a"/>
-        <!-- Lächeln -->
-        <path d="M-3,-27 Q0,-24 3,-27" stroke="#c47a5a" stroke-width="0.8" fill="none"/>
-        <!-- Körper -->
-        <rect x="-6" y="-20" width="12" height="16" rx="3" fill="#e85d75"/>
-        <!-- Arme -->
-        <line x1="-6" y1="-16" x2="-14" y2="-8" stroke="#FDDCB5" stroke-width="3" stroke-linecap="round" class="arm-swing"/>
-        <line x1="6" y1="-16" x2="14" y2="-8" stroke="#FDDCB5" stroke-width="3" stroke-linecap="round" class="arm-swing-r"/>
-        <!-- Beine -->
-        <line x1="-3" y1="-4" x2="-5" y2="8" stroke="#4a6fa5" stroke-width="3" stroke-linecap="round" class="leg-walk"/>
-        <line x1="3" y1="-4" x2="5" y2="8" stroke="#4a6fa5" stroke-width="3" stroke-linecap="round" class="leg-walk-r"/>
-        <!-- Rucksack -->
-        <rect x="5" y="-18" width="6" height="9" rx="2" fill="#d4a030" opacity="0.8"/>
-      </g>
-      <!-- Vögel -->
-      <g class="bird-fly">
-        <path d="M140,60 Q145,52 150,60" stroke="#f5e6d3" stroke-width="1.5" fill="none"/>
-        <path d="M155,45 Q160,37 165,45" stroke="#f5e6d3" stroke-width="1.5" fill="none"/>
-      </g>
-      <g class="bird-fly-2">
-        <path d="M250,70 Q255,62 260,70" stroke="#f5e6d3" stroke-width="1.2" fill="none"/>
-      </g>
-      <!-- Blätter -->
-      <ellipse cx="100" cy="50" rx="4" ry="2" fill="#4ade80" opacity="0.6" class="leaf-fall-1"/>
-      <ellipse cx="250" cy="30" rx="3" ry="1.5" fill="#86efac" opacity="0.5" class="leaf-fall-2"/>
-      <ellipse cx="350" cy="60" rx="3.5" ry="1.8" fill="#4ade80" opacity="0.4" class="leaf-fall-3"/>
-    </svg>
-
-    <!-- FLUSS: Fridolin der Frosch am Ufer, Wasser fließt, Fische springen -->
-    <svg v-else-if="scene === 'river'" viewBox="0 0 400 300" class="scene-svg">
-      <defs>
-        <linearGradient id="river-water" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="50%" stop-color="#2a5080"/><stop offset="100%" stop-color="#1e3a5f"/></linearGradient>
-      </defs>
-      <rect width="400" height="300" fill="#0f1e30"/>
-      <!-- Ufer -->
-      <path d="M0,200 Q80,180 160,195 Q240,210 320,190 Q380,180 400,185 L400,300 L0,300Z" fill="#2a4a1a"/>
-      <!-- Wasser -->
-      <path d="M0,190 Q80,170 160,185 Q240,200 320,180 Q380,170 400,175 L400,230 Q320,250 240,230 Q160,210 80,230 L0,240Z" fill="url(#river-water)" class="water-flow"/>
-      <!-- Wellen -->
-      <path d="M30,200 Q60,195 90,200 Q120,205 150,200" stroke="rgba(100,180,255,0.3)" stroke-width="1.5" fill="none" class="ripple-1"/>
-      <path d="M180,195 Q210,190 240,195 Q270,200 300,195" stroke="rgba(100,180,255,0.25)" stroke-width="1.5" fill="none" class="ripple-2"/>
-      <!-- Steine -->
-      <ellipse cx="140" cy="205" rx="15" ry="8" fill="#5a6a5a"/>
-      <ellipse cx="250" cy="195" rx="12" ry="6" fill="#4a5a4a"/>
-      <!-- Fridolin der Frosch auf dem Stein -->
-      <g class="frog-hop" transform="translate(140, 185)">
-        <!-- Körper -->
-        <ellipse cx="0" cy="0" rx="12" ry="9" fill="#3aaa4a"/>
-        <!-- Augen -->
-        <circle cx="-5" cy="-8" r="5" fill="#3aaa4a"/>
-        <circle cx="5" cy="-8" r="5" fill="#3aaa4a"/>
-        <circle cx="-5" cy="-9" r="3" fill="white"/>
-        <circle cx="5" cy="-9" r="3" fill="white"/>
-        <circle cx="-4" cy="-9" r="1.5" fill="#1a3a1a"/>
-        <circle cx="6" cy="-9" r="1.5" fill="#1a3a1a"/>
-        <!-- Mund (Lächeln) -->
-        <path d="M-5,0 Q0,5 5,0" stroke="#1a5a2a" stroke-width="1" fill="none"/>
-        <!-- Mütze -->
-        <path d="M-7,-11 Q0,-18 7,-11" fill="#4a7af5"/>
-        <!-- Beine -->
-        <path d="M-10,5 Q-18,12 -15,15" stroke="#3aaa4a" stroke-width="3" fill="none"/>
-        <path d="M10,5 Q18,12 15,15" stroke="#3aaa4a" stroke-width="3" fill="none"/>
-      </g>
-      <!-- Fisch springt -->
-      <g class="fish-jump">
-        <path d="M280,210 Q285,205 290,210 L285,213Z" fill="#f0a050"/>
-        <circle cx="282" cy="209" r="1" fill="#1a1a2e"/>
-      </g>
-      <!-- Libellen -->
-      <g class="dragonfly" transform="translate(200,120)">
-        <line x1="0" y1="0" x2="12" y2="0" stroke="#80d0ff" stroke-width="1.5"/>
-        <ellipse cx="-2" cy="-3" rx="5" ry="2" fill="rgba(100,200,255,0.3)" class="wing-flutter"/>
-        <ellipse cx="-2" cy="3" rx="5" ry="2" fill="rgba(100,200,255,0.3)" class="wing-flutter"/>
-        <circle cx="14" cy="0" r="2" fill="#60b0e0"/>
-      </g>
-      <!-- Kieselsteine im Wasser (sichtbar durch klares Wasser) -->
-      <circle cx="170" cy="225" r="3" fill="#8a9a7a" opacity="0.3"/>
-      <circle cx="220" cy="220" r="2.5" fill="#7a8a6a" opacity="0.25"/>
-      <circle cx="200" cy="230" r="2" fill="#9aaa8a" opacity="0.2"/>
-    </svg>
-
-    <!-- HAUS: Gemütliches Haus, Rauch, warmes Licht, alte Frau am Fenster -->
-    <svg v-else-if="scene === 'house'" viewBox="0 0 400 300" class="scene-svg">
-      <rect width="400" height="300" fill="#1a150a"/>
-      <!-- Sterne -->
-      <circle cx="50" cy="30" r="1" fill="#ffd700" opacity="0.4" class="star-twinkle"/>
-      <circle cx="150" cy="20" r="1.2" fill="#ffd700" opacity="0.3" class="star-twinkle-2"/>
-      <circle cx="320" cy="40" r="1" fill="#ffd700" opacity="0.5" class="star-twinkle"/>
-      <circle cx="370" cy="25" r="0.8" fill="#ffd700" opacity="0.3" class="star-twinkle-2"/>
-      <!-- Haus -->
-      <g transform="translate(140, 80)">
-        <!-- Dach -->
-        <polygon points="0,80 60,20 120,80" fill="#8a4a2a"/>
-        <polygon points="-10,80 60,15 130,80" fill="#a05a30" class="house-settle"/>
-        <!-- Wände -->
-        <rect x="10" y="80" width="100" height="90" fill="#c4956a" rx="2"/>
-        <!-- Fenster (warmes Licht) -->
-        <rect x="25" y="95" width="25" height="25" rx="2" fill="#ffd080" class="window-glow"/>
-        <rect x="70" y="95" width="25" height="25" rx="2" fill="#ffd080" class="window-glow-2"/>
-        <!-- Fensterkreuz -->
-        <line x1="37.5" y1="95" x2="37.5" y2="120" stroke="#a05a30" stroke-width="1.5"/>
-        <line x1="25" y1="107.5" x2="50" y2="107.5" stroke="#a05a30" stroke-width="1.5"/>
-        <line x1="82.5" y1="95" x2="82.5" y2="120" stroke="#a05a30" stroke-width="1.5"/>
-        <line x1="70" y1="107.5" x2="95" y2="107.5" stroke="#a05a30" stroke-width="1.5"/>
-        <!-- Silhouette im Fenster -->
-        <circle cx="82" cy="105" r="5" fill="#c08040" opacity="0.5" class="granny-silhouette"/>
-        <!-- Tür -->
-        <rect x="45" y="130" width="30" height="40" rx="3" fill="#7a4a2a"/>
-        <circle cx="68" cy="152" r="2" fill="#d4a030"/>
-        <!-- Licht aus der Tür -->
-        <polygon points="45,170 35,185 85,185 75,170" fill="#ffd080" opacity="0.3" class="door-light"/>
-        <!-- Schornstein -->
-        <rect x="85" y="30" width="15" height="50" fill="#8a5a3a"/>
-        <!-- Rauch -->
-        <circle cx="92" cy="25" r="6" fill="#aaa" opacity="0.15" class="smoke-1"/>
-        <circle cx="95" cy="15" r="8" fill="#aaa" opacity="0.1" class="smoke-2"/>
-        <circle cx="90" cy="5" r="10" fill="#aaa" opacity="0.07" class="smoke-3"/>
-      </g>
-      <!-- Blumen im Garten -->
-      <g class="flowers-sway">
-        <line x1="160" y1="260" x2="160" y2="245" stroke="#2a6a2a" stroke-width="1.5"/>
-        <circle cx="160" cy="243" r="4" fill="#ff6b8a"/>
-        <line x1="180" y1="260" x2="180" y2="248" stroke="#2a6a2a" stroke-width="1.5"/>
-        <circle cx="180" cy="246" r="3.5" fill="#ffd060"/>
-        <line x1="240" y1="260" x2="240" y2="244" stroke="#2a6a2a" stroke-width="1.5"/>
-        <circle cx="240" cy="242" r="4" fill="#a080ff"/>
-        <line x1="260" y1="260" x2="260" y2="250" stroke="#2a6a2a" stroke-width="1.5"/>
-        <circle cx="260" cy="248" r="3" fill="#ff8060"/>
-      </g>
-      <!-- Boden -->
-      <path d="M0,260 Q100,255 200,260 Q300,265 400,258 L400,300 L0,300Z" fill="#2a3a1a"/>
-      <!-- Warmes Lichtspiel -->
-      <circle cx="200" cy="200" r="120" fill="rgba(255,200,80,0.04)" class="warm-glow-big"/>
-    </svg>
-
-    <!-- MILA ALLEIN: Mila als größere Figur, bricht aus dem Rahmen -->
-    <svg v-else-if="scene === 'mila-closeup'" viewBox="0 0 400 300" class="scene-svg mila-breakout">
-      <rect width="400" height="300" fill="#1a1a2e"/>
-      <!-- Großer Mila-Charakter -->
-      <g transform="translate(200, 150)" class="mila-bounce">
-        <!-- Haare -->
-        <ellipse cx="0" cy="-65" rx="28" ry="32" fill="#8B5E3C"/>
-        <path d="M-22,-70 Q-30,-40 -25,-15" stroke="#8B5E3C" stroke-width="10" fill="none" class="hair-blow-big"/>
-        <path d="M22,-70 Q28,-45 20,-20" stroke="#7B4E2C" stroke-width="8" fill="none" class="hair-blow-big-r"/>
-        <!-- Kopf -->
-        <circle cx="0" cy="-70" r="24" fill="#FDDCB5"/>
-        <!-- Augen (groß, ausdrucksvoll) -->
-        <ellipse cx="-8" cy="-75" rx="4" ry="5" fill="white"/>
-        <ellipse cx="8" cy="-75" rx="4" ry="5" fill="white"/>
-        <circle cx="-7" cy="-74" r="3" fill="#5a3a20"/>
-        <circle cx="9" cy="-74" r="3" fill="#5a3a20"/>
-        <circle cx="-6" cy="-75" r="1" fill="white"/>
-        <circle cx="10" cy="-75" r="1" fill="white"/>
-        <!-- Großes Lächeln -->
-        <path d="M-8,-62 Q0,-55 8,-62" stroke="#c47a5a" stroke-width="2" fill="none"/>
-        <!-- Wangen -->
-        <circle cx="-14" cy="-65" r="4" fill="#ffb0a0" opacity="0.4"/>
-        <circle cx="14" cy="-65" r="4" fill="#ffb0a0" opacity="0.4"/>
-        <!-- Körper -->
-        <rect x="-16" y="-44" width="32" height="40" rx="8" fill="#e85d75"/>
-        <!-- Arme (winkend!) -->
-        <line x1="-16" y1="-35" x2="-35" y2="-55" stroke="#FDDCB5" stroke-width="8" stroke-linecap="round" class="wave-arm"/>
-        <line x1="16" y1="-30" x2="30" y2="-10" stroke="#FDDCB5" stroke-width="8" stroke-linecap="round"/>
-        <!-- Hand winkt -->
-        <circle cx="-37" cy="-57" r="6" fill="#FDDCB5" class="wave-arm"/>
-        <!-- Beine -->
-        <line x1="-6" y1="-4" x2="-10" y2="25" stroke="#4a6fa5" stroke-width="8" stroke-linecap="round"/>
-        <line x1="6" y1="-4" x2="10" y2="25" stroke="#4a6fa5" stroke-width="8" stroke-linecap="round"/>
-        <!-- Schuhe -->
-        <ellipse cx="-12" cy="27" rx="8" ry="4" fill="#8B5E3C"/>
-        <ellipse cx="12" cy="27" rx="8" ry="4" fill="#8B5E3C"/>
-      </g>
-      <!-- Sparkles um Mila -->
-      <circle cx="120" cy="80" r="3" fill="#ffd700" opacity="0.6" class="sparkle-1"/>
-      <circle cx="280" cy="90" r="2.5" fill="#ffd700" opacity="0.5" class="sparkle-2"/>
-      <circle cx="150" cy="200" r="2" fill="#ffd700" opacity="0.4" class="sparkle-3"/>
-      <circle cx="260" cy="220" r="3" fill="#ffd700" opacity="0.5" class="sparkle-1"/>
-    </svg>
-
-    <!-- Fallback: Wald-Standard -->
-    <svg v-else viewBox="0 0 400 300" class="scene-svg">
-      <rect width="400" height="300" fill="#0f2318"/>
-      <polygon points="50,300 80,120 110,300" fill="#2d6b3f" class="trees-front"/>
-      <polygon points="150,300 190,90 230,300" fill="#267a3a" class="trees-front"/>
-      <polygon points="280,300 310,130 340,300" fill="#2d6b3f" class="trees-front"/>
-      <circle cx="350" cy="40" r="12" fill="#ffd700" opacity="0.6" class="sun-pulse"/>
+  <div class="scene-container">
+    <svg :viewBox="viewBox" class="scene-svg" :class="{ 'scene-breakout': scene === 'mila-closeup' }">
+      <!-- Dynamic scene based on prop -->
+      <component :is="'g'" v-html="sceneContent" />
     </svg>
   </div>
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   scene: { type: String, default: 'forest-intro' }
+})
+
+const viewBox = '0 0 400 280'
+
+// ============================================================
+// SHARED SVG PARTS — reusable character/element builders
+// ============================================================
+
+const MILA_COLORS = { hair: '#8B5E3C', skin: '#FDDCB5', dress: '#e85d75', pants: '#4a6fa5', bag: '#d4a030' }
+
+function mila(x, y, scale = 1, extras = '') {
+  return `<g transform="translate(${x},${y}) scale(${scale})" class="mila-char">
+    <ellipse cx="0" cy="-28" rx="10" ry="12" fill="${MILA_COLORS.hair}"/>
+    <path d="M-8,-30 Q-12,-15 -10,-5" stroke="${MILA_COLORS.hair}" stroke-width="4" fill="none" class="hair-blow"/>
+    <circle cx="0" cy="-30" r="9" fill="${MILA_COLORS.skin}"/>
+    <circle cx="-3" cy="-32" r="1.5" fill="#3a2a1a"/><circle cx="4" cy="-32" r="1.5" fill="#3a2a1a"/>
+    <path d="M-3,-27 Q0,-24 3,-27" stroke="#c47a5a" stroke-width="0.8" fill="none"/>
+    <rect x="-6" y="-20" width="12" height="16" rx="3" fill="${MILA_COLORS.dress}"/>
+    <line x1="-6" y1="-16" x2="-14" y2="-8" stroke="${MILA_COLORS.skin}" stroke-width="3" stroke-linecap="round" class="arm-l"/>
+    <line x1="6" y1="-16" x2="14" y2="-8" stroke="${MILA_COLORS.skin}" stroke-width="3" stroke-linecap="round" class="arm-r"/>
+    <line x1="-3" y1="-4" x2="-5" y2="8" stroke="${MILA_COLORS.pants}" stroke-width="3" stroke-linecap="round" class="leg-l"/>
+    <line x1="3" y1="-4" x2="5" y2="8" stroke="${MILA_COLORS.pants}" stroke-width="3" stroke-linecap="round" class="leg-r"/>
+    ${extras}
+  </g>`
+}
+
+function tree(x, h, color = '#2d6b3f') {
+  return `<polygon points="${x},280 ${x + h * 0.35},${280 - h} ${x + h * 0.7},280" fill="${color}"/>`
+}
+
+function house(x, y, scale = 1) {
+  return `<g transform="translate(${x},${y}) scale(${scale})">
+    <polygon points="-25,0 0,-30 25,0" fill="#a05a30"/>
+    <rect x="-20" y="0" width="40" height="35" fill="#c4956a" rx="1"/>
+    <rect x="-12" y="8" width="10" height="10" rx="1" fill="#ffd080" class="win-glow"/>
+    <rect x="3" y="8" width="10" height="10" rx="1" fill="#ffd080" class="win-glow-2"/>
+    <rect x="-5" y="18" width="10" height="17" rx="2" fill="#7a4a2a"/>
+    <circle cx="3" cy="27" r="1.2" fill="#d4a030"/>
+  </g>`
+}
+
+function sun(cx, cy, r = 14) {
+  return `<circle cx="${cx}" cy="${cy}" r="${r * 0.7}" fill="#ffd700" opacity="0.15"/>
+    <circle cx="${cx}" cy="${cy}" r="${r * 0.35}" fill="#ffd700" opacity="0.8" class="sun-pulse"/>`
+}
+
+function bird(x, y) {
+  return `<path d="M${x},${y} Q${x + 5},${y - 6} ${x + 10},${y}" stroke="#f5e6d3" stroke-width="1.3" fill="none"/>`
+}
+
+function musicNote(x, y, delay = '0s') {
+  return `<text x="${x}" y="${y}" fill="#ffd700" font-size="14" opacity="0.7" class="note-float" style="animation-delay:${delay}">♪</text>`
+}
+
+function flower(x, y, color = '#ff6b8a', size = 4) {
+  return `<line x1="${x}" y1="${y}" x2="${x}" y2="${y - size * 3}" stroke="#2a6a2a" stroke-width="1.3"/>
+    <circle cx="${x}" cy="${y - size * 3 - size * 0.5}" r="${size}" fill="${color}" class="flower-sway"/>`
+}
+
+// ============================================================
+// SCENES — each one is a unique illustration for a specific moment
+// ============================================================
+
+const scenes = {
+  // === LEKTION 1: DER WALD ===
+
+  // Absatz 1: "Es war einmal ein kleines Mädchen namens Mila"
+  'mila-portrait': () => {
+    return `<defs><radialGradient id="gp1" cx="50%" cy="40%"><stop offset="0%" stop-color="#2a1a3e"/><stop offset="100%" stop-color="#0f1a28"/></radialGradient></defs>
+      <rect width="400" height="280" fill="url(#gp1)"/>
+      ${sun(320, 50)}
+      <!-- Sparkles um Mila -->
+      <circle cx="130" cy="90" r="2" fill="#ffd700" opacity="0.5" class="sparkle-1"/>
+      <circle cx="270" cy="100" r="2.5" fill="#ffd700" opacity="0.4" class="sparkle-2"/>
+      <circle cx="160" cy="200" r="1.5" fill="#ffd700" opacity="0.6" class="sparkle-3"/>
+      <!-- Große Mila in der Mitte -->
+      ${mila(200, 195, 2.2, `<rect x="5" y="-18" width="6" height="9" rx="2" fill="${MILA_COLORS.bag}" opacity="0.8"/>`)}
+      <!-- Boden -->
+      <ellipse cx="200" cy="260" rx="80" ry="10" fill="rgba(80,200,100,0.1)"/>`
+  },
+
+  // Absatz 2: "Mila lebte in einem kleinen Dorf mit roten Dächern"
+  'village': () => {
+    return `<rect width="400" height="280" fill="#0f1e28"/>
+      ${sun(350, 40, 12)}
+      <!-- Hügel -->
+      <ellipse cx="200" cy="280" rx="250" ry="60" fill="#1a3a1a"/>
+      <!-- Häuser mit roten Dächern -->
+      <g transform="translate(80,190)">
+        <polygon points="-20,0 0,-25 20,0" fill="#cc4444"/>
+        <rect x="-15" y="0" width="30" height="30" fill="#ddc090" rx="1"/>
+        <rect x="-8" y="6" width="8" height="8" fill="#ffd080" class="win-glow"/>
+        <rect x="2" y="6" width="8" height="8" fill="#ffd080" class="win-glow-2"/>
+      </g>
+      <g transform="translate(160,185)">
+        <polygon points="-22,0 0,-28 22,0" fill="#cc4444"/>
+        <rect x="-17" y="0" width="34" height="35" fill="#ddc090" rx="1"/>
+        <rect x="-10" y="8" width="9" height="9" fill="#ffd080" class="win-glow"/>
+        <rect x="3" y="8" width="9" height="9" fill="#ffd080" class="win-glow-2"/>
+      </g>
+      <g transform="translate(260,192)">
+        <polygon points="-18,0 0,-22 18,0" fill="#cc4444"/>
+        <rect x="-13" y="0" width="26" height="28" fill="#ddc090" rx="1"/>
+        <rect x="-6" y="6" width="7" height="7" fill="#ffd080" class="win-glow"/>
+      </g>
+      <!-- Blumen -->
+      ${flower(50, 250, '#ff6b8a')} ${flower(120, 255, '#ffd060', 3)} ${flower(300, 248, '#a080ff')} ${flower(340, 255, '#ff8060', 3)}
+      <!-- Zaun -->
+      <line x1="30" y1="245" x2="370" y2="245" stroke="#8a7a5a" stroke-width="1.5" opacity="0.3"/>
+      ${mila(320, 228, 0.9)}`
+  },
+
+  // Absatz 3: "Mila schaute aus ihrem Fenster, Vögel flogen"
+  'window-birds': () => {
+    return `<rect width="400" height="280" fill="#1a2a3e"/>
+      <!-- Fensterrahmen -->
+      <rect x="100" y="40" width="200" height="200" rx="8" fill="#c4956a"/>
+      <rect x="110" y="50" width="180" height="180" rx="4" fill="#87ceeb"/>
+      <!-- Fensterkreuz -->
+      <line x1="200" y1="50" x2="200" y2="230" stroke="#c4956a" stroke-width="6"/>
+      <line x1="110" y1="140" x2="290" y2="140" stroke="#c4956a" stroke-width="6"/>
+      <!-- Draußen: Bäume + Himmel -->
+      ${tree(120, 70, '#2a6a3a')} ${tree(220, 85, '#267a3a')} ${tree(250, 60, '#2a6a3a')}
+      <!-- Vögel draußen -->
+      <g class="bird-fly">${bird(150, 80)} ${bird(230, 70)}</g>
+      <g class="bird-fly-2">${bird(180, 100)}</g>
+      <!-- Mila schaut raus (Silhouette im Fenster) -->
+      <g transform="translate(165, 175)">
+        <ellipse cx="0" cy="-15" rx="8" ry="10" fill="${MILA_COLORS.hair}"/>
+        <circle cx="0" cy="-17" r="7" fill="${MILA_COLORS.skin}"/>
+        <circle cx="-2" cy="-19" r="1.2" fill="#3a2a1a"/><circle cx="3" cy="-19" r="1.2" fill="#3a2a1a"/>
+        <path d="M-2,-15 Q0,-13 2,-15" stroke="#c47a5a" stroke-width="0.6" fill="none"/>
+        <rect x="-5" y="-9" width="10" height="12" rx="2" fill="${MILA_COLORS.dress}"/>
+        <!-- Hände auf dem Fensterbrett -->
+        <ellipse cx="-8" cy="-2" rx="3" ry="2" fill="${MILA_COLORS.skin}"/>
+        <ellipse cx="8" cy="-2" rx="3" ry="2" fill="${MILA_COLORS.skin}"/>
+      </g>
+      <!-- Vorhänge -->
+      <path d="M110,50 Q125,100 115,180" stroke="#e85d75" stroke-width="3" fill="none" opacity="0.5" class="curtain-l"/>
+      <path d="M290,50 Q275,100 285,180" stroke="#e85d75" stroke-width="3" fill="none" opacity="0.5" class="curtain-r"/>`
+  },
+
+  // Absatz 4: "Sonnenaufgang, geheimnisvolles Geräusch, Melodie"
+  'sunrise-melody': () => {
+    return `<defs>
+        <linearGradient id="sunrise" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ff6b35"/><stop offset="40%" stop-color="#f7931e"/><stop offset="100%" stop-color="#1a2a3e"/>
+        </linearGradient>
+      </defs>
+      <rect width="400" height="280" fill="url(#sunrise)"/>
+      <!-- Große Sonne aufgehend -->
+      <circle cx="200" cy="200" r="60" fill="#ffd700" opacity="0.3"/>
+      <circle cx="200" cy="200" r="40" fill="#ffd700" opacity="0.5"/>
+      <circle cx="200" cy="200" r="25" fill="#fff5cc" opacity="0.8" class="sun-pulse"/>
+      <!-- Sonnenstrahlen -->
+      <line x1="200" y1="130" x2="200" y2="110" stroke="#ffd700" stroke-width="2" opacity="0.4" class="ray-1"/>
+      <line x1="150" y1="155" x2="135" y2="140" stroke="#ffd700" stroke-width="2" opacity="0.3" class="ray-2"/>
+      <line x1="250" y1="155" x2="265" y2="140" stroke="#ffd700" stroke-width="2" opacity="0.3" class="ray-3"/>
+      <!-- Wald-Silhouette -->
+      <path d="M0,230 Q50,200 100,220 Q150,190 200,215 Q250,195 300,218 Q350,200 400,225 L400,280 L0,280Z" fill="#0a1a12"/>
+      <!-- Musiknoten schweben aus dem Wald -->
+      ${musicNote(180, 180)} ${musicNote(220, 165, '0.5s')} ${musicNote(160, 150, '1s')} ${musicNote(240, 140, '1.5s')}
+      <!-- Mila klein, schaut Richtung Wald -->
+      ${mila(100, 248, 0.8)}`
+  },
+
+  // Absatz 5: "Was ist das für ein Klang? fragte sich Mila"
+  'mila-wondering': () => {
+    return `<rect width="400" height="280" fill="#1a1a2e"/>
+      ${sun(50, 40, 10)}
+      <!-- Mila groß in der Mitte, fragend -->
+      <g transform="translate(200, 180) scale(2)">
+        <ellipse cx="0" cy="-28" rx="10" ry="12" fill="${MILA_COLORS.hair}"/>
+        <path d="M-8,-30 Q-12,-15 -10,-5" stroke="${MILA_COLORS.hair}" stroke-width="4" fill="none" class="hair-blow"/>
+        <circle cx="0" cy="-30" r="9" fill="${MILA_COLORS.skin}"/>
+        <!-- Große fragende Augen -->
+        <ellipse cx="-3" cy="-32" rx="2" ry="2.5" fill="white"/>
+        <ellipse cx="4" cy="-32" rx="2" ry="2.5" fill="white"/>
+        <circle cx="-3" cy="-31.5" r="1.3" fill="#3a2a1a"/>
+        <circle cx="4" cy="-31.5" r="1.3" fill="#3a2a1a"/>
+        <!-- O-Mund (staunend) -->
+        <ellipse cx="0" cy="-26" rx="2" ry="2.5" fill="#c47a5a" opacity="0.6"/>
+        <rect x="-6" y="-20" width="12" height="16" rx="3" fill="${MILA_COLORS.dress}"/>
+        <!-- Hand am Kinn -->
+        <path d="M6,-16 Q12,-20 8,-25" stroke="${MILA_COLORS.skin}" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <circle cx="8" cy="-26" r="2.5" fill="${MILA_COLORS.skin}"/>
+      </g>
+      <!-- Fragezeichen -->
+      <text x="270" y="100" fill="#ffd700" font-size="40" opacity="0.6" class="question-bob">?</text>
+      <!-- Musiknoten -->
+      ${musicNote(90, 120)} ${musicNote(310, 90, '0.7s')} ${musicNote(120, 80, '1.2s')}`
+  },
+
+  // Absatz 6: "Mila packte ihren Rucksack und schlich aus dem Haus"
+  'sneaking-out': () => {
+    return `<rect width="400" height="280" fill="#0f1520"/>
+      <!-- Haus von außen (Nacht) -->
+      ${house(120, 140, 2)}
+      <!-- Offene Tür mit Lichtstrahl -->
+      <polygon points="195,246 185,275 225,275 215,246" fill="#ffd080" opacity="0.25" class="door-light-pulse"/>
+      <!-- Mila schleicht raus mit Rucksack -->
+      <g class="mila-sneak">
+        ${mila(240, 248, 1, `<rect x="5" y="-18" width="6" height="9" rx="2" fill="${MILA_COLORS.bag}"/>`)}
+      </g>
+      <!-- Sterne -->
+      <circle cx="50" cy="30" r="1.2" fill="#ffd700" opacity="0.5" class="star-1"/>
+      <circle cx="150" cy="20" r="1" fill="#ffd700" opacity="0.3" class="star-2"/>
+      <circle cx="300" cy="35" r="1.3" fill="#ffd700" opacity="0.4" class="star-1"/>
+      <circle cx="350" cy="55" r="0.8" fill="#ffd700" opacity="0.3" class="star-2"/>
+      <!-- Mond -->
+      <circle cx="340" cy="40" r="15" fill="#ffe8a0" opacity="0.3"/>
+      <circle cx="345" cy="37" r="12" fill="#0f1520"/>`
+  },
+
+  // Absatz 7: "Zwei Wege — Fluss oder Haus"
+  'fork-in-road': () => {
+    return `<rect width="400" height="280" fill="#0f2318"/>
+      <!-- Wald links und rechts -->
+      ${tree(10, 130, '#1a4a2a')} ${tree(50, 150, '#267a3a')} ${tree(80, 120, '#1a4a2a')}
+      ${tree(300, 140, '#1a4a2a')} ${tree(340, 155, '#267a3a')} ${tree(370, 125, '#1a4a2a')}
+      <!-- Zwei Wege (Y-Gabelung) -->
+      <path d="M200,280 Q200,230 200,200" stroke="#5a4a30" stroke-width="12" fill="none" stroke-linecap="round"/>
+      <path d="M200,200 Q160,170 100,150" stroke="#5a4a30" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <path d="M200,200 Q240,170 310,150" stroke="#5a4a30" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <!-- Links: Fluss-Symbol -->
+      <path d="M60,140 Q75,130 90,140 Q105,150 120,140" stroke="#4a9edd" stroke-width="3" fill="none" class="ripple-1"/>
+      <text x="70" y="125" fill="#93c5fd" font-size="10" opacity="0.6">Fluss</text>
+      <!-- Rechts: Haus-Symbol -->
+      ${house(320, 125, 0.8)}
+      <text x="305" y="118" fill="#fcd34d" font-size="10" opacity="0.6">Haus</text>
+      <!-- Mila steht an der Gabelung -->
+      ${mila(200, 250, 1.2)}
+      <!-- Fragezeichen über Mila -->
+      <text x="195" y="200" fill="#ffd700" font-size="16" opacity="0.5" class="question-bob">?</text>`
+  },
+
+  // === LEKTION 2: DER FLUSS ===
+
+  // Fridolin am Fluss
+  'river': () => {
+    return `<defs><linearGradient id="rw" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="50%" stop-color="#2a5080"/><stop offset="100%" stop-color="#1e3a5f"/></linearGradient></defs>
+      <rect width="400" height="280" fill="#0f1e30"/>
+      <!-- Ufer -->
+      <path d="M0,180 Q100,165 200,175 Q300,185 400,170 L400,280 L0,280Z" fill="#2a4a1a"/>
+      <!-- Wasser -->
+      <path d="M0,170 Q100,155 200,165 Q300,175 400,160 L400,210 Q300,225 200,210 Q100,195 0,210Z" fill="url(#rw)" class="water-flow"/>
+      <path d="M30,180 Q70,175 110,180" stroke="rgba(100,180,255,0.3)" stroke-width="1.5" fill="none" class="ripple-1"/>
+      <path d="M200,175 Q240,170 280,175" stroke="rgba(100,180,255,0.25)" stroke-width="1.5" fill="none" class="ripple-2"/>
+      <!-- Stein -->
+      <ellipse cx="160" cy="182" rx="18" ry="8" fill="#5a6a5a"/>
+      <!-- Fridolin auf dem Stein -->
+      <g class="frog-hop" transform="translate(160,165)">
+        <ellipse cx="0" cy="0" rx="10" ry="7" fill="#3aaa4a"/>
+        <circle cx="-4" cy="-7" r="4" fill="#3aaa4a"/><circle cx="4" cy="-7" r="4" fill="#3aaa4a"/>
+        <circle cx="-4" cy="-8" r="2.5" fill="white"/><circle cx="4" cy="-8" r="2.5" fill="white"/>
+        <circle cx="-3.5" cy="-8" r="1.2" fill="#1a3a1a"/><circle cx="4.5" cy="-8" r="1.2" fill="#1a3a1a"/>
+        <path d="M-4,1 Q0,5 4,1" stroke="#1a5a2a" stroke-width="0.8" fill="none"/>
+        <path d="M-6,-10 Q0,-16 6,-10" fill="#4a7af5"/>
+      </g>
+      <!-- Mila am Ufer -->
+      ${mila(280, 205, 1.1)}
+      <!-- Fisch springt -->
+      <g class="fish-jump"><path d="M80,180 Q85,175 90,180 L85,183Z" fill="#f0a050"/></g>
+      <!-- Libelle -->
+      <g class="dragonfly-move" transform="translate(220,100)">
+        <line x1="0" y1="0" x2="10" y2="0" stroke="#80d0ff" stroke-width="1.2"/>
+        <ellipse cx="-2" cy="-2.5" rx="4" ry="1.5" fill="rgba(100,200,255,0.3)" class="wing-flutter"/>
+        <ellipse cx="-2" cy="2.5" rx="4" ry="1.5" fill="rgba(100,200,255,0.3)" class="wing-flutter"/>
+        <circle cx="12" cy="0" r="1.5" fill="#60b0e0"/>
+      </g>`
+  },
+
+  // === LEKTION 3: DAS HAUS ===
+
+  'house': () => {
+    return `<rect width="400" height="280" fill="#1a150a"/>
+      <!-- Sterne -->
+      <circle cx="50" cy="25" r="1" fill="#ffd700" opacity="0.4" class="star-1"/>
+      <circle cx="150" cy="18" r="1.2" fill="#ffd700" opacity="0.3" class="star-2"/>
+      <circle cx="320" cy="35" r="1" fill="#ffd700" opacity="0.5" class="star-1"/>
+      <!-- Haus groß -->
+      <g transform="translate(200, 110)">
+        <polygon points="-50,0 0,-50 50,0" fill="#a05a30" class="house-settle"/>
+        <rect x="-40" y="0" width="80" height="70" fill="#c4956a" rx="2"/>
+        <rect x="-28" y="12" width="20" height="18" rx="2" fill="#ffd080" class="win-glow"/>
+        <rect x="8" y="12" width="20" height="18" rx="2" fill="#ffd080" class="win-glow-2"/>
+        <line x1="-18" y1="12" x2="-18" y2="30" stroke="#a05a30" stroke-width="1.2"/>
+        <line x1="-28" y1="21" x2="-8" y2="21" stroke="#a05a30" stroke-width="1.2"/>
+        <line x1="18" y1="12" x2="18" y2="30" stroke="#a05a30" stroke-width="1.2"/>
+        <line x1="8" y1="21" x2="28" y2="21" stroke="#a05a30" stroke-width="1.2"/>
+        <!-- Oma-Silhouette im rechten Fenster -->
+        <circle cx="18" cy="18" r="4" fill="#c08040" opacity="0.4" class="granny-sil"/>
+        <!-- Tür -->
+        <rect x="-8" y="40" width="16" height="30" rx="3" fill="#7a4a2a"/>
+        <circle cx="4" cy="56" r="1.5" fill="#d4a030"/>
+        <!-- Licht aus der Tür -->
+        <polygon points="-8,70 -15,85 23,85 16,70" fill="#ffd080" opacity="0.3" class="door-light-pulse"/>
+        <!-- Schornstein + Rauch -->
+        <rect x="25" y="-35" width="12" height="35" fill="#8a5a3a"/>
+        <circle cx="31" cy="-40" r="5" fill="#aaa" opacity="0.12" class="smoke-1"/>
+        <circle cx="33" cy="-50" r="7" fill="#aaa" opacity="0.08" class="smoke-2"/>
+        <circle cx="30" cy="-60" r="9" fill="#aaa" opacity="0.05" class="smoke-3"/>
+      </g>
+      <!-- Blumen -->
+      ${flower(80, 240, '#ff6b8a')} ${flower(110, 245, '#ffd060', 3)} ${flower(290, 238, '#a080ff')} ${flower(320, 243, '#ff8060', 3)}
+      <!-- Boden -->
+      <path d="M0,240 Q100,235 200,240 Q300,245 400,238 L400,280 L0,280Z" fill="#2a3a1a"/>
+      <!-- Warmes Lichtspiel -->
+      <circle cx="200" cy="180" r="100" fill="rgba(255,200,80,0.04)" class="warm-glow"/>`
+  },
+
+  // === MILA CLOSEUP (Breakout) ===
+  'mila-closeup': () => {
+    return `<rect width="400" height="280" fill="#1a1a2e"/>
+      <g transform="translate(200, 145)" class="mila-bounce">
+        <ellipse cx="0" cy="-62" rx="25" ry="30" fill="${MILA_COLORS.hair}"/>
+        <path d="M-20,-65 Q-28,-38 -22,-12" stroke="${MILA_COLORS.hair}" stroke-width="9" fill="none" class="hair-blow"/>
+        <path d="M20,-65 Q26,-42 18,-18" stroke="#7B4E2C" stroke-width="7" fill="none" class="hair-blow"/>
+        <circle cx="0" cy="-66" r="22" fill="${MILA_COLORS.skin}"/>
+        <ellipse cx="-7" cy="-70" rx="3.5" ry="4.5" fill="white"/>
+        <ellipse cx="7" cy="-70" rx="3.5" ry="4.5" fill="white"/>
+        <circle cx="-6" cy="-69" r="2.5" fill="#5a3a20"/><circle cx="8" cy="-69" r="2.5" fill="#5a3a20"/>
+        <circle cx="-5" cy="-70" r="0.8" fill="white"/><circle cx="9" cy="-70" r="0.8" fill="white"/>
+        <path d="M-7,-58 Q0,-52 7,-58" stroke="#c47a5a" stroke-width="1.8" fill="none"/>
+        <circle cx="-13" cy="-61" r="3.5" fill="#ffb0a0" opacity="0.4"/>
+        <circle cx="13" cy="-61" r="3.5" fill="#ffb0a0" opacity="0.4"/>
+        <rect x="-15" y="-42" width="30" height="38" rx="7" fill="${MILA_COLORS.dress}"/>
+        <line x1="-15" y1="-32" x2="-32" y2="-50" stroke="${MILA_COLORS.skin}" stroke-width="7" stroke-linecap="round" class="wave-hand"/>
+        <circle cx="-34" cy="-52" r="5" fill="${MILA_COLORS.skin}" class="wave-hand"/>
+        <line x1="15" y1="-28" x2="28" y2="-10" stroke="${MILA_COLORS.skin}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="-5" y1="-4" x2="-9" y2="22" stroke="${MILA_COLORS.pants}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="5" y1="-4" x2="9" y2="22" stroke="${MILA_COLORS.pants}" stroke-width="7" stroke-linecap="round"/>
+        <ellipse cx="-11" cy="24" rx="7" ry="3.5" fill="${MILA_COLORS.hair}"/>
+        <ellipse cx="11" cy="24" rx="7" ry="3.5" fill="${MILA_COLORS.hair}"/>
+      </g>
+      <circle cx="120" cy="80" r="3" fill="#ffd700" opacity="0.6" class="sparkle-1"/>
+      <circle cx="280" cy="90" r="2.5" fill="#ffd700" opacity="0.5" class="sparkle-2"/>
+      <circle cx="100" cy="200" r="2" fill="#ffd700" opacity="0.4" class="sparkle-3"/>
+      <circle cx="300" cy="210" r="3" fill="#ffd700" opacity="0.5" class="sparkle-1"/>`
+  }
+}
+
+const sceneContent = computed(() => {
+  const fn = scenes[props.scene]
+  return fn ? fn() : scenes['mila-portrait']()
 })
 </script>
 
 <style scoped>
-.scene-container { width: 100%; border-radius: 0.6rem; overflow: visible; position: relative; }
+.scene-container { width: 100%; border-radius: 0.6rem; overflow: visible; }
 .scene-svg { width: 100%; height: auto; border-radius: 0.6rem; display: block; }
+.scene-breakout { overflow: visible; }
 
-/* Mila bricht aus dem Rahmen heraus */
-.mila-breakout { overflow: visible; }
-.mila-breakout .mila-bounce {
-  animation: milaBounce 2s ease-in-out infinite;
-  transform-origin: center bottom;
-}
-@keyframes milaBounce {
-  0%, 100% { transform: translate(200px, 150px) scale(1); }
-  50% { transform: translate(200px, 140px) scale(1.03); }
-}
-.wave-arm { animation: waveHand 1s ease-in-out infinite; transform-origin: -16px -35px; }
-@keyframes waveHand { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-15deg); } }
+/* Mila */
+.mila-char .hair-blow { animation: hairBlow 3s ease-in-out infinite; }
+.mila-char .arm-l { animation: armSwing 1s ease-in-out infinite; transform-origin: -6px -16px; }
+.mila-char .arm-r { animation: armSwing 1s ease-in-out infinite reverse; transform-origin: 6px -16px; }
+.mila-char .leg-l { animation: legWalk 0.8s ease-in-out infinite; transform-origin: -3px -4px; }
+.mila-char .leg-r { animation: legWalk 0.8s ease-in-out infinite reverse; transform-origin: 3px -4px; }
+@keyframes hairBlow { 0%,100% { d: path("M-8,-30 Q-12,-15 -10,-5"); } 50% { d: path("M-8,-30 Q-14,-15 -12,-5"); } }
+@keyframes armSwing { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+@keyframes legWalk { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
 
-/* Mila läuft -->
-.mila-walk { animation: milaWalkBounce 1.2s ease-in-out infinite; }
-@keyframes milaWalkBounce {
-  0%, 100% { transform: translate(185px, 230px); }
-  50% { transform: translate(185px, 227px); }
-}
-.arm-swing { animation: armSwing 0.8s ease-in-out infinite; transform-origin: -6px -16px; }
-.arm-swing-r { animation: armSwing 0.8s ease-in-out infinite reverse; transform-origin: 6px -16px; }
-@keyframes armSwing { 0%, 100% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } }
-.leg-walk { animation: legWalk 0.8s ease-in-out infinite; transform-origin: -3px -4px; }
-.leg-walk-r { animation: legWalk 0.8s ease-in-out infinite reverse; transform-origin: 3px -4px; }
-@keyframes legWalk { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
-.hair-blow { animation: hairBlow 3s ease-in-out infinite; transform-origin: -8px -30px; }
-@keyframes hairBlow { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(5deg); } }
-.hair-blow-big { animation: hairBlow 3s ease-in-out infinite; }
-.hair-blow-big-r { animation: hairBlow 3.5s ease-in-out infinite reverse; }
+/* Mila bounce (closeup) */
+.mila-bounce { animation: milaBounce 2s ease-in-out infinite; }
+@keyframes milaBounce { 0%,100% { transform: translate(200px,145px); } 50% { transform: translate(200px,138px); } }
+.wave-hand { animation: waveHand 0.8s ease-in-out infinite; transform-origin: -15px -32px; }
+@keyframes waveHand { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-12deg); } }
 
-/* Bäume schwanken */
-.trees-front { animation: treeSway 4s ease-in-out infinite; transform-origin: bottom center; }
-.trees-back { animation: treeSway 5s ease-in-out infinite reverse; transform-origin: bottom center; }
-@keyframes treeSway { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(1.02) translateX(2px); } }
+/* Mila sneaking */
+.mila-sneak { animation: sneakMove 3s ease-in-out infinite; }
+@keyframes sneakMove { 0%,100% { transform: translateX(0); } 50% { transform: translateX(8px); } }
 
-/* Vögel fliegen */
-.bird-fly { animation: birdFly 8s linear infinite; }
-.bird-fly-2 { animation: birdFly 10s linear infinite 3s; }
-@keyframes birdFly {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(200px, -30px); opacity: 0; }
-}
+/* Sun */
+.sun-pulse { animation: sunPulse 3s ease-in-out infinite; }
+@keyframes sunPulse { 0%,100% { opacity: 0.8; } 50% { opacity: 1; } }
 
-/* Blätter fallen */
-.leaf-fall-1 { animation: leafFall 6s ease-in-out infinite; }
-.leaf-fall-2 { animation: leafFall 8s ease-in-out infinite 2s; }
-.leaf-fall-3 { animation: leafFall 7s ease-in-out infinite 4s; }
-@keyframes leafFall {
-  0% { transform: translate(0, 0) rotate(0deg); opacity: 0.6; }
-  100% { transform: translate(20px, 250px) rotate(360deg); opacity: 0; }
-}
+/* Windows */
+.win-glow { animation: winFlicker 3s ease-in-out infinite; }
+.win-glow-2 { animation: winFlicker 3.5s ease-in-out infinite 1s; }
+@keyframes winFlicker { 0%,100% { fill: #ffd080; } 50% { fill: #ffe8b0; } }
 
-/* Sonne pulsiert */
-.sun-pulse { animation: sunPulse 4s ease-in-out infinite; }
-@keyframes sunPulse { 0%, 100% { r: 14; opacity: 0.9; } 50% { r: 16; opacity: 1; } }
+/* Birds */
+.bird-fly { animation: birdMove 7s linear infinite; }
+.bird-fly-2 { animation: birdMove 9s linear infinite 2s; }
+@keyframes birdMove { 0% { transform: translate(0,0); } 100% { transform: translate(150px,-20px); opacity: 0; } }
 
-/* Frosch hüpft */
-.frog-hop { animation: frogHop 3s ease-in-out infinite; transform-origin: center bottom; }
-@keyframes frogHop {
-  0%, 70%, 100% { transform: translate(140px, 185px) scaleY(1); }
-  80% { transform: translate(140px, 170px) scaleY(1.1); }
-  90% { transform: translate(140px, 185px) scaleY(0.9); }
-}
+/* Music notes float up */
+.note-float { animation: noteUp 3s ease-out infinite; }
+@keyframes noteUp { 0% { transform: translateY(0); opacity: 0.7; } 100% { transform: translateY(-40px); opacity: 0; } }
 
-/* Wasser fließt */
+/* Question mark */
+.question-bob { animation: bob 1.5s ease-in-out infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+/* Rays */
+.ray-1 { animation: rayPulse 2s ease-in-out infinite; }
+.ray-2 { animation: rayPulse 2.5s ease-in-out infinite 0.3s; }
+.ray-3 { animation: rayPulse 2.5s ease-in-out infinite 0.6s; }
+@keyframes rayPulse { 0%,100% { opacity: 0.2; } 50% { opacity: 0.5; } }
+
+/* Frog */
+.frog-hop { animation: frogHop 3s ease-in-out infinite; }
+@keyframes frogHop { 0%,70%,100% { transform: translate(160px,165px) scaleY(1); } 80% { transform: translate(160px,152px) scaleY(1.1); } 90% { transform: translate(160px,165px) scaleY(0.92); } }
+
+/* Water */
 .water-flow { animation: waterShift 3s ease-in-out infinite; }
-@keyframes waterShift { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
-.ripple-1 { animation: rippleMove 2s ease-in-out infinite; }
-.ripple-2 { animation: rippleMove 2.5s ease-in-out infinite 0.5s; }
-@keyframes rippleMove { 0%, 100% { transform: translateX(0); opacity: 0.3; } 50% { transform: translateX(8px); opacity: 0.15; } }
+@keyframes waterShift { 0%,100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+.ripple-1 { animation: ripple 2s ease-in-out infinite; }
+.ripple-2 { animation: ripple 2.5s ease-in-out infinite 0.5s; }
+@keyframes ripple { 0%,100% { transform: translateX(0); opacity: 0.3; } 50% { transform: translateX(6px); opacity: 0.15; } }
 
-/* Fisch springt */
+/* Fish */
 .fish-jump { animation: fishJump 4s ease-in-out infinite 2s; }
-@keyframes fishJump {
-  0%, 80%, 100% { transform: translate(0, 0); opacity: 0; }
-  85% { transform: translate(0, -20px); opacity: 1; }
-  95% { transform: translate(5px, -25px) rotate(-20deg); opacity: 1; }
-}
+@keyframes fishJump { 0%,80%,100% { transform: translate(0,0); opacity: 0; } 85% { transform: translate(0,-15px); opacity: 1; } 95% { transform: translate(3px,-20px) rotate(-15deg); opacity: 1; } }
 
-/* Libelle */
-.dragonfly { animation: dragonflyMove 6s ease-in-out infinite; }
-@keyframes dragonflyMove {
-  0%, 100% { transform: translate(200px, 120px); }
-  25% { transform: translate(230px, 110px); }
-  50% { transform: translate(180px, 100px); }
-  75% { transform: translate(210px, 130px); }
-}
-.wing-flutter { animation: wingFlap 0.15s ease-in-out infinite alternate; transform-origin: center; }
+/* Dragonfly */
+.dragonfly-move { animation: dfly 5s ease-in-out infinite; }
+@keyframes dfly { 0%,100% { transform: translate(220px,100px); } 33% { transform: translate(250px,90px); } 66% { transform: translate(200px,85px); } }
+.wing-flutter { animation: wingFlap 0.12s ease-in-out infinite alternate; }
 @keyframes wingFlap { 0% { transform: scaleY(1); } 100% { transform: scaleY(0.3); } }
 
-/* Haus-Effekte */
-.window-glow { animation: windowFlicker 3s ease-in-out infinite; }
-.window-glow-2 { animation: windowFlicker 3.5s ease-in-out infinite 1s; }
-@keyframes windowFlicker { 0%, 100% { fill: #ffd080; } 50% { fill: #ffe0a0; } }
-.door-light { animation: doorLightPulse 4s ease-in-out infinite; }
-@keyframes doorLightPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.5; } }
+/* House */
+.house-settle { animation: settle 6s ease-in-out infinite; transform-origin: bottom; }
+@keyframes settle { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.003); } }
+.door-light-pulse { animation: doorPulse 4s ease-in-out infinite; }
+@keyframes doorPulse { 0%,100% { opacity: 0.25; } 50% { opacity: 0.45; } }
+.granny-sil { animation: grannyBob 5s ease-in-out infinite; }
+@keyframes grannyBob { 0%,100% { transform: translate(0,0); } 50% { transform: translate(1.5px,0); } }
+
+/* Smoke */
 .smoke-1 { animation: smokeRise 5s ease-out infinite; }
 .smoke-2 { animation: smokeRise 6s ease-out infinite 1s; }
 .smoke-3 { animation: smokeRise 7s ease-out infinite 2s; }
-@keyframes smokeRise {
-  0% { transform: translate(0, 0) scale(1); opacity: 0.15; }
-  100% { transform: translate(-10px, -40px) scale(2); opacity: 0; }
-}
-.granny-silhouette { animation: grannyMove 5s ease-in-out infinite; }
-@keyframes grannyMove { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(2px, 0); } }
-.flowers-sway { animation: flowersSway 3s ease-in-out infinite; transform-origin: bottom; }
-@keyframes flowersSway { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(2deg); } }
-.star-twinkle { animation: twinkle 2s ease-in-out infinite; }
-.star-twinkle-2 { animation: twinkle 3s ease-in-out infinite 1s; }
-@keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
-.warm-glow-big { animation: warmGlow 5s ease-in-out infinite; }
-@keyframes warmGlow { 0%, 100% { opacity: 0.04; } 50% { opacity: 0.08; } }
-.house-settle { animation: houseSettle 6s ease-in-out infinite; transform-origin: bottom; }
-@keyframes houseSettle { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.003); } }
+@keyframes smokeRise { 0% { transform: translate(0,0) scale(1); opacity: 0.12; } 100% { transform: translate(-8px,-30px) scale(1.8); opacity: 0; } }
+
+/* Flowers */
+.flower-sway { animation: flSway 3s ease-in-out infinite; transform-origin: center bottom; }
+@keyframes flSway { 0%,100% { transform: rotate(0); } 50% { transform: rotate(4deg); } }
+
+/* Stars */
+.star-1 { animation: twinkle 2s ease-in-out infinite; }
+.star-2 { animation: twinkle 3s ease-in-out infinite 1s; }
+@keyframes twinkle { 0%,100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+
+/* Warm glow */
+.warm-glow { animation: warmG 5s ease-in-out infinite; }
+@keyframes warmG { 0%,100% { opacity: 0.04; } 50% { opacity: 0.08; } }
 
 /* Sparkles */
 .sparkle-1 { animation: sparkle 1.5s ease-in-out infinite; }
 .sparkle-2 { animation: sparkle 2s ease-in-out infinite 0.5s; }
 .sparkle-3 { animation: sparkle 1.8s ease-in-out infinite 1s; }
-@keyframes sparkle {
-  0%, 100% { opacity: 0; transform: scale(0.5); }
-  50% { opacity: 0.8; transform: scale(1.3); }
-}
+@keyframes sparkle { 0%,100% { opacity: 0; transform: scale(0.5); } 50% { opacity: 0.8; transform: scale(1.3); } }
+
+/* Curtains */
+.curtain-l { animation: curtainBlow 4s ease-in-out infinite; transform-origin: top left; }
+.curtain-r { animation: curtainBlow 4.5s ease-in-out infinite reverse; transform-origin: top right; }
+@keyframes curtainBlow { 0%,100% { transform: scaleX(1); } 50% { transform: scaleX(1.05); } }
 </style>

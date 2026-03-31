@@ -130,8 +130,8 @@
                     </div>
 
                     <template v-for="(para, pIdx) in visibleParagraphs" :key="`${currentPage}-${pIdx}`">
-                      <!-- Inline scene for paragraphs after the first (full width between text) -->
-                      <div v-if="pIdx === 2 && visibleParagraphs.length > 3 && currentPage === 0" class="scene-inline" :style="{ animationDelay: `${pIdx * 150}ms` }">
+                      <!-- Inline scene between paragraphs (shows the scene for this paragraph) -->
+                      <div v-if="pIdx > 0 && pIdx % 2 === 0 && !para.hasAnswer" class="scene-inline" :style="{ animationDelay: `${pIdx * 150}ms` }">
                         <StoryScene :scene="paragraphScene(pIdx)" />
                       </div>
 
@@ -469,12 +469,23 @@ function getWordClass(word) {
   return ''
 }
 
-// Map paragraph index to a scene illustration
+// Map paragraph to a unique scene based on section + paragraph index
 function paragraphScene(pIdx) {
-  const scene = sceneType.value
-  if (scene === 'water') return 'river'
-  if (scene === 'house') return 'house'
-  return 'forest-intro'
+  const globalIdx = currentPage.value * paragraphsPerPage.value + pIdx
+  const sectionTitle = (currentSection.value?.title || '').toLowerCase()
+  const lessonNum = lessonNumber.value
+
+  // Lektion 1: Der Wald
+  if (lessonNum === 1) {
+    const forestScenes = ['mila-portrait', 'village', 'window-birds', 'sunrise-melody', 'mila-wondering', 'sneaking-out', 'fork-in-road']
+    return forestScenes[globalIdx] || 'mila-portrait'
+  }
+  // Lektion 2: Der Fluss
+  if (lessonNum === 2) return 'river'
+  // Lektion 3: Das Haus
+  if (lessonNum === 3) return 'house'
+
+  return 'mila-portrait'
 }
 
 const currentVoice = computed(() => {
