@@ -1,5 +1,5 @@
 <template>
-  <div class="relative">
+  <div class="relative overflow-hidden">
     <!-- Vertical path line (always left) -->
     <div class="absolute top-0 bottom-0 left-5 w-0.5">
       <!-- Background line -->
@@ -20,7 +20,7 @@
         v-for="lesson in sortedLessons"
         :key="lesson.number"
         :style="{ animationDelay: `${(lesson.number - 1) * 60}ms` }"
-        class="relative flex items-start gap-4 animate-[fadeInUp_0.4s_ease_forwards] opacity-0">
+        class="relative flex items-start gap-4 min-w-0 animate-[fadeInUp_0.4s_ease_forwards] opacity-0">
 
         <!-- Node dot -->
         <div :class="[
@@ -46,11 +46,11 @@
         </div>
 
         <!-- Card -->
-        <div class="flex-1">
-          <div class="flex items-center gap-1">
+        <div class="flex-1 min-w-0">
+          <div class="relative">
             <div
               v-if="draggable && checkFavorite(lesson.number) && getStatus(lesson.number) !== 'completed'"
-              class="flex-shrink-0 cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 transition-colors touch-none"
+              class="absolute -left-5 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 transition-colors touch-none z-10"
               :data-drag-handle="lesson.number">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
@@ -58,7 +58,7 @@
                 <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
               </svg>
             </div>
-            <div class="flex-1">
+            <div class="flex-1 min-w-0">
               <slot
                 name="card"
                 :lesson="lesson"
