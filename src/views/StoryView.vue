@@ -516,12 +516,8 @@ function resolveStoryAssetPath(imagePath, lesson) {
   const lessonFilename = effectiveLesson?._filename || `${String(lessonNumber.value).padStart(2, '0')}-lesson`
   const resolvedWorkshop = resolveWorkshopKey(learning.value, workshop.value)
   if (resolvedWorkshop !== workshop.value) {
-    // resolvedWorkshop is a full path (e.g. /__local/workshop-name/lang/workshop)
-    // Avoid double slash: resolvedWorkshop already starts with /
-    const prefix = resolvedWorkshop.startsWith('/') ? '' : baseUrl
-    const url = `${prefix}${resolvedWorkshop}/${lessonFilename}/${imagePath}`
-    console.log('🖼️ Story image:', url, { resolvedWorkshop, lessonFilename, imagePath })
-    return url
+    const prefix = resolvedWorkshop.startsWith('http://') || resolvedWorkshop.startsWith('https://') || resolvedWorkshop.startsWith('/') ? '' : baseUrl
+    return `${prefix}${resolvedWorkshop}/${lessonFilename}/${imagePath}`
   }
   return `${baseUrl}lessons/${learning.value}/${workshop.value}/${lessonFilename}/${imagePath}`
 }
