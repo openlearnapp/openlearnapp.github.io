@@ -26,7 +26,7 @@
         </Badge>
       </div>
 
-      <nav v-if="filteredSections.length > 1" class="mb-6 p-4 bg-muted/50 dark:bg-slate-800/60 rounded-xl ring-1 ring-border/30 dark:ring-white/[0.06]">
+      <nav v-if="filteredSections.length > 1" class="mb-6 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl ring-1 ring-border/50 dark:ring-white/[0.06] shadow-sm">
         <h3 class="text-sm font-semibold text-muted-foreground mb-3">{{ $t('lesson.sections') }}</h3>
         <ol class="space-y-1.5">
           <li v-for="(section, idx) in filteredSections" :key="idx" class="flex items-center gap-2.5">
@@ -43,7 +43,7 @@
         v-for="(section, idx) in filteredSections"
         :key="idx"
         :id="`section-${idx}`"
-        :class="activeLabel ? 'p-0 mb-3 border-0 shadow-none' : 'p-5 mb-6 ring-1 ring-border/50 dark:ring-white/[0.06] shadow-sm dark:bg-slate-800/60'">
+        :class="activeLabel ? 'p-0 mb-3 border-0 shadow-none' : 'p-5 mb-6 ring-1 ring-border/50 dark:ring-white/[0.06] shadow-md dark:shadow-lg bg-white dark:bg-slate-800/60'">
         <CardHeader v-if="!activeLabel" class="p-0 pb-4">
           <div class="flex items-center gap-3">
             <span class="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-primary/15 text-primary text-lg font-bold">
@@ -130,7 +130,7 @@
                 ? 'bg-green-50 dark:bg-green-500/10 border border-green-300 dark:border-green-500/30 shadow-sm'
                 : isAssessmentType(example)
                   ? 'bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 shadow-sm'
-                  : 'bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600/40 shadow-sm hover:shadow-md hover:border-primary/30'
+                  : 'bg-slate-50 dark:bg-slate-700/50 border border-slate-200/80 dark:border-slate-600/40 shadow-md hover:shadow-lg hover:border-primary/30'
             ]">
             <div :class="example.image ? 'flex gap-4' : ''">
               <div :class="example.image ? 'flex-1 min-w-0' : ''">
