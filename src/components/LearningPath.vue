@@ -47,10 +47,10 @@
 
         <!-- Card -->
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-1">
+          <div class="relative">
             <div
               v-if="draggable && checkFavorite(lesson.number) && getStatus(lesson.number) !== 'completed'"
-              class="flex-shrink-0 cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 transition-colors touch-none"
+              class="absolute -left-5 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 transition-colors touch-none z-10"
               :data-drag-handle="lesson.number">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
