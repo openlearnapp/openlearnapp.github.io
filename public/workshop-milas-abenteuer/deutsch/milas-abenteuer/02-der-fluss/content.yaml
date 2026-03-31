@@ -30,7 +30,7 @@ sections:
           - text: "Ferdinand"
           - text: "Friedrich"
   - title: "Was weisst du?"
-    image: "images/river.svg"
+    image: "images/fridolin.svg"
     examples:
       - q: "Fridolin klatschte begeistert in seine kleinen gruenen Haende. 'Richtig! Du hoerst gut zu. Das ist eine wichtige Eigenschaft fuer ein Abenteuer.'"
         voice: fridolin
@@ -46,7 +46,7 @@ sections:
             correct: true
           - text: "Ein Einhorn"
   - title: "Ein neuer Freund"
-    image: "images/river.svg"
+    image: "images/mila-fridolin.svg"
     examples:
       - q: "Mila laechelte breit. Sie hatte einen neuen Freund gefunden — einen sprechenden Frosch mit einer blauen Muetze! So etwas passierte nicht jeden Tag."
         voice: narrator

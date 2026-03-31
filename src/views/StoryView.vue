@@ -123,18 +123,18 @@
               <div class="flex-1 overflow-hidden px-6 pb-4 relative" ref="pageContentRef">
                 <div class="h-full overflow-hidden">
                   <div ref="textFlowRef" class="story-text-flow">
-                    <!-- Animated scene illustration (floats left, text wraps around) -->
-                    <div v-if="currentPage === 0" class="book-image-wrapper">
-                      <StoryScene :scene="paragraphScene(0)" />
+                    <!-- Section image (same as in LessonDetail, floats left) -->
+                    <div v-if="displayImage && currentPage === 0" class="book-image-wrapper">
+                      <img
+                        :src="displayImage"
+                        :alt="currentSection?.title || ''"
+                        class="book-float-image"
+                        :class="imageLoaded ? 'image-loaded' : 'image-loading'"
+                        @load="imageLoaded = true" />
                       <div class="image-glow" :class="`glow-${sceneType}`" />
                     </div>
 
                     <template v-for="(para, pIdx) in visibleParagraphs" :key="`${currentPage}-${pIdx}`">
-                      <!-- Inline scene between paragraphs (shows the scene for this paragraph) -->
-                      <div v-if="pIdx > 0 && pIdx % 2 === 0 && !para.hasAnswer" class="scene-inline" :style="{ animationDelay: `${pIdx * 150}ms` }">
-                        <StoryScene :scene="paragraphScene(pIdx)" />
-                      </div>
-
                       <!-- Story/narration paragraph with staggered animation -->
                       <p v-if="!para.hasAnswer"
                         class="story-para text-lg md:text-xl leading-[1.9] mb-4"
@@ -151,11 +151,6 @@
                         <p class="story-para text-base md:text-lg leading-[1.7] opacity-50 italic example-a">{{ para.a }}</p>
                       </div>
                     </template>
-
-                    <!-- Mila breakout scene on last page -->
-                    <div v-if="currentPage === totalPages - 1 && sceneType === 'forest'" class="scene-breakout">
-                      <StoryScene scene="mila-closeup" />
-                    </div>
                   </div>
                 </div>
               </div>
@@ -265,7 +260,7 @@ import { useAudio } from '../composables/useAudio'
 import { useSettings } from '../composables/useSettings'
 import { useAssessments } from '../composables/useAssessments'
 import { useTextLayout } from '../composables/useTextLayout'
-import StoryScene from '../components/StoryScene.vue'
+// StoryScene removed — Story Mode uses the same section images from YAML
 
 const router = useRouter()
 const route = useRoute()

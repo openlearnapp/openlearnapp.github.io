@@ -27,7 +27,7 @@ sections:
             goto: { lesson: 3, section: 1 }
         goto_wrong: { lesson: 3, section: 0 }
   - title: "Die Geschichten"
-    image: "images/house.svg"
+    image: "images/book.svg"
     examples:
       - q: "'Dieses Buch ist etwas ganz Besonderes,' sagte die alte Frau und strich liebevoll ueber den goldenen Einband. 'Jede Geschichte darin fuehrt in eine neue Welt.'"
         voice: grandma
