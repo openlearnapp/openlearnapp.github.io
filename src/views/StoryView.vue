@@ -123,18 +123,18 @@
               <div class="flex-1 overflow-hidden px-6 pb-4 relative" ref="pageContentRef">
                 <div class="h-full overflow-hidden">
                   <div ref="textFlowRef" class="story-text-flow">
-                    <!-- Float image on first page with 3D pop-out effect -->
-                    <div v-if="displayImage && currentPage === 0" class="book-image-wrapper">
-                      <img
-                        :src="displayImage"
-                        :alt="currentSection?.title || ''"
-                        class="book-float-image"
-                        :class="imageLoaded ? 'image-loaded' : 'image-loading'"
-                        @load="imageLoaded = true" />
+                    <!-- Animated scene illustration (floats left, text wraps around) -->
+                    <div v-if="currentPage === 0" class="book-image-wrapper">
+                      <StoryScene :scene="paragraphScene(0)" />
                       <div class="image-glow" :class="`glow-${sceneType}`" />
                     </div>
 
                     <template v-for="(para, pIdx) in visibleParagraphs" :key="`${currentPage}-${pIdx}`">
+                      <!-- Inline scene for paragraphs after the first (full width between text) -->
+                      <div v-if="pIdx === 2 && visibleParagraphs.length > 3 && currentPage === 0" class="scene-inline" :style="{ animationDelay: `${pIdx * 150}ms` }">
+                        <StoryScene :scene="paragraphScene(pIdx)" />
+                      </div>
+
                       <!-- Story/narration paragraph with staggered animation -->
                       <p v-if="!para.hasAnswer"
                         class="story-para text-lg md:text-xl leading-[1.9] mb-4"
@@ -151,6 +151,11 @@
                         <p class="story-para text-base md:text-lg leading-[1.7] opacity-50 italic example-a">{{ para.a }}</p>
                       </div>
                     </template>
+
+                    <!-- Mila breakout scene on last page -->
+                    <div v-if="currentPage === totalPages - 1 && sceneType === 'forest'" class="scene-breakout">
+                      <StoryScene scene="mila-closeup" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -260,6 +265,7 @@ import { useAudio } from '../composables/useAudio'
 import { useSettings } from '../composables/useSettings'
 import { useAssessments } from '../composables/useAssessments'
 import { useTextLayout } from '../composables/useTextLayout'
+import StoryScene from '../components/StoryScene.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -461,6 +467,14 @@ function getWordClass(word) {
     return `keyword-${scene}`
   }
   return ''
+}
+
+// Map paragraph index to a scene illustration
+function paragraphScene(pIdx) {
+  const scene = sceneType.value
+  if (scene === 'water') return 'river'
+  if (scene === 'house') return 'house'
+  return 'forest-intro'
 }
 
 const currentVoice = computed(() => {
@@ -1414,5 +1428,25 @@ onUnmounted(() => {
   font-family: Georgia, 'Times New Roman', serif;
   color: #f5e6d3;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Inline scene between paragraphs */
+.scene-inline {
+  width: 100%; margin: 0.5rem 0 1rem; clear: both;
+  border-radius: 0.6rem; overflow: hidden;
+  animation: paraSlideIn 0.6s ease-out both;
+}
+
+/* Mila breakout at the end — overflows the page */
+.scene-breakout {
+  width: 60%; margin: 1rem auto 0; clear: both;
+  position: relative; z-index: 10;
+  animation: breakoutPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0.5s;
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4));
+}
+@keyframes breakoutPop {
+  0% { opacity: 0; transform: scale(0.5) translateY(30px); }
+  100% { opacity: 1; transform: scale(1) translateY(-20px); }
 }
 </style>
