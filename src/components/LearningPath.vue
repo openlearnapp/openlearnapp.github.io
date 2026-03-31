@@ -46,11 +46,11 @@
         </div>
 
         <!-- Card -->
-        <div class="flex-1 min-w-0">
-          <div class="relative">
+        <div class="flex-1">
+          <div class="flex items-center gap-1">
             <div
               v-if="draggable && checkFavorite(lesson.number) && getStatus(lesson.number) !== 'completed'"
-              class="absolute -left-5 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 transition-colors touch-none z-10"
+              class="flex-shrink-0 cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 transition-colors touch-none"
               :data-drag-handle="lesson.number">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
@@ -58,7 +58,7 @@
                 <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
               </svg>
             </div>
-            <div class="flex-1 min-w-0">
+            <div class="flex-1">
               <slot
                 name="card"
                 :lesson="lesson"
