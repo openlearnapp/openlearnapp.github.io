@@ -26,14 +26,12 @@
         </Badge>
       </div>
 
-      <nav v-if="filteredSections.length > 1" class="mb-6 p-4 bg-muted/50 rounded-xl border border-border/50">
+      <nav v-if="filteredSections.length > 1" class="mb-6 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl ring-1 ring-border/50 dark:ring-white/[0.06] shadow-sm">
         <h3 class="text-sm font-semibold text-muted-foreground mb-3">{{ $t('lesson.sections') }}</h3>
-        <ol class="space-y-2">
-          <li v-for="(section, idx) in filteredSections" :key="idx" class="flex items-center gap-3">
-            <span class="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold">
-              {{ idx + 1 }}
-            </span>
-            <a :href="`#section-${idx}`" class="text-sm text-foreground hover:text-primary transition-colors" @click.prevent="scrollToSection(idx)">
+        <ol class="space-y-1.5">
+          <li v-for="(section, idx) in filteredSections" :key="idx" class="flex items-center gap-2.5">
+            <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 dark:bg-primary/20 text-primary text-xs font-bold">{{ idx + 1 }}</span>
+            <a :href="`#section-${idx}`" class="text-sm text-foreground hover:text-primary transition" @click.prevent="scrollToSection(idx)">
               {{ section.title }}
             </a>
           </li>
@@ -45,7 +43,7 @@
         v-for="(section, idx) in filteredSections"
         :key="idx"
         :id="`section-${idx}`"
-        :class="activeLabel ? 'p-0 mb-3 border-0 shadow-none' : 'p-5 mb-6 border border-border/50 shadow-sm'">
+        :class="activeLabel ? 'p-0 mb-3 border-0 shadow-none' : 'p-5 mb-6 ring-1 ring-border/50 dark:ring-white/[0.06] shadow-md dark:shadow-lg bg-white dark:bg-slate-800/60'">
         <CardHeader v-if="!activeLabel" class="p-0 pb-4">
           <div class="flex items-center gap-3">
             <span class="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-primary/15 text-primary text-lg font-bold">
@@ -120,7 +118,7 @@
             :id="`example-${example._originalSectionIdx}-${example._originalExampleIdx}`"
             @click="handleExampleClick(example)"
             :class="[
-              'p-4 mb-3 rounded transition',
+              'p-4 mb-3 rounded-xl transition-all duration-200',
               isAssessmentType(example) ? '' : 'cursor-pointer',
               isCurrentlyReading(example) && isPlaying
                 ? 'ring-4 ring-yellow-400 dark:ring-yellow-600'
@@ -129,10 +127,10 @@
                 ? 'ring-4 ring-orange-400 dark:ring-orange-600'
                 : '',
               isAssessmentCorrect(example)
-                ? 'bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500'
-                : example.labels
-                  ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
-                  : 'bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500'
+                ? 'bg-green-50 dark:bg-green-500/10 border border-green-300 dark:border-green-500/30 shadow-sm'
+                : isAssessmentType(example)
+                  ? 'bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 shadow-sm'
+                  : 'bg-slate-50 dark:bg-slate-700/50 border border-slate-200/80 dark:border-slate-600/40 shadow-md hover:shadow-lg hover:border-primary/30'
             ]">
             <div :class="example.image ? 'flex gap-4' : ''">
               <div :class="example.image ? 'flex-1 min-w-0' : ''">
@@ -209,36 +207,38 @@
             </template>
 
 
-            <div v-if="settings.showLearningItems && example.rel && example.rel.length > 0" class="flex flex-wrap gap-2 mb-3">
+            <div v-if="settings.showLearningItems && example.rel && example.rel.length > 0" class="flex flex-wrap gap-2 mb-3 mt-2 pt-2 border-t border-dashed border-slate-200 dark:border-slate-600/40">
               <Badge
                 v-for="(item, relIdx) in example.rel"
                 :key="relIdx"
                 variant="outline"
                 @click.stop="handleItemClick(item[0])"
                 :class="[
-                  'cursor-pointer transition',
+                  'cursor-pointer transition-all duration-200 text-xs',
                   isItemLearned(learning, workshop, item[0])
-                    ? 'bg-green-100 dark:bg-green-900 border-green-400 dark:border-green-600 line-through opacity-60'
-                    : 'hover:border-green-400 dark:hover:border-green-600'
+                    ? 'bg-green-100 dark:bg-green-800/40 border-green-400 dark:border-green-500/40 opacity-70'
+                    : 'bg-sky-50 dark:bg-sky-900/20 border-sky-200 dark:border-sky-500/30 hover:bg-sky-100 dark:hover:bg-sky-800/30 hover:shadow-sm'
                 ]">
-                <span class="font-semibold text-primary">
+                <span :class="['font-bold', isItemLearned(learning, workshop, item[0]) ? 'line-through text-green-600 dark:text-green-400' : 'text-sky-700 dark:text-sky-300']">
                   {{ item[0] }}
                 </span>
-                <span class="text-foreground ml-1">
-                  • {{ item.slice(1).join(' • ') }}
+                <span class="text-muted-foreground ml-1">
+                  · {{ item.slice(1).join(' · ') }}
                 </span>
-                <span v-if="isItemLearned(learning, workshop, item[0])" class="ml-1">✓</span>
+                <span v-if="isItemLearned(learning, workshop, item[0])" class="ml-1 text-green-500">✓</span>
               </Badge>
             </div>
 
-            <div v-if="settings.showLabels && example.labels" class="flex gap-1">
+            <div v-if="settings.showLabels && example.labels" class="flex gap-1.5 mt-1">
               <Badge
                 v-for="label in example.labels"
                 :key="label"
                 @click.stop="toggleLabel(label)"
                 :class="[
-                  'cursor-pointer transition',
-                  activeLabel === label ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                  'cursor-pointer transition-all text-[10px] font-semibold px-2.5 py-0.5 rounded-full',
+                  activeLabel === label
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/20 dark:hover:bg-primary/30'
                 ]">
                 {{ label }}
               </Badge>
