@@ -123,14 +123,13 @@
               <div class="flex-1 overflow-hidden px-6 pb-4 relative" ref="pageContentRef">
                 <div class="h-full overflow-hidden">
                   <div ref="textFlowRef" class="story-text-flow">
-                    <!-- Section image (same as in LessonDetail, floats left) -->
-                    <div v-if="displayImage && currentPage === 0" class="book-image-wrapper">
+                    <!-- Section image (floats left, text wraps around) -->
+                    <div v-if="currentSection?.image && currentPage === 0" class="book-image-wrapper">
                       <img
-                        :src="displayImage"
+                        :src="resolvedSectionImage"
                         :alt="currentSection?.title || ''"
                         class="book-float-image"
-                        :class="imageLoaded ? 'image-loaded' : 'image-loading'"
-                        @load="imageLoaded = true" />
+                        @error="(e) => console.error('IMG error:', e.target.src)" />
                       <div class="image-glow" :class="`glow-${sceneType}`" />
                     </div>
 
@@ -340,6 +339,13 @@ const currentExample = computed(() => {
 
 const currentNarrationText = computed(() => {
   return currentExample.value?.q || ''
+})
+
+// Direct image resolution for current section (bypasses displayImage complexity)
+const resolvedSectionImage = computed(() => {
+  const img = currentSection.value?.image
+  if (!img) return null
+  return resolveStoryAssetPath(img)
 })
 
 // Book pagination state
@@ -1344,8 +1350,8 @@ onUnmounted(() => {
   border-radius: 0.6rem;
   transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.image-loading { opacity: 0; transform: rotateY(-8deg) scale(0.9); }
-.image-loaded { opacity: 1; transform: rotateY(0deg) scale(1); animation: imageFloat 6s ease-in-out infinite; }
+/* Image always visible, subtle float animation */
+.book-float-image { animation: imageFloat 6s ease-in-out infinite; }
 .image-glow {
   position: absolute; inset: -10%; border-radius: 1rem;
   pointer-events: none; z-index: -1; opacity: 0.4;
