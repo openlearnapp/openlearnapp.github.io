@@ -4,7 +4,7 @@ description: "Mila entdeckt ein geheimnisvolles Haus voller Geschichten."
 image: "images/house.svg"
 sections:
   - title: "Das Haus im Wald"
-    image: "images/house.svg"
+    image: "images/mila-tuer.svg"
     examples:
       - q: "Mila ging den schmalen Weg entlang und entdeckte ein altes Haus zwischen den Baeumen. Es sah aus wie aus einem Maerchenbuch — mit krummen Waenden, einem Schornstein aus dem blauer Rauch aufstieg, und einem Garten voller leuchtender Blumen."
         voice: narrator

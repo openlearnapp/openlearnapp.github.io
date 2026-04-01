@@ -4,7 +4,7 @@ description: "Mila entdeckt einen Wald und muss sich entscheiden."
 image: "images/forest.svg"
 sections:
   - title: "Es war einmal"
-    image: "images/forest.svg"
+    image: "images/mila-dorf.svg"
     examples:
       - q: "Es war einmal ein kleines Maedchen namens Mila. Sie hatte lange braune Haare und grosse neugierige Augen, die immer nach neuen Abenteuern suchten."
         voice: narrator

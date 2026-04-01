@@ -4,7 +4,7 @@ description: "Mila folgt dem Geraeusch zum Fluss und trifft einen besonderen Fre
 image: "images/river.svg"
 sections:
   - title: "Der Fluss"
-    image: "images/river.svg"
+    image: "images/mila-fluss.svg"
     examples:
       - q: "Mila folgte dem schmalen Pfad durch den Wald. Die Baeume standen so dicht beieinander, dass ihre Aeste ein gruenes Dach bildeten. Sonnenstrahlen fielen wie goldene Faeden hindurch."
         voice: narrator

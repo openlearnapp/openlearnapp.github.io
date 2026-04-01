@@ -1,44 +1,48 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280">
   <defs><style>
-    .fh{animation:fhp 2.5s ease-in-out infinite}@keyframes fhp{0%,70%,100%{transform:translateY(0)}80%{transform:translateY(-12px)}90%{transform:translateY(3px)}}
-    .sp{animation:spk 1.5s ease-in-out infinite}@keyframes spk{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:.8;transform:scale(1.3)}}
-    .qb{animation:qbb 1.2s ease-in-out infinite}@keyframes qbb{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    .fh{animation:fhp 2.5s ease-in-out infinite}@keyframes fhp{0%,70%,100%{transform:translateY(0)}80%{transform:translateY(-8px)}90%{transform:translateY(2px)}}
+    .blink{animation:bl 3s ease-in-out infinite}@keyframes bl{0%,45%,55%,100%{transform:scaleY(1)}50%{transform:scaleY(0.1)}}
+    .bubble{animation:bub 3s ease-in-out infinite}@keyframes bub{0%{transform:translateY(0);opacity:.5}100%{transform:translateY(-40px);opacity:0}}
   </style></defs>
   <rect width="400" height="280" fill="#0f1e30"/>
-  <!-- Fokus auf Fridolin — groß in der Mitte -->
-  <ellipse cx="200" cy="240" rx="50" ry="18" fill="#5a6a5a"/>
-  <g transform="translate(200, 200)"><g class="fh">
-    <!-- Körper -->
-    <ellipse cx="0" cy="0" rx="30" ry="22" fill="#3aaa4a"/>
-    <!-- Augen (groß, freundlich) -->
-    <circle cx="-12" cy="-20" r="12" fill="#3aaa4a"/>
-    <circle cx="12" cy="-20" r="12" fill="#3aaa4a"/>
-    <circle cx="-12" cy="-22" r="8" fill="white"/>
-    <circle cx="12" cy="-22" r="8" fill="white"/>
-    <circle cx="-10" cy="-22" r="4" fill="#1a3a1a"/>
-    <circle cx="14" cy="-22" r="4" fill="#1a3a1a"/>
-    <circle cx="-9" cy="-23" r="1.5" fill="white"/>
-    <circle cx="15" cy="-23" r="1.5" fill="white"/>
-    <!-- Großes Lächeln -->
-    <path d="M-12,2 Q0,14 12,2" stroke="#1a5a2a" stroke-width="2" fill="none"/>
+  <!-- Seerosenblatt -->
+  <ellipse cx="200" cy="230" rx="55" ry="20" fill="#2a6a3a"/>
+  <ellipse cx="200" cy="228" rx="50" ry="17" fill="#3a8a4a"/>
+  <path d="M200,228 L200,211" stroke="#2a6a3a" stroke-width="2"/>
+  <!-- Wasser um Seerosenblatt -->
+  <path d="M100,240 Q150,232 200,238 Q250,244 300,236 Q350,230 400,240 L400,280 L0,280Z" fill="#1e3a5f" opacity="0.6"/>
+  <!-- Fridolin auf dem Blatt -->
+  <g transform="translate(200,195)"><g class="fh">
+    <ellipse cx="0" cy="0" rx="22" ry="16" fill="#3aaa4a"/>
+    <!-- Augen -->
+    <circle cx="-9" cy="-14" r="9" fill="#3aaa4a"/>
+    <circle cx="9" cy="-14" r="9" fill="#3aaa4a"/>
+    <g class="blink">
+      <circle cx="-9" cy="-16" r="6" fill="white"/>
+      <circle cx="9" cy="-16" r="6" fill="white"/>
+    </g>
+    <circle cx="-7" cy="-16" r="3" fill="#1a3a1a"/>
+    <circle cx="11" cy="-16" r="3" fill="#1a3a1a"/>
+    <circle cx="-6" cy="-17" r="1" fill="white"/>
+    <circle cx="12" cy="-17" r="1" fill="white"/>
+    <!-- Lächeln -->
+    <path d="M-8,2 Q0,10 8,2" stroke="#1a5a2a" stroke-width="1.5" fill="none"/>
     <!-- Blaue Mütze -->
-    <path d="M-18,-30 Q0,-48 18,-30" fill="#4a7af5"/>
+    <path d="M-14,-22 Q0,-36 14,-22" fill="#4a7af5"/>
     <!-- Beine -->
-    <path d="M-28,12 Q-40,28 -35,32" stroke="#3aaa4a" stroke-width="8" fill="none" stroke-linecap="round"/>
-    <path d="M28,12 Q40,28 35,32" stroke="#3aaa4a" stroke-width="8" fill="none" stroke-linecap="round"/>
-    <!-- Hände -->
-    <ellipse cx="-35" cy="33" rx="6" ry="4" fill="#2a8a3a"/>
-    <ellipse cx="35" cy="33" rx="6" ry="4" fill="#2a8a3a"/>
+    <path d="M-20,10 Q-28,22 -24,26" stroke="#3aaa4a" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M20,10 Q28,22 24,26" stroke="#3aaa4a" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="-24" cy="27" rx="5" ry="3" fill="#2a8a3a"/>
+    <ellipse cx="24" cy="27" rx="5" ry="3" fill="#2a8a3a"/>
   </g></g>
   <!-- Sprechblase -->
-  <g transform="translate(290, 110)">
-    <ellipse cx="0" cy="0" rx="55" ry="30" fill="white" opacity="0.9"/>
-    <polygon points="-15,25 -25,45 0,28" fill="white" opacity="0.9"/>
-    <text x="0" y="5" text-anchor="middle" fill="#1a3a1a" font-size="12" font-family="Georgia,serif">Hallo! Ich bin</text>
-    <text x="0" y="20" text-anchor="middle" fill="#3aaa4a" font-size="14" font-weight="bold" font-family="Georgia,serif">Fridolin!</text>
+  <g transform="translate(300,100)">
+    <ellipse cx="0" cy="0" rx="50" ry="26" fill="white" opacity="0.9" rx="8"/>
+    <polygon points="-20,22 -30,40 -5,24" fill="white" opacity="0.9"/>
+    <text x="0" y="-4" text-anchor="middle" fill="#1a3a1a" font-size="11" font-family="Georgia,serif">Quak! Ich bin</text>
+    <text x="0" y="12" text-anchor="middle" fill="#3aaa4a" font-size="13" font-weight="bold" font-family="Georgia,serif">Fridolin!</text>
   </g>
-  <!-- Sparkles -->
-  <circle cx="100" cy="100" r="3" fill="#ffd700" class="sp"/>
-  <circle cx="320" cy="80" r="2.5" fill="#ffd700" class="sp" style="animation-delay:.5s"/>
-  <circle cx="80" cy="200" r="2" fill="#4ade80" class="sp" style="animation-delay:1s"/>
+  <!-- Wasserblasen -->
+  <circle cx="130" cy="250" r="3" fill="rgba(100,180,255,0.3)" class="bubble"/>
+  <circle cx="270" cy="255" r="2" fill="rgba(100,180,255,0.2)" class="bubble" style="animation-delay:1s"/>
 </svg>
