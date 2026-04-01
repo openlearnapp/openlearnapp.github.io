@@ -341,12 +341,7 @@ const currentNarrationText = computed(() => {
   return currentExample.value?.q || ''
 })
 
-// Direct image resolution for current section (bypasses displayImage complexity)
-const resolvedSectionImage = computed(() => {
-  const img = currentSection.value?.image
-  if (!img) return null
-  return resolveStoryAssetPath(img)
-})
+// resolvedSectionImage is defined after resolveStoryAssetPath below
 
 // Book pagination state
 const currentPage = ref(0)
@@ -535,6 +530,12 @@ function resolveSectionImage(imagePath) {
 function resolveLessonImage(imagePath) {
   return resolveStoryAssetPath(imagePath)
 }
+
+const resolvedSectionImage = computed(() => {
+  const img = currentSection.value?.image
+  if (!img) return null
+  return resolveStoryAssetPath(img)
+})
 
 function getAudioBase() {
   const lesson = currentLesson.value
