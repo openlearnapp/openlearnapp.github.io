@@ -91,9 +91,14 @@
           <div v-if="sceneType === 'house'" class="scene-deco scene-deco-glow" />
         </div>
 
-        <!-- Assessment background -->
-        <div v-if="isAssessmentState && currentSection?.title" class="absolute top-16 left-0 right-0 px-6 pointer-events-none z-[1]">
-          <p class="text-amber-200/40 text-sm tracking-wider text-center font-serif">{{ currentSection.title }}</p>
+        <!-- Assessment background with section image -->
+        <div v-if="isAssessmentState" class="absolute inset-0 pointer-events-none z-[1]">
+          <div v-if="currentSection?.title" class="absolute top-16 left-0 right-0 px-6">
+            <p class="text-amber-200/40 text-sm tracking-wider text-center font-serif">{{ currentSection.title }}</p>
+          </div>
+          <div v-if="currentSection?.image" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 opacity-10">
+            <img :src="resolvedSectionImage" :alt="currentSection?.title || ''" class="w-full h-full object-contain" />
+          </div>
         </div>
 
         <!-- Book page layout -->
@@ -124,7 +129,7 @@
                 <div class="h-full overflow-hidden">
                   <div ref="textFlowRef" class="story-text-flow">
                     <!-- Section image (floats left, text wraps around) -->
-                    <div v-if="currentSection?.image && currentPage === 0" class="book-image-wrapper">
+                    <div v-if="currentSection?.image" class="book-image-wrapper">
                       <img
                         :src="resolvedSectionImage"
                         :alt="currentSection?.title || ''"
