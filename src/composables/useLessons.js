@@ -30,31 +30,38 @@ function parseSource(source) {
 
 // Default content sources loaded from default-sources.yaml
 let defaultContentSources = []
+let defaultSourcesPromise = null
 
-// Module-level singleton state (shared across all useLessons() calls)
+// Shared state across all component instances (singleton pattern)
 const workshopSlugMap = ref({}) // lang → { slug → URL } mapping for remote workshops
+const availableContent = ref({})
+const languageCodes = ref({})
+const workshopCodes = ref({})
+const workshopMeta = ref({})
+const isLoading = ref(false)
+const loadedSourceLangs = new Set()
+let loadingPromise = null
 
 async function loadDefaultSources() {
   if (defaultContentSources.length > 0) return defaultContentSources
-  try {
-    const response = await fetch('default-sources.yaml')
-    if (!response.ok) return []
-    const text = await response.text()
-    const data = yaml.load(text)
-    defaultContentSources = data?.sources || []
-    console.log(`📋 Loaded ${defaultContentSources.length} default sources`)
-  } catch (error) {
-    console.warn('⚠️ Failed to load default-sources.yaml:', error)
-  }
-  return defaultContentSources
+  if (defaultSourcesPromise) return defaultSourcesPromise
+  defaultSourcesPromise = (async () => {
+    try {
+      const response = await fetch('default-sources.yaml')
+      if (!response.ok) return []
+      const text = await response.text()
+      const data = yaml.load(text)
+      defaultContentSources = data?.sources || []
+      console.log(`📋 Loaded ${defaultContentSources.length} default sources`)
+    } catch (error) {
+      console.warn('⚠️ Failed to load default-sources.yaml:', error)
+    }
+    return defaultContentSources
+  })()
+  return defaultSourcesPromise
 }
 
 export function useLessons() {
-  const availableContent = ref({})
-  const languageCodes = ref({}) // Store language codes
-  const workshopCodes = ref({}) // Store workshop codes
-  const workshopMeta = ref({}) // { lang: { workshop: { title, description } } }
-  const isLoading = ref(false)
 
   // Get content sources from localStorage
   function getContentSources() {
@@ -335,7 +342,6 @@ export function useLessons() {
   }
 
   // targetLang: if set, only load workshop details for this language
-  let loadingPromise = null
   async function loadAvailableContent(targetLang) {
     // Prevent duplicate concurrent calls
     if (loadingPromise) return loadingPromise
@@ -395,6 +401,8 @@ export function useLessons() {
         }
       }
 
+      // Clear cache when content is rebuilt so sources reload correctly
+      loadedSourceLangs.clear()
       availableContent.value = content
       languageCodes.value = codes
       if (targetLang) loadedSourceLangs.add(targetLang)
@@ -407,7 +415,6 @@ export function useLessons() {
   }
 
   // Load workshop details for a new language from already-known sources
-  const loadedSourceLangs = new Set()
   async function loadSourcesForLanguage(lang) {
     if (loadedSourceLangs.has(lang)) return
     console.log(`📡 Loading source workshop details for language: ${lang}`)
