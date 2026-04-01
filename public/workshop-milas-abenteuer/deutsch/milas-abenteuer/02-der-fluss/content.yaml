@@ -14,6 +14,9 @@ sections:
         voice: narrator
       - q: "Am Ufer, auf einem grossen flachen Stein, sass ein kleiner gruener Frosch. Er hatte grosse freundliche Augen und trug eine winzige blaue Muetze auf dem Kopf."
         voice: narrator
+  - title: "Fridolin"
+    image: "images/fridolin.svg"
+    examples:
       - q: "'Hallo! Ich bin Fridolin,' sagte der Frosch und verbeugte sich hoeflich. 'Ich warte schon den ganzen Morgen auf dich!'"
         voice: fridolin
       - q: "'Auf mich?' fragte Mila ueberrascht. 'Woher wusstest du, dass ich komme?'"
@@ -22,22 +25,22 @@ sections:
         voice: fridolin
       - q: "Wie heisst der Frosch?"
         type: select
-        goto_correct: { lesson: 2, section: 1 }
-        goto_wrong: { lesson: 2, section: 0 }
+        goto_correct: { lesson: 2, section: 2 }
+        goto_wrong: { lesson: 2, section: 1 }
         options:
           - text: "Fridolin"
             correct: true
           - text: "Ferdinand"
           - text: "Friedrich"
   - title: "Was weisst du?"
-    image: "images/fridolin.svg"
+    image: "images/river.svg"
     examples:
       - q: "Fridolin klatschte begeistert in seine kleinen gruenen Haende. 'Richtig! Du hoerst gut zu. Das ist eine wichtige Eigenschaft fuer ein Abenteuer.'"
         voice: fridolin
       - q: "Was hat Mila am Fluss gesehen?"
         type: multiple-choice
-        goto_correct: { lesson: 2, section: 2 }
-        goto_wrong: { lesson: 2, section: 1 }
+        goto_correct: { lesson: 2, section: 3 }
+        goto_wrong: { lesson: 2, section: 2 }
         options:
           - text: "Einen Frosch"
             correct: true

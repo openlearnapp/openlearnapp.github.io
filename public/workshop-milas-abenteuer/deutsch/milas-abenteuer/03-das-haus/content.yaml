@@ -12,6 +12,9 @@ sections:
         voice: narrator
       - q: "Mila zoegerte einen Moment. Sollte sie wirklich einfach hineingehen? Aber die Neugier war staerker als die Vorsicht."
         voice: narrator
+  - title: "Die alte Frau"
+    image: "images/house.svg"
+    examples:
       - q: "'Komm herein, kleines Maedchen,' sagte eine freundliche Stimme von drinnen. 'Ich habe dich erwartet. Der Tee ist schon fertig.'"
         voice: grandma
       - q: "Drinnen sass eine alte Frau in einem gemuetlichen Sessel. Sie hatte silberweisses Haar und ein warmes Laecheln. Auf ihrem Schoss lag ein riesiges Buch mit einem goldenen Einband."
@@ -20,12 +23,12 @@ sections:
         type: input
         answers:
           - text: "ein Buch"
-            goto: { lesson: 3, section: 1 }
+            goto: { lesson: 3, section: 2 }
           - text: "Buch"
-            goto: { lesson: 3, section: 1 }
+            goto: { lesson: 3, section: 2 }
           - text: "ein grosses Buch"
-            goto: { lesson: 3, section: 1 }
-        goto_wrong: { lesson: 3, section: 0 }
+            goto: { lesson: 3, section: 2 }
+        goto_wrong: { lesson: 3, section: 1 }
   - title: "Die Geschichten"
     image: "images/book.svg"
     examples:

@@ -14,6 +14,9 @@ sections:
         voice: narrator
       - q: "Eines Tages, als die Sonne gerade aufging und der Himmel orange und rosa leuchtete, hoerte Mila ein geheimnisvolles Geraeusch aus dem Wald. Es klang wie eine leise Melodie, die jemand auf einer Floete spielte."
         voice: narrator
+  - title: "Der geheimnisvolle Klang"
+    image: "images/forest.svg"
+    examples:
       - q: "'Was ist das fuer ein wunderschoener Klang?' fragte sich Mila und stand sofort auf."
         voice: narrator
       - q: "Sie zog sich schnell an, packte ihren kleinen Rucksack und schlich leise aus dem Haus, waehrend alle noch schliefen."
