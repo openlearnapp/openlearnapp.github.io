@@ -694,29 +694,39 @@ async function loadAndStart() {
   audioReady.value = false
   paused.value = false
 
-  if (lessons.value.length === 0) {
-    lessons.value = await loadAllLessonsForWorkshop(learning.value, workshop.value)
+  try {
+    if (lessons.value.length === 0) {
+      lessons.value = await loadAllLessonsForWorkshop(learning.value, workshop.value)
+    }
+
+    const lesson = lessons.value.find(l => l.number === lessonNumber.value)
+    if (!lesson) {
+      goToOverview()
+      return
+    }
+
+    currentLesson.value = lesson
+    currentSectionIndex.value = 0
+    currentExampleIndex.value = 0
+    currentPage.value = 0
+
+    emit('update-title', lesson.title || '')
+
+    cleanup()
+    await initializeAudio(lesson, learning.value, workshop.value, audioSettings.value)
+    audioReady.value = hasAudio.value
+
+    // Intro sequence: show lesson image, read lesson title, then section title, then examples
+    await playIntroSequence()
+  } catch (err) {
+    console.error('Story load failed:', err)
+    // Still start the story even if something broke — avoids black screen
+    if (currentLesson.value) {
+      showCurrentExample()
+    } else {
+      goToOverview()
+    }
   }
-
-  const lesson = lessons.value.find(l => l.number === lessonNumber.value)
-  if (!lesson) {
-    goToOverview()
-    return
-  }
-
-  currentLesson.value = lesson
-  currentSectionIndex.value = 0
-  currentExampleIndex.value = 0
-  currentPage.value = 0
-
-  emit('update-title', lesson.title || '')
-
-  cleanup()
-  await initializeAudio(lesson, learning.value, workshop.value, audioSettings.value)
-  audioReady.value = hasAudio.value
-
-  // Intro sequence: show lesson image, read lesson title, then section title, then examples
-  await playIntroSequence()
 }
 
 async function playIntroSequence() {
