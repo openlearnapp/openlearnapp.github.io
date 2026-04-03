@@ -84,8 +84,8 @@ test.describe('Workshop Overview', () => {
     await page.waitForTimeout(2000);
 
     // Should show footer links
-    await expect(page.getByRole('link', { name: 'Guide' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Feedback' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Guide', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Feedback', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Bug Report' })).toBeVisible();
   });
 });

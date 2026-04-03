@@ -108,15 +108,24 @@ pnpm build
 # Preview production build locally
 pnpm preview
 
-# Run unit tests (Vitest)
+# Run unit tests (Vitest) — single run, exits when done
+npx vitest --run
+
+# Run unit tests in watch mode
 pnpm test
 
 # Run unit tests with UI
 pnpm test:ui
 
-# Run E2E tests (Playwright)
+# Run E2E tests (Playwright) — needs `pnpm build` first or dev server running
 pnpm test:e2e
+
+# Run E2E smoke tests only (used in CI)
+pnpm test:e2e:smoke
 ```
+
+> **Note:** `pnpm test` starts Vitest in watch mode (hangs). Use `npx vitest --run` for a single run that exits.
+> E2E tests start their own preview server automatically. Full suite takes ~45s locally.
 
 ### Local Workshop Development
 
