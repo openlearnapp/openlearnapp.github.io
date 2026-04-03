@@ -2,12 +2,11 @@
 # These are always loaded and cannot be removed by users
 sources:
   # Built-in workshops (served from public/)
-  # Built-in workshops (served from public/)
   - workshop-open-learn-guide/index.yaml
   - workshop-open-learn-feedback/index.yaml
   - workshop-milas-abenteuer/index.yaml
-  - workshop-k0rdent/index.yaml
   # External workshops (hosted on open-learn.app)
+  - https://open-learn.app/workshop-k0rdent/index.yaml
   - https://open-learn.app/workshop-portugiesisch/index.yaml
   - https://open-learn.app/workshop-farsi/index.yaml
   - https://open-learn.app/workshop-arabisch/index.yaml
