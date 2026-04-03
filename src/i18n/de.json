@@ -14,7 +14,9 @@
     "settings": "Einstellungen",
     "done": "Fertig",
     "profile": "Profil",
-    "loading": "Lädt..."
+    "loading": "Lädt...",
+    "menu": "Menü",
+    "closeMenu": "Menü schließen"
   },
   "profile": {
     "title": "Mein Profil",

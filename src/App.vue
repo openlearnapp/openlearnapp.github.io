@@ -128,18 +128,6 @@
             <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
           </Button>
 
-          <!-- Coach button -->
-          <Button
-            v-if="hasCoach"
-            variant="ghost"
-            size="icon"
-            @click="goToCoach"
-            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
-            :title="$t('nav.coach')"
-            :aria-label="$t('nav.coach')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
-          </Button>
-
           <!-- Items / Lesson# toggle button -->
           <Button
             v-if="canShowItemsButton"
@@ -153,45 +141,45 @@
             <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </Button>
 
-          <!-- Profile avatar (hidden on mobile, visible on desktop when logged in) -->
-          <button
-            v-if="!isHomePage && isGunLoggedIn && route.name !== 'profile'"
-            @click="goToProfile"
-            class="hidden md:flex flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 border-white/50 hover:border-white transition"
-            :title="$t('nav.profile')"
-            :aria-label="$t('nav.profile')">
-            <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-              <rect width="40" height="40" :fill="`hsl(${avatarHue}, 30%, 85%)`" />
-              <text x="20" y="27" text-anchor="middle" font-size="18" font-weight="bold"
-                :fill="`hsl(${avatarHue}, 65%, 35%)`" font-family="Arial, sans-serif">{{ avatarInitial }}</text>
-            </svg>
-          </button>
+          <!-- Burger menu (replaces Settings, Profile, Workshops buttons) -->
+          <div v-if="!isHomePage" class="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              @click="showBurgerMenu = !showBurgerMenu"
+              class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
+              :title="showBurgerMenu ? $t('nav.closeMenu') : $t('nav.menu')"
+              :aria-label="showBurgerMenu ? $t('nav.closeMenu') : $t('nav.menu')">
+              <svg v-if="!showBurgerMenu" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+            </Button>
 
-          <!-- Settings / Done button (always occupies same slot to prevent jumping) -->
-          <Button
-            v-if="!isHomePage"
-            variant="ghost"
-            size="icon"
-            @click="route.name === 'settings' ? goBack() : goToSettings()"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0 transition-transform duration-300"
-            :class="route.name !== 'settings' ? 'hover:rotate-90' : ''"
-            :title="route.name === 'settings' ? $t('nav.done') : $t('nav.settings')"
-            :aria-label="route.name === 'settings' ? $t('nav.done') : $t('nav.settings')">
-            <svg v-if="route.name !== 'settings'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </Button>
-
-          <!-- Workshops button (visible on profile page) -->
-          <Button
-            v-if="route.name === 'profile'"
-            variant="ghost"
-            size="icon"
-            @click="goToWorkshopOverview"
-            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
-            :title="$t('home.workshops')"
-            :aria-label="$t('home.workshops')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
-          </Button>
+            <!-- Dropdown menu -->
+            <div
+              v-if="showBurgerMenu"
+              class="absolute top-full mt-1 bg-popover text-popover-foreground border rounded-lg shadow-lg overflow-hidden min-w-[180px] z-[100]"
+              :class="isRtl ? 'left-0' : 'right-0'">
+              <button
+                @click="goToSettings(); showBurgerMenu = false"
+                :class="['flex items-center gap-3 w-full px-4 py-3 text-sm hover:bg-accent transition', isRtl ? 'text-right' : 'text-left', route.name === 'settings' ? 'bg-accent font-medium' : '']">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>{{ $t('nav.settings') }}</span>
+              </button>
+              <button
+                @click="goToProfile(); showBurgerMenu = false"
+                :class="['flex items-center gap-3 w-full px-4 py-3 text-sm hover:bg-accent transition', isRtl ? 'text-right' : 'text-left', route.name === 'profile' ? 'bg-accent font-medium' : '']">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>{{ $t('nav.profile') }}</span>
+              </button>
+              <button
+                v-if="hasCoach"
+                @click="goToCoach(); showBurgerMenu = false"
+                :class="['flex items-center gap-3 w-full px-4 py-3 text-sm hover:bg-accent transition', isRtl ? 'text-right' : 'text-left', route.name === 'coach' ? 'bg-accent font-medium' : '']">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                <span>{{ $t('nav.coach') }}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -262,6 +250,7 @@ const { locale } = useI18n()
 
 const pageTitle = ref('🎓 Open Learn')
 const showLanguageMenu = ref(false)
+const showBurgerMenu = ref(false)
 
 const { isLoadingAudio, isPlaying, play, pause, resume } = useAudio()
 const { settings } = useSettings()
@@ -424,10 +413,13 @@ async function switchLanguage(lang) {
   router.push({ name: 'workshop-overview', params: { learning: lang } })
 }
 
-// Close dropdown when clicking outside
+// Close dropdowns when clicking outside
 function handleClickOutside(e) {
   if (showLanguageMenu.value && !e.target.closest('[aria-label]') && !e.target.closest('.absolute')) {
     showLanguageMenu.value = false
+  }
+  if (showBurgerMenu.value && !e.target.closest('.relative')) {
+    showBurgerMenu.value = false
   }
 }
 
