@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280">
+  <defs><style>
+    .flame{animation:fl 1s ease-in-out infinite}@keyframes fl{0%,100%{transform:scaleY(1);opacity:.8}50%{transform:scaleY(1.2);opacity:1}}
+    .steam{animation:st 3s ease-in-out infinite}@keyframes st{0%{transform:translateY(0);opacity:.4}100%{transform:translateY(-20px);opacity:0}}
+  </style></defs>
+  <rect width="400" height="280" fill="#2a1a10"/>
+  <!-- Warmer Raum -->
+  <rect x="20" y="20" width="360" height="240" rx="8" fill="#3a2a18"/>
+  <!-- Kamin -->
+  <rect x="300" y="120" width="60" height="80" rx="4" fill="#1a1008"/>
+  <ellipse cx="330" cy="185" rx="15" ry="8" fill="#ff6a20" class="flame"/>
+  <ellipse cx="330" cy="188" rx="10" ry="5" fill="#ffa040" class="flame" style="animation-delay:.3s"/>
+  <!-- Sessel -->
+  <path d="M140,140 Q130,140 130,160 L130,220 Q130,230 140,230 L220,230 Q230,230 230,220 L230,160 Q230,140 220,140Z" fill="#8a4a2a"/>
+  <path d="M120,150 Q115,150 115,160 L115,210 Q115,220 120,220 L130,220 L130,150Z" fill="#7a3a1a"/>
+  <path d="M230,150 L240,150 Q245,150 245,160 L245,210 Q245,220 240,220 L230,220Z" fill="#7a3a1a"/>
+  <!-- Alte Frau im Sessel -->
+  <g transform="translate(180,165)">
+    <!-- Haar -->
+    <ellipse cx="0" cy="-30" rx="14" ry="16" fill="#d0d0d0"/>
+    <!-- Gesicht -->
+    <circle cx="0" cy="-28" r="11" fill="#e8c8a8"/>
+    <!-- Augen -->
+    <path d="M-5,-30 Q-3,-27 -1,-30" stroke="#3a2a1a" stroke-width="1" fill="none"/>
+    <path d="M2,-30 Q4,-27 6,-30" stroke="#3a2a1a" stroke-width="1" fill="none"/>
+    <!-- Lächeln -->
+    <path d="M-4,-24 Q0,-20 4,-24" stroke="#a07060" stroke-width="0.8" fill="none"/>
+    <!-- Brille -->
+    <circle cx="-3" cy="-29" r="5" fill="none" stroke="#8a7a5a" stroke-width="0.8"/>
+    <circle cx="5" cy="-29" r="5" fill="none" stroke="#8a7a5a" stroke-width="0.8"/>
+    <line x1="2" y1="-29" x2="-2" y2="-29" stroke="#8a7a5a" stroke-width="0.6"/>
+    <!-- Kleid -->
+    <path d="M-12,-16 Q-14,0 -10,20 L10,20 Q14,0 12,-16Z" fill="#5a3a6a"/>
+    <!-- Buch auf dem Schoß -->
+    <rect x="-12" y="5" width="24" height="16" rx="2" fill="#c8a030"/>
+    <line x1="0" y1="5" x2="0" y2="21" stroke="#a08020" stroke-width="1"/>
+  </g>
+  <!-- Teetasse -->
+  <g transform="translate(260,200)">
+    <rect x="-8" y="-6" width="16" height="12" rx="3" fill="#e8d8c0"/>
+    <path d="M8,-2 Q14,-2 14,3 Q14,8 8,8" stroke="#e8d8c0" stroke-width="2" fill="none"/>
+    <path d="M-2,-10 Q0,-16 2,-10" stroke="#fff" stroke-width="1" fill="none" opacity="0.4" class="steam"/>
+  </g>
+  <!-- Teppich -->
+  <ellipse cx="180" cy="248" rx="80" ry="15" fill="#8a3a2a" opacity="0.4"/>
+</svg>

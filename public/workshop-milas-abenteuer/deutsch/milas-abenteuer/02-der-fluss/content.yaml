@@ -33,7 +33,7 @@ sections:
           - text: "Ferdinand"
           - text: "Friedrich"
   - title: "Was weisst du?"
-    image: "images/river.svg"
+    image: "images/fridolin-quiz.svg"
     examples:
       - q: "Fridolin klatschte begeistert in seine kleinen gruenen Haende. 'Richtig! Du hoerst gut zu. Das ist eine wichtige Eigenschaft fuer ein Abenteuer.'"
         voice: fridolin

@@ -13,7 +13,7 @@ sections:
       - q: "Mila zoegerte einen Moment. Sollte sie wirklich einfach hineingehen? Aber die Neugier war staerker als die Vorsicht."
         voice: narrator
   - title: "Die alte Frau"
-    image: "images/house.svg"
+    image: "images/alte-frau.svg"
     examples:
       - q: "'Komm herein, kleines Maedchen,' sagte eine freundliche Stimme von drinnen. 'Ich habe dich erwartet. Der Tee ist schon fertig.'"
         voice: grandma
