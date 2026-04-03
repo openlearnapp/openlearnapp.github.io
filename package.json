@@ -13,6 +13,7 @@
     "test:e2e:smoke": "SMOKE=true playwright test"
   },
   "dependencies": {
+    "@chenglou/pretext": "^0.0.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "dompurify": "^3.3.1",

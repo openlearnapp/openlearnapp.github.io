@@ -4,10 +4,11 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 import fs from 'fs'
 
-// Auto-detect sibling workshop directories (../workshop-*)
+// Auto-detect sibling workshop directories (../workshop-*) and built-in workshops (public/workshop-*)
 // In dev mode, serves local workshop files and provides a manifest
 function localWorkshopsPlugin() {
   const parentDir = path.resolve(__dirname, '..')
+  const publicDir = path.resolve(__dirname, 'public')
   const localWorkshops = new Map()
 
   // Scan for sibling workshop directories that have index.yaml
@@ -22,10 +23,23 @@ function localWorkshopsPlugin() {
     }
   } catch { /* ignore */ }
 
+  // Also scan built-in workshops in public/ so they appear as local-dev too
+  try {
+    for (const entry of fs.readdirSync(publicDir)) {
+      const fullPath = path.join(publicDir, entry)
+      if (entry.startsWith('workshop-') && fs.statSync(fullPath).isDirectory()) {
+        if (fs.existsSync(path.join(fullPath, 'index.yaml')) && !localWorkshops.has(entry)) {
+          localWorkshops.set(entry, fullPath)
+        }
+      }
+    }
+  } catch { /* ignore */ }
+
   if (localWorkshops.size > 0) {
     console.log(`\n🔧 Local workshops (shown alongside remote):`)
-    for (const [name] of localWorkshops) {
-      console.log(`   ${name}/`)
+    for (const [name, dir] of localWorkshops) {
+      const isBuiltIn = dir.startsWith(publicDir)
+      console.log(`   ${name}/${isBuiltIn ? ' (built-in)' : ''}`)
     }
     console.log('')
   }
