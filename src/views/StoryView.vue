@@ -129,7 +129,7 @@
                 <div class="h-full overflow-hidden">
                   <div ref="textFlowRef" class="story-text-flow">
                     <!-- Section image (floats left, text wraps around) -->
-                    <div v-if="currentSection?.image && currentPage === 0" class="book-image-wrapper">
+                    <div v-if="currentSection?.image" class="book-image-wrapper">
                       <img
                         :src="resolvedSectionImage"
                         :alt="currentSection?.title || ''"
