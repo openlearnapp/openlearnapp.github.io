@@ -1,9 +1,0 @@
-workshops:
-  - folder: milas-abenteuer
-    code: de-DE
-    title: "Milas Abenteuer"
-    description: "Eine interaktive Geschichte zum Entdecken — wohin wird Mila gehen?"
-    color: "270 40% 92%"
-    primaryColor: "270 60% 50%"
-    image: "milas-abenteuer/thumbnail.svg"
-    labels: ["Kids", "Mila"]

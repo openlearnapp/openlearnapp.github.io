@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-04-03
+
+### Refactoring
+
+#### Milas Abenteuer in eigenes Repo migriert
+- `public/workshop-milas-abenteuer/` aus Hauptrepo entfernt
+- Eigenes GitHub-Repo `openlearnapp/workshop-milas-abenteuer` erstellt mit GitHub Pages
+- `default-sources.yaml` zeigt jetzt auf externe URL `https://open-learn.app/workshop-milas-abenteuer/`
+
 ## 2026-03-30
 
 ### Features
