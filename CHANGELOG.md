@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-04-03
+
+### Features
+
+#### Burger Menu für Navigation (#130)
+- Hamburger-Icon ersetzt einzelne Settings-, Profile- und Coach-Buttons oben rechts
+- Dropdown mit Settings, Profile und Coach (nur wenn Coach verfügbar)
+- Aktuelle Seite wird im Menü hervorgehoben
+- i18n in allen 4 Sprachen (DE, EN, AR, FA)
+
+### Fixes
+
+#### Workshop-Übersicht fehlt nach Reload (#134)
+- `useLessons()` auf Singleton-Pattern umgestellt — verhindert Race Conditions beim parallelen Laden
+- Cache-Invalidierung (`loadedSourceLangs.clear()`) beim Content-Rebuild
+- Parallele `loadDefaultSources()`-Aufrufe werden dedupliziert
+
 ## 2026-03-30
 
 ### Features
