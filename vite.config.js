@@ -85,6 +85,8 @@ export default defineConfig(({ command }) => ({
       workbox: {
         // Precache built app assets
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Don't intercept navigation to workshop landing pages or 404
+        navigateFallbackDenylist: [/^\/workshop-/, /^\/404\.html/],
         // Runtime caching for workshop metadata (always cached, stale-while-revalidate)
         runtimeCaching: [
           {
