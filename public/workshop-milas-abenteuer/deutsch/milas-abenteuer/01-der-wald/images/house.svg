@@ -1,23 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280">
-  <defs><style>
-    .wg{animation:wgl 3s ease-in-out infinite}@keyframes wgl{0%,100%{fill:#ffd080}50%{fill:#ffe8b0}}
-    .sm{animation:sr 5s ease-out infinite}@keyframes sr{0%{transform:translate(0,0) scale(1);opacity:.12}100%{transform:translate(-8px,-30px) scale(1.8);opacity:0}}
-    .st{animation:tw 2s ease-in-out infinite}@keyframes tw{0%,100%{opacity:.3}50%{opacity:.8}}
-  </style></defs>
-  <rect width="400" height="280" fill="#1a150a"/>
-  <circle cx="50" cy="25" r="1" fill="#ffd700" class="st"/><circle cx="150" cy="18" r="1.2" fill="#ffd700" class="st" style="animation-delay:1s"/><circle cx="320" cy="35" r="1" fill="#ffd700" class="st"/>
-  <path d="M0,210 Q100,205 200,210 Q300,215 400,208 L400,280 L0,280Z" fill="#2a3a1a"/>
-  <g transform="translate(200,140)">
-    <polygon points="-50,0 0,-50 50,0" fill="#a05a30"/>
-    <rect x="-40" y="0" width="80" height="70" fill="#c4956a" rx="2"/>
-    <rect x="-28" y="12" width="20" height="18" rx="2" fill="#ffd080" class="wg"/>
-    <rect x="8" y="12" width="20" height="18" rx="2" fill="#ffd080" class="wg" style="animation-delay:1s"/>
-    <rect x="-8" y="40" width="16" height="30" rx="3" fill="#7a4a2a"/>
-    <circle cx="4" cy="56" r="1.5" fill="#d4a030"/>
-    <rect x="25" y="-35" width="12" height="35" fill="#8a5a3a"/>
-    <circle cx="31" cy="-40" r="5" fill="#aaa" opacity=".12" class="sm"/>
-    <circle cx="33" cy="-50" r="7" fill="#aaa" opacity=".08" class="sm" style="animation-delay:1s"/>
-  </g>
-  <circle cx="200" cy="190" r="110" fill="rgba(255,200,80,0.05)"/>
-  <text x="200" y="268" text-anchor="middle" fill="rgba(252,211,77,0.4)" font-size="13" font-family="Georgia,serif">Zum alten Haus</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#2d5a2d"/>
+  <rect x="130" y="120" width="140" height="130" fill="#8B6914"/>
+  <polygon points="120,120 200,50 280,120" fill="#cc4444"/>
+  <rect x="175" y="180" width="50" height="70" fill="#5a3a0a"/>
+  <rect x="145" y="140" width="40" height="40" fill="#ffe066" opacity="0.8"/>
+  <rect x="215" y="140" width="40" height="40" fill="#ffe066" opacity="0.8"/>
+  <text x="200" y="280" text-anchor="middle" fill="white" font-size="24" font-family="sans-serif">Zum alten Haus</text>
 </svg>

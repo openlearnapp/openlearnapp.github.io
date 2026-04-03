@@ -1,44 +1,35 @@
 number: 3
 title: "Das alte Haus"
-description: "Mila entdeckt ein geheimnisvolles Haus voller Geschichten."
+description: "Mila entdeckt ein geheimnisvolles Haus."
 image: "images/house.svg"
 sections:
   - title: "Das Haus im Wald"
-    image: "images/mila-tuer.svg"
+    image: "images/house.svg"
     examples:
-      - q: "Mila ging den schmalen Weg entlang und entdeckte ein altes Haus zwischen den Baeumen. Es sah aus wie aus einem Maerchenbuch — mit krummen Waenden, einem Schornstein aus dem blauer Rauch aufstieg, und einem Garten voller leuchtender Blumen."
+      - q: "Mila ging den schmalen Weg entlang und entdeckte ein altes Haus."
         voice: narrator
-      - q: "Die Tuer stand einen Spalt offen und warmes, goldenes Licht schien heraus. Es roch nach frisch gebackenem Kuchen und heissem Kakao."
+      - q: "Die Tuer stand offen und warmes Licht schien heraus."
         voice: narrator
-      - q: "Mila zoegerte einen Moment. Sollte sie wirklich einfach hineingehen? Aber die Neugier war staerker als die Vorsicht."
-        voice: narrator
-  - title: "Die alte Frau"
-    image: "images/alte-frau.svg"
-    examples:
-      - q: "'Komm herein, kleines Maedchen,' sagte eine freundliche Stimme von drinnen. 'Ich habe dich erwartet. Der Tee ist schon fertig.'"
+      - q: "'Komm herein, kleines Maedchen,' sagte eine freundliche Stimme."
         voice: grandma
-      - q: "Drinnen sass eine alte Frau in einem gemuetlichen Sessel. Sie hatte silberweisses Haar und ein warmes Laecheln. Auf ihrem Schoss lag ein riesiges Buch mit einem goldenen Einband."
+      - q: "Drinnen sass eine alte Frau mit einem grossen Buch voller Geschichten."
         voice: narrator
       - q: "Was hatte die alte Frau?"
         type: input
         answers:
           - text: "ein Buch"
-            goto: { lesson: 3, section: 2 }
+            goto: { lesson: 3, section: 1 }
           - text: "Buch"
-            goto: { lesson: 3, section: 2 }
+            goto: { lesson: 3, section: 1 }
           - text: "ein grosses Buch"
-            goto: { lesson: 3, section: 2 }
-        goto_wrong: { lesson: 3, section: 1 }
+            goto: { lesson: 3, section: 1 }
+        goto_wrong: { lesson: 3, section: 0 }
   - title: "Die Geschichten"
-    image: "images/book.svg"
+    image: "images/house.svg"
     examples:
-      - q: "'Dieses Buch ist etwas ganz Besonderes,' sagte die alte Frau und strich liebevoll ueber den goldenen Einband. 'Jede Geschichte darin fuehrt in eine neue Welt.'"
+      - q: "'Jede Geschichte fuehrt in eine neue Welt,' sagte sie laechelnd."
         voice: grandma
-      - q: "'Aber aufgepasst — wer eine Geschichte liest, erlebt sie auch! Man muss mutig sein, um die Seiten umzublaettern.'"
-        voice: grandma
-      - q: "Mila setzte sich neben die alte Frau. Das Buch oeffnete sich von selbst und die Buchstaben auf der ersten Seite begannen zu leuchten. Ein warmer Wind wehte aus den Seiten und Mila konnte das Meer rauschen hoeren."
+      - q: "Mila setzte sich neben die alte Frau und begann zu lesen."
         voice: narrator
-      - q: "'Bereit fuer ein Abenteuer?' fragte die alte Frau und zwinkerte."
-        voice: grandma
-      - q: "Mila nickte aufgeregt, nahm einen tiefen Atemzug und begann zu lesen. Und so begann ein neues, grosses Abenteuer..."
+      - q: "Und so begann ein neues Abenteuer..."
         voice: narrator

@@ -1,41 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280">
-  <defs><style>
-    .wg{animation:wgl 3s ease-in-out infinite}@keyframes wgl{0%,100%{fill:#ffd080}50%{fill:#ffe8b0}}
-    .sm{animation:sr 5s ease-out infinite}@keyframes sr{0%{transform:translate(0,0) scale(1);opacity:.12}100%{transform:translate(-8px,-30px) scale(1.8);opacity:0}}
-    .st{animation:tw 2s ease-in-out infinite}@keyframes tw{0%,100%{opacity:.3}50%{opacity:.8}}
-    .dl{animation:dp 4s ease-in-out infinite}@keyframes dp{0%,100%{opacity:.25}50%{opacity:.45}}
-    .fs{animation:fw 3s ease-in-out infinite;transform-origin:center bottom}@keyframes fw{0%,100%{transform:rotate(0)}50%{transform:rotate(3deg)}}
-  </style></defs>
-  <rect width="400" height="280" fill="#1a150a"/>
-  <!-- Sterne -->
-  <circle cx="50" cy="25" r="1" fill="#ffd700" class="st"/><circle cx="150" cy="18" r="1.2" fill="#ffd700" class="st" style="animation-delay:1s"/><circle cx="320" cy="35" r="1" fill="#ffd700" class="st"/><circle cx="370" cy="20" r=".8" fill="#ffd700" class="st" style="animation-delay:2s"/>
-  <!-- Boden -->
-  <path d="M0,210 Q100,205 200,210 Q300,215 400,208 L400,280 L0,280Z" fill="#2a3a1a"/>
-  <!-- Warmes Lichtspiel um Haus -->
-  <circle cx="200" cy="190" r="110" fill="rgba(255,200,80,0.05)"/>
-  <!-- Haus — sitzt AUF dem Boden -->
-  <g transform="translate(200,140)">
-    <polygon points="-50,0 0,-50 50,0" fill="#a05a30"/>
-    <rect x="-40" y="0" width="80" height="70" fill="#c4956a" rx="2"/>
-    <rect x="-28" y="12" width="20" height="18" rx="2" class="wg"/>
-    <rect x="8" y="12" width="20" height="18" rx="2" class="wg" style="animation-delay:1s"/>
-    <line x1="-18" y1="12" x2="-18" y2="30" stroke="#a05a30" stroke-width="1.2"/>
-    <line x1="-28" y1="21" x2="-8" y2="21" stroke="#a05a30" stroke-width="1.2"/>
-    <line x1="18" y1="12" x2="18" y2="30" stroke="#a05a30" stroke-width="1.2"/>
-    <line x1="8" y1="21" x2="28" y2="21" stroke="#a05a30" stroke-width="1.2"/>
-    <!-- Oma Silhouette -->
-    <circle cx="18" cy="18" r="4" fill="#c08040" opacity=".4"/>
-    <rect x="-8" y="40" width="16" height="30" rx="3" fill="#7a4a2a"/>
-    <circle cx="4" cy="56" r="1.5" fill="#d4a030"/>
-    <polygon points="-8,70 -15,80 23,80 16,70" fill="#ffd080" opacity=".3" class="dl"/>
-    <rect x="25" y="-35" width="12" height="35" fill="#8a5a3a"/>
-    <circle cx="31" cy="-40" r="5" fill="#aaa" opacity=".12" class="sm"/>
-    <circle cx="33" cy="-50" r="7" fill="#aaa" opacity=".08" class="sm" style="animation-delay:1s"/>
-    <circle cx="30" cy="-60" r="9" fill="#aaa" opacity=".05" class="sm" style="animation-delay:2s"/>
-  </g>
-  <!-- Blumen auf dem Boden -->
-  <g class="fs"><line x1="80" y1="215" x2="80" y2="203" stroke="#2a6a2a" stroke-width="1.3"/><circle cx="80" cy="201" r="4" fill="#ff6b8a"/></g>
-  <g class="fs" style="animation-delay:.5s"><line x1="115" y1="213" x2="115" y2="203" stroke="#2a6a2a" stroke-width="1.3"/><circle cx="115" cy="201" r="3.5" fill="#ffd060"/></g>
-  <g class="fs" style="animation-delay:1s"><line x1="285" y1="214" x2="285" y2="202" stroke="#2a6a2a" stroke-width="1.3"/><circle cx="285" cy="200" r="4" fill="#a080ff"/></g>
-  <g class="fs" style="animation-delay:1.5s"><line x1="320" y1="212" x2="320" y2="203" stroke="#2a6a2a" stroke-width="1.3"/><circle cx="320" cy="201" r="3" fill="#ff8060"/></g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#1a2a3a"/>
+  <rect y="400" width="800" height="200" fill="#2d4a2d"/>
+  <rect x="250" y="200" width="300" height="200" fill="#8B6914"/>
+  <polygon points="220,200 400,80 580,200" fill="#cc4444"/>
+  <rect x="350" y="300" width="100" height="100" fill="#5a3a0a"/>
+  <rect x="270" y="230" width="80" height="60" fill="#ffe066" opacity="0.8"/>
+  <rect x="450" y="230" width="80" height="60" fill="#ffe066" opacity="0.8"/>
+  <circle cx="600" cy="100" r="30" fill="#ddd" opacity="0.6"/>
+  <text x="400" y="550" text-anchor="middle" fill="white" font-size="32" font-family="sans-serif">Das alte Haus</text>
 </svg>

@@ -1,14 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280">
-  <defs>
-    <linearGradient id="rw" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="50%" stop-color="#2a5080"/><stop offset="100%" stop-color="#1e3a5f"/></linearGradient>
-    <style>.wm{animation:wv 3s ease-in-out infinite}@keyframes wv{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}.rp{animation:rr 2s ease-in-out infinite}@keyframes rr{0%,100%{opacity:.3}50%{opacity:.15;transform:translateX(6px)}}</style>
-  </defs>
-  <rect width="400" height="280" fill="#0f1e30"/>
-  <path d="M0,180 Q100,165 200,175 Q300,185 400,170 L400,280 L0,280Z" fill="#2a4a1a"/>
-  <path d="M0,170 Q100,155 200,165 Q300,175 400,160 L400,210 Q300,225 200,210 Q100,195 0,210Z" fill="url(#rw)" class="wm"/>
-  <path d="M40,180 Q80,175 120,180" stroke="rgba(100,180,255,0.3)" stroke-width="1.5" fill="none" class="rp"/>
-  <path d="M200,175 Q240,170 280,175" stroke="rgba(100,180,255,0.25)" stroke-width="1.5" fill="none" class="rp" style="animation-delay:.5s"/>
-  <ellipse cx="160" cy="182" rx="18" ry="8" fill="#5a6a5a"/>
-  <polygon points="30,280 55,150 80,280" fill="#2d6b3f"/><polygon points="320,280 345,160 370,280" fill="#267a3a"/>
-  <text x="200" y="145" text-anchor="middle" fill="rgba(147,197,253,0.5)" font-size="14" font-family="Georgia,serif">Zum Fluss</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#2d5a2d"/>
+  <path d="M0,150 Q100,100 200,150 Q300,200 400,150 L400,300 L0,300 Z" fill="#3388cc"/>
+  <path d="M0,160 Q100,110 200,160 Q300,210 400,160" fill="none" stroke="white" stroke-width="2" opacity="0.4"/>
+  <text x="200" y="80" text-anchor="middle" fill="white" font-size="24" font-family="sans-serif">Zum Fluss</text>
 </svg>
