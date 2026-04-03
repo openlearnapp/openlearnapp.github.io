@@ -551,7 +551,8 @@ function getAudioBase() {
   }
   const resolvedWorkshop = resolveWorkshopKey(learning.value, workshop.value)
   if (resolvedWorkshop !== workshop.value) {
-    return `${import.meta.env.BASE_URL}${resolvedWorkshop}/${lessonFilename}/audio`
+    const prefix = resolvedWorkshop.startsWith('http://') || resolvedWorkshop.startsWith('https://') || resolvedWorkshop.startsWith('/') ? '' : import.meta.env.BASE_URL
+    return `${prefix}${resolvedWorkshop}/${lessonFilename}/audio`
   }
   return `${import.meta.env.BASE_URL}lessons/${learning.value}/${workshop.value}/${lessonFilename}/audio`
 }
