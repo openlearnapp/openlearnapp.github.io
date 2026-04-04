@@ -116,7 +116,7 @@ window.OpenLearn = {
       async init() {
         const [indexData, changelogText] = await Promise.all([
           fetchYaml('index.yaml'),
-          fetch('CHANGELOG.md').then(r => r.ok ? r.text() : null).catch(() => null)
+          fetch('CHANGELOG.md', { cache: 'no-store' }).then(r => r.ok ? r.text() : null).catch(() => null)
         ])
         const langs = (indexData?.languages || []).map(l => typeof l === 'string' ? l : l.folder)
         store.languages = langs
@@ -281,8 +281,9 @@ window.OpenLearn = {
     })
   }
 
+  // Fetch with cache bypass to avoid Service Worker duplication
   async function fetchYaml(url) {
-    try { const r = await fetch(url); return r.ok ? jsyaml.load(await r.text()) : null }
+    try { const r = await fetch(url, { cache: 'no-store' }); return r.ok ? jsyaml.load(await r.text()) : null }
     catch { return null }
   }
 
