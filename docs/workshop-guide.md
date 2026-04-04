@@ -8,8 +8,8 @@ Every workshop is a repository (or folder) with this structure:
 
 ```
 workshop-my-topic/
-├── index.html                     # Landing page (universal template, auto-renders README + CHANGELOG)
-├── README.md                      # Workshop description (rendered on landing page + GitHub)
+├── index.html                     # Landing page (uses open-learn.js components)
+├── README.md                      # Workshop description (for GitHub)
 ├── CHANGELOG.md                   # Version history (rendered on landing page)
 ├── index.yaml                     # Languages this workshop supports
 ├── deutsch/                       # German interface
@@ -253,6 +253,89 @@ Add to `default-sources.yaml` in the platform repo:
 ```yaml
 sources:
   - https://open-learn.app/workshop-my-topic/index.yaml
+```
+
+## Landing Page
+
+Every workshop gets a landing page at its GitHub Pages URL (e.g. `open-learn.app/workshop-my-topic/`). The page is powered by a shared component library — no code to maintain per workshop.
+
+### Minimal setup (default page)
+
+Create `index.html` in your workshop repo:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <div id="app">
+    <ol-workshop-page />
+  </div>
+  <script src="https://open-learn.app/shared/open-learn.js"></script>
+  <script>OpenLearn.mount()</script>
+</body>
+</html>
+```
+
+This renders the full landing page automatically from your YAML files:
+- Title and description from `workshops.yaml` (localized)
+- Language picker with flags (switches all content)
+- Labels from `workshops.yaml`
+- "Add Workshop to Open Learn" button (passes selected language)
+- Lesson list with titles from `content.yaml` (localized)
+- Changelog from `CHANGELOG.md` (if present)
+- Footer with GitHub link
+
+### Custom composition
+
+Use individual components as building blocks:
+
+```html
+<div id="app">
+  <div style="display:flex;align-items:center;gap:12px">
+    <ol-language-picker />
+    <h1>{{ store.title }}</h1>
+  </div>
+  <p>{{ store.description }}</p>
+  <ol-labels />
+  <ol-add-button text="Start Learning" />
+  <ol-lesson-list />
+  <ol-changelog />
+  <ol-footer />
+</div>
+<script src="https://open-learn.app/shared/open-learn.js"></script>
+<script>OpenLearn.mount()</script>
+```
+
+### Available components
+
+| Component | Description |
+|-----------|-------------|
+| `<ol-workshop-page />` | Full default landing page (composes all below) |
+| `<ol-language-picker />` | Dropdown with flags, switches all content |
+| `<ol-labels />` | Label badges from workshop metadata |
+| `<ol-add-button />` | CTA button (prop `text` to customize label) |
+| `<ol-lesson-list />` | Numbered lesson list with titles |
+| `<ol-changelog />` | Rendered `CHANGELOG.md` |
+| `<ol-footer />` | GitHub + Open Learn links |
+
+All components share state via Vue provide/inject — the `store` object is available in the template with workshop data (`store.title`, `store.description`, `store.lessons`, etc.).
+
+### CHANGELOG.md
+
+Add a `CHANGELOG.md` to your workshop repo. It's rendered on the landing page automatically:
+
+```markdown
+# Changelog
+
+## v1.0 — April 2026
+
+- 10 lessons covering basic vocabulary
+- Interactive assessments
+- English and German interface
 ```
 
 ## Local Development
