@@ -34,8 +34,18 @@
  *   </script>
  */
 
+// Expose API immediately so OpenLearn.mount() can be called before deps load
+let _resolve
+const _ready = new Promise(r => { _resolve = r })
+window.OpenLearn = {
+  mount(selector = '#app') {
+    _ready.then(fn => fn(selector))
+  }
+};
+
 (async function () {
   'use strict'
+  console.log('[open-learn.js] v0.1.0')
 
   // --- Load dependencies ---
   const cdn = 'https://cdn.jsdelivr.net/npm'
@@ -235,29 +245,26 @@
   // Public API: OpenLearn.mount(selector)
   // ============================================================
 
-  window.OpenLearn = {
-    mount(selector = '#app') {
-      const store = createStore()
-      const app = createApp({
-        setup() {
-          provide(STATE_KEY, store)
-          store.init()
-          // Expose store to template for custom compositions
-          return { workshop: store.workshop, store }
-        }
-      })
-      // Register all components globally
-      app.component('ol-language-picker', OlLanguagePicker)
-      app.component('ol-labels', OlLabels)
-      app.component('ol-add-button', OlAddButton)
-      app.component('ol-lesson-list', OlLessonList)
-      app.component('ol-changelog', OlChangelog)
-      app.component('ol-footer', OlFooter)
-      app.component('ol-workshop-page', OlWorkshopPage)
-      app.mount(selector)
-      return app
-    }
-  }
+  // Resolve the ready promise with the actual mount function
+  _resolve(function doMount(selector = '#app') {
+    const store = createStore()
+    const app = createApp({
+      setup() {
+        provide(STATE_KEY, store)
+        store.init()
+        return { workshop: store.workshop, store }
+      }
+    })
+    app.component('ol-language-picker', OlLanguagePicker)
+    app.component('ol-labels', OlLabels)
+    app.component('ol-add-button', OlAddButton)
+    app.component('ol-lesson-list', OlLessonList)
+    app.component('ol-changelog', OlChangelog)
+    app.component('ol-footer', OlFooter)
+    app.component('ol-workshop-page', OlWorkshopPage)
+    app.mount(selector)
+    return app
+  })
 
   // --- Helpers ---
   function load(src) {
