@@ -423,3 +423,15 @@ This project follows a spec-driven process. See `docs/development-process.md` fo
 ## Changelog
 
 Maintain `CHANGELOG.md` in the project root. When creating a PR, add an entry to the changelog under the current date. Group entries by **Features**, **Fixes**, and **Docs & CI**. Include the PR number in parentheses.
+
+**Workshop repos** also have their own `CHANGELOG.md`. Update it when adding lessons, translations, or making changes. The changelog is rendered on the workshop's landing page automatically.
+
+## Workshop Landing Pages
+
+Each workshop repo has an `index.html` that auto-generates a landing page from `README.md` and `CHANGELOG.md`:
+
+- `README.md` — workshop description, lesson list, links (rendered as main content)
+- `CHANGELOG.md` — version history (rendered below, optional)
+- `index.html` — universal template, same file for all workshops (do not edit per-workshop)
+
+The template uses marked.js (CDN) to render markdown client-side. It auto-generates the "Start Workshop" CTA button and GitHub link from the page URL. To set up a new workshop landing page, copy `index.html` from any existing workshop repo.

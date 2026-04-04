@@ -8,6 +8,9 @@ Every workshop is a repository (or folder) with this structure:
 
 ```
 workshop-my-topic/
+├── index.html                     # Landing page (universal template, auto-renders README + CHANGELOG)
+├── README.md                      # Workshop description (rendered on landing page + GitHub)
+├── CHANGELOG.md                   # Version history (rendered on landing page)
 ├── index.yaml                     # Languages this workshop supports
 ├── deutsch/                       # German interface
 │   ├── workshops.yaml             # Workshop metadata
