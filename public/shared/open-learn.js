@@ -129,12 +129,12 @@ window.OpenLearn = {
       loaded.value = true
     }
 
-    return {
+    return reactive({
       loaded, selectedLang, languages, langData,
       workshop: ws, title, description, labels, lessons,
       addUrl, ghUrl, workshopName, sourceUrl,
       selectLanguage, init
-    }
+    })
   }
 
   // ============================================================
