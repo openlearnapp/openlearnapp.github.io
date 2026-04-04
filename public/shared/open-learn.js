@@ -91,63 +91,56 @@ window.OpenLearn = {
   }
 
   function createStore() {
-    const loaded = ref(false)
-    const selectedLang = ref(null)
-    const languages = ref([])
-    const langData = ref({})
-    const changelogHtml = ref('')
+    const store = reactive({
+      loaded: false,
+      selectedLang: null,
+      languages: [],
+      langData: {},
+      changelogHtml: '',
+      ghUrl,
+      workshopName,
+      sourceUrl,
+      // Computed-like getters
+      get workshop() { return this.langData[this.selectedLang]?.ws || {} },
+      get title() { return this.workshop.title || workshopName },
+      get description() { return this.workshop.description || '' },
+      get labels() { return this.workshop.labels || [] },
+      get lessons() { return this.langData[this.selectedLang]?.lessons || [] },
+      get addUrl() {
+        return `https://open-learn.app/#/add?source=${encodeURIComponent(sourceUrl)}&lang=${encodeURIComponent(this.selectedLang || '')}`
+      },
+      selectLanguage(lang) {
+        this.selectedLang = lang
+        document.title = (this.langData[lang]?.ws?.title || workshopName) + ' – Open Learn Workshop'
+      },
+      async init() {
+        const [indexData, changelogText] = await Promise.all([
+          fetchYaml('index.yaml'),
+          fetch('CHANGELOG.md').then(r => r.ok ? r.text() : null).catch(() => null)
+        ])
+        const langs = (indexData?.languages || []).map(l => typeof l === 'string' ? l : l.folder)
+        store.languages = langs
 
-    const ws = computed(() => langData.value[selectedLang.value]?.ws || {})
-    const title = computed(() => ws.value.title || workshopName)
-    const description = computed(() => ws.value.description || '')
-    const labels = computed(() => ws.value.labels || [])
-    const lessons = computed(() => langData.value[selectedLang.value]?.lessons || [])
-    const addUrl = computed(() =>
-      `https://open-learn.app/#/add?source=${encodeURIComponent(sourceUrl)}&lang=${encodeURIComponent(selectedLang.value || '')}`
-    )
-
-    function selectLanguage(lang) {
-      selectedLang.value = lang
-      document.title = (langData.value[lang]?.ws?.title || workshopName) + ' – Open Learn Workshop'
-    }
-
-    async function init() {
-      const [indexData, changelogText] = await Promise.all([
-        fetchYaml('index.yaml'),
-        fetch('CHANGELOG.md').then(r => r.ok ? r.text() : null).catch(() => null)
-      ])
-      const langs = (indexData?.languages || []).map(l => typeof l === 'string' ? l : l.folder)
-      languages.value = langs
-
-      const data = {}
-      await Promise.all(langs.map(async lang => {
-        const wsYaml = await fetchYaml(`${lang}/workshops.yaml`) || await fetchYaml(`${lang}/topics.yaml`)
-        const wsEntry = (wsYaml?.workshops || wsYaml?.topics || [])[0] || {}
-        const wsFolder = wsEntry.folder || workshopName
-        const lessonsYaml = await fetchYaml(`${lang}/${wsFolder}/lessons.yaml`)
-        const folders = lessonsYaml?.lessons || []
-        const lessonList = await Promise.all(folders.map(async f => {
-          const c = await fetchYaml(`${lang}/${wsFolder}/${f}/content.yaml`)
-          return { title: c?.title || f, number: c?.number || 0, description: c?.description || '' }
+        const data = {}
+        await Promise.all(langs.map(async lang => {
+          const wsYaml = await fetchYaml(`${lang}/workshops.yaml`) || await fetchYaml(`${lang}/topics.yaml`)
+          const wsEntry = (wsYaml?.workshops || wsYaml?.topics || [])[0] || {}
+          const wsFolder = wsEntry.folder || workshopName
+          const lessonsYaml = await fetchYaml(`${lang}/${wsFolder}/lessons.yaml`)
+          const folders = lessonsYaml?.lessons || []
+          const lessonList = await Promise.all(folders.map(async f => {
+            const c = await fetchYaml(`${lang}/${wsFolder}/${f}/content.yaml`)
+            return { title: c?.title || f, number: c?.number || 0, description: c?.description || '' }
+          }))
+          data[lang] = { ws: wsEntry, lessons: lessonList.sort((a, b) => a.number - b.number) }
         }))
-        data[lang] = { ws: wsEntry, lessons: lessonList.sort((a, b) => a.number - b.number) }
-      }))
-      langData.value = data
-      if (langs.length > 0) selectLanguage(langs[0])
-      if (changelogText) {
-        console.log('[open-learn.js] Changelog loaded:', changelogText.length, 'chars')
-        changelogHtml.value = marked.parse(changelogText)
-        console.log('[open-learn.js] Changelog parsed:', changelogHtml.value.substring(0, 50))
+        store.langData = data
+        if (langs.length > 0) store.selectLanguage(langs[0])
+        if (changelogText) store.changelogHtml = marked.parse(changelogText)
+        store.loaded = true
       }
-      loaded.value = true
-    }
-
-    return reactive({
-      loaded, selectedLang, languages, langData,
-      workshop: ws, title, description, labels, lessons,
-      addUrl, ghUrl, workshopName, sourceUrl,
-      selectLanguage, init
     })
+    return store
   }
 
   // ============================================================
