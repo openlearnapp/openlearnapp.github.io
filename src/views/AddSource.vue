@@ -54,9 +54,10 @@ import { Card, CardContent } from '@/components/ui/card'
 const router = useRouter()
 const route = useRoute()
 const { getContentSources, addContentSource, loadAvailableContent } = useLessons()
-const { selectedLanguage } = useLanguage()
+const { selectedLanguage, setLanguage } = useLanguage()
 
 const sourceUrl = ref(route.query.source || '')
+const requestedLang = ref(route.query.lang || '')
 const isValidating = ref(false)
 const error = ref(null)
 
@@ -137,14 +138,22 @@ async function validateAndAddSource() {
     }
 
     // Reload content so the new source is available for navigation
-    await loadAvailableContent()
+    const targetLangForLoad = requestedLang.value || selectedLanguage.value || Object.keys(content)[0]
+    await loadAvailableContent(targetLangForLoad)
 
-    // Determine where to navigate
-    const userLang = selectedLanguage.value || 'deutsch'
+    // Determine target language: requested from landing page > user's selected > fallback
+    const targetLang = (requestedLang.value && content[requestedLang.value])
+      ? requestedLang.value
+      : (content[selectedLanguage.value] ? selectedLanguage.value : null)
+    const userLang = targetLang || Object.keys(content)[0] || 'deutsch'
+
+    // Switch platform language to match
+    setLanguage(userLang)
+
     const workshopsForLang = content[userLang]
 
     if (workshopsForLang && workshopsForLang.length === 1) {
-      // Single workshop available in user's language — go directly to lessons
+      // Single workshop available — go directly to lessons
       router.replace({
         name: 'lessons-overview',
         params: { learning: userLang, workshop: workshopsForLang[0] }
@@ -156,7 +165,7 @@ async function validateAndAddSource() {
         params: { learning: userLang }
       })
     } else {
-      // Workshop not available in user's language — go to workshop overview with notification
+      // Workshop not available — go to workshop overview with notification
       const availableLangs = Object.keys(content).map(l => formatLangName(l)).join(', ')
       const workshopNames = Object.values(content).flat().map(w => formatLangName(w)).join(', ')
       router.replace({
