@@ -37,6 +37,18 @@
             </div>
           </div>
 
+          <!-- Back button (on settings and profile pages) -->
+          <Button
+            v-if="route.name === 'settings' || route.name === 'profile'"
+            variant="ghost"
+            size="icon"
+            @click="goBack"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
+            :title="$t('nav.back')"
+            :aria-label="$t('nav.back')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          </Button>
+
           <!-- Back to workshop overview (on lessons overview, hidden in single-workshop PWA) -->
           <Button
             v-if="route.name === 'lessons-overview' && !isSingleWorkshopPwa"

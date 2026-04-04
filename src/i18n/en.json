@@ -16,7 +16,8 @@
     "profile": "Profile",
     "loading": "Loading...",
     "menu": "Menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "back": "Back"
   },
   "profile": {
     "title": "My Profile",
