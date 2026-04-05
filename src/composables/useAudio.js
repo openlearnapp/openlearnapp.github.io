@@ -30,7 +30,9 @@ function getAudioBase(lesson, learning, workshop) {
   if (lesson._source && lesson._source.type === 'url') {
     return `${lesson._source.path}/audio`
   } else if (resolvedWorkshop && resolvedWorkshop !== workshop) {
-    return `${baseUrl}${resolvedWorkshop}/${lessonFilename}/audio`
+    // resolvedWorkshop may be an absolute URL (external) or relative path (built-in)
+    const prefix = resolvedWorkshop.startsWith('http') ? '' : baseUrl
+    return `${prefix}${resolvedWorkshop}/${lessonFilename}/audio`
   } else if (learning && (learning.startsWith('http://') || learning.startsWith('https://'))) {
     return `${learning}/${workshop}/${lessonFilename}/audio`
   } else {
