@@ -183,20 +183,61 @@ Each lesson can include pre-recorded audio in an `audio/` subfolder.
 
 Indices are zero-based: first section = `0`, first example = `0`.
 
+### Voice Roles (Story Mode)
+
+Examples can specify a `voice` role for character-specific voices in story mode:
+
+```yaml
+examples:
+  - q: "Es war einmal ein kleines Mädchen namens Mila."
+    voice: narrator
+  - q: "Komm herein, mein Kind."
+    voice: grandma
+  - q: "Quak! Ich bin Fridolin!"
+    voice: fridolin
+```
+
+The audio generator maps roles to TTS voices. Examples without `voice:` use the default voice.
+
 ### Generating Audio
 
+Two generators are available — pick based on quality vs setup needs:
+
+**Option 1: Edge TTS (recommended — natural neural voices)**
+
 ```bash
-# From the Open Learn repo
+./generate-audio-edge.sh /path/to/workshop/deutsch/my-topic
+```
+
+Requires `uv` (https://github.com/astral-sh/uv) and `yq` (`brew install yq`). Uses Microsoft Edge TTS Neural voices via `uvx edge-tts`.
+
+Voice mapping via `voices.yaml` in the workshop directory:
+
+```yaml
+# voices.yaml
+narrator: de-DE-KillianNeural
+grandma: de-DE-KatjaNeural
+fridolin: de-DE-ConradNeural
+default: de-DE-AmalaNeural
+```
+
+List available voices: `uvx edge-tts --list-voices | grep de-DE`
+
+**Option 2: macOS `say` (fast, no dependencies)**
+
+```bash
 ./generate-audio.sh /path/to/workshop/deutsch/my-topic/01-lesson/
 
-# Generate all lessons
+# All lessons
 ./generate-audio.sh
 
 # Force regenerate
 ./generate-audio.sh -f
 ```
 
-Requires macOS with `say`, `yq` (`brew install yq`), and `ffmpeg` (`brew install ffmpeg`).
+Requires macOS with `say`, `yq`, and `ffmpeg` (`brew install yq ffmpeg`).
+
+### Fallback
 
 If audio files are missing, the app falls back to browser SpeechSynthesis.
 
@@ -337,6 +378,61 @@ Add a `CHANGELOG.md` to your workshop repo. It's rendered on the landing page au
 - Interactive assessments
 - English and German interface
 ```
+
+## Workshop CLAUDE.md
+
+Every workshop repo should have a `CLAUDE.md` at the root. It gives Claude Code (and new contributors) immediate context when working on the workshop, without having to browse the platform docs.
+
+### Template
+
+```markdown
+# <Workshop Name>
+
+## Purpose
+What does this workshop teach? What problem does it solve?
+
+## Target Audience
+Who is this for? Age range, prior knowledge, skill level.
+
+## Structure
+- N lessons, ~X minutes total
+- Languages: deutsch, english, ...
+- Special features: story mode, branching, assessments, ...
+
+## Voice Mapping (if story mode)
+| Role | Character | Voice |
+|------|-----------|-------|
+| narrator | Erzähler | de-DE-KillianNeural |
+| grandma | Oma | de-DE-KatjaNeural |
+
+## Specific Conventions
+Workshop-specific rules, e.g.:
+- All assessments have goto_correct/goto_wrong
+- Images live in lesson/images/
+- Audio regenerated with edge-tts voice mapping
+
+## Development
+
+Generate audio:
+\`\`\`bash
+bash generate-audio.sh deutsch/my-topic
+\`\`\`
+
+Local preview: place as sibling of openlearnapp.github.io, run \`pnpm dev\`.
+
+## See Also
+- [Open Learn Platform](https://github.com/openlearnapp/openlearnapp.github.io)
+- [Workshop Guide](https://github.com/openlearnapp/openlearnapp.github.io/blob/main/docs/workshop-guide.md)
+- [Lesson Schema](https://github.com/openlearnapp/openlearnapp.github.io/blob/main/docs/lesson-schema.md)
+- [Workshop Creator Plugin](https://github.com/openlearnapp/plugin-workshop-creator)
+```
+
+### Why per-workshop CLAUDE.md?
+
+- **Context for Claude Code**: when working on the workshop repo, Claude has immediate understanding without reading the platform docs
+- **Onboarding**: new contributors learn the workshop's goals and conventions in one file
+- **References over duplication**: links to central docs (schema, guide) instead of copying content
+- **Workshop-specific conventions**: voice mappings, special features, rules unique to this workshop
 
 ## Local Development
 

@@ -334,6 +334,40 @@ Built-in workshops live in `public/workshop-*/`. External workshops are loaded f
 
 See `docs/workshop-guide.md` for the full guide and `docs/yaml-schemas.md` for schema details.
 
+## Audio Generation
+
+Two generators are available:
+
+- `generate-audio.sh` — macOS `say` (fast, no install, robotic)
+- `generate-audio-edge.sh` — Edge TTS Neural voices (natural, needs `uv`)
+
+Edge TTS supports per-character voice mapping via `voices.yaml` in the workshop directory. Examples in `content.yaml` can set a `voice:` role (e.g. `narrator`, `grandma`) that maps to a specific neural voice.
+
+```yaml
+# workshop/voices.yaml
+narrator: de-DE-KillianNeural
+grandma: de-DE-KatjaNeural
+default: de-DE-AmalaNeural
+```
+
+```yaml
+# content.yaml
+examples:
+  - q: "Es war einmal..."
+    voice: narrator
+```
+
+## Workshop CLAUDE.md
+
+Every workshop repo should have its own `CLAUDE.md` at the root describing:
+- Purpose and target audience
+- Structure (lessons, languages, special features)
+- Voice mapping (if using story mode)
+- Workshop-specific conventions
+- References to platform docs (this file, workshop-guide.md, lesson-schema.md)
+
+This gives Claude Code (and contributors) immediate context when working on the workshop without having to browse the platform repo. See `docs/workshop-guide.md` for the template.
+
 ## Terminology
 
 | Term | Code variable | Meaning |
