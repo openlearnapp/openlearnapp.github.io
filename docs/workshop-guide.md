@@ -283,9 +283,19 @@ jobs:
 
 ### Share Link
 
+Basic share link:
+
 ```
 https://open-learn.app/#/add?source=https://YOUR-USER.github.io/workshop-my-topic/index.yaml
 ```
+
+With preferred interface language (platform switches language and goes directly to the workshop):
+
+```
+https://open-learn.app/#/add?source=https://YOUR-USER.github.io/workshop-my-topic/index.yaml&lang=deutsch
+```
+
+The `lang` parameter tells the platform which interface language to use when loading the workshop. Useful for linking from a workshop landing page where the user already selected a language — the shared `open-learn.js` landing page does this automatically.
 
 ### Making it a Default Source
 
