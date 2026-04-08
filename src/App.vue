@@ -3,7 +3,7 @@
     <!-- Header with unified navigation - sticky on desktop -->
     <!-- Safe area spacer for iOS PWA (pushes header below status bar) -->
     <div v-if="!isHomePage && !isStoryMode" class="bg-primary sticky top-0 z-50" style="height: env(safe-area-inset-top, 0px)"></div>
-    <header v-if="!isHomePage && !isStoryMode" class="bg-primary text-white py-4 px-4 relative sticky z-50" style="top: env(safe-area-inset-top, 0px)">
+    <header v-if="!isHomePage && !isStoryMode" class="bg-primary text-white py-2 md:py-4 px-4 relative sticky z-50" style="top: env(safe-area-inset-top, 0px)">
       <div class="flex items-center justify-between gap-2">
         <!-- Left side: language dropdown + nav buttons -->
         <div class="flex items-center gap-2 min-w-fit">
@@ -87,7 +87,7 @@
 
         <!-- Right side buttons (fixed width container) -->
         <div class="flex items-center gap-2 min-w-fit">
-          <!-- Play/Pause button (visible only on lesson detail page, hidden on mobile) -->
+          <!-- Play/Pause button (desktop only — mobile has floating button in LessonDetail) -->
           <Button
             v-if="isLessonPage"
             variant="ghost"
@@ -97,7 +97,7 @@
             class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             :title="isLoadingAudio ? $t('nav.loading') : (isPlaying ? $t('nav.pause') : $t('nav.play'))"
             :aria-label="isLoadingAudio ? $t('nav.loadingAudio') : (isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio'))">
-            <svg v-if="isLoadingAudio" class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            <svg v-if="isLoadingAudio" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
             <svg v-else-if="isPlaying" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
             <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
           </Button>
@@ -108,7 +108,7 @@
             variant="ghost"
             size="icon"
             @click="enterStoryMode"
-            class="hidden sm:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
+            class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             title="Story Mode"
             aria-label="Story Mode">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -124,7 +124,8 @@
             :title="toggleButtonTitle"
             :aria-label="toggleButtonTitle">
             <span v-if="toggleButtonMode === 'number'" class="text-sm font-bold">{{ fromLessonNumber }}</span>
-            <svg v-else-if="toggleButtonMode === 'items'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span v-else-if="toggleButtonMode === 'lessons'" class="text-xs font-bold">123</span>
+            <svg v-else-if="toggleButtonMode === 'items'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
             <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
           </Button>
 
@@ -403,10 +404,11 @@ const canShowToggleButton = computed(() => {
 })
 
 const toggleButtonMode = computed(() => {
-  if (route.name === 'learning-items') return 'results'
-  if (route.name === 'assessment-results' && fromLessonNumber.value) return 'number'
-  if (route.name === 'assessment-results') return 'items'
-  return 'items'
+  // Show icon for the NEXT view in the cycle
+  if (route.name === 'learning-items') return 'results'           // next: results (clipboard)
+  if (route.name === 'assessment-results' && fromLessonNumber.value) return 'number' // next: lesson N
+  if (route.name === 'assessment-results') return 'lessons'       // next: lessons overview
+  return 'items'                                                  // next: learning items (list)
 })
 
 const toggleButtonTitle = computed(() => {
