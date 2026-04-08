@@ -173,6 +173,10 @@ export default defineConfig(({ command }) => ({
       }
     })
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(JSON.parse(fs.readFileSync('./package.json', 'utf-8')).version),
+    __APP_LAST_PR__: JSON.stringify(JSON.parse(fs.readFileSync('./package.json', 'utf-8'))._lastPR || ''),
+  },
   base: '/',
   server: {
     cors: true  // Enable CORS for cross-origin requests

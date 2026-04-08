@@ -44,7 +44,7 @@
         :key="idx"
         :id="`section-${idx}`"
         :class="activeLabel ? 'p-0 mb-3 border-0 shadow-none' : 'p-5 mb-6 ring-1 ring-border/50 dark:ring-white/[0.06] shadow-md dark:shadow-lg bg-white dark:bg-slate-800/60'">
-        <CardHeader v-if="!activeLabel" :id="`section-header-${idx}`" class="p-0 pb-4">
+        <CardHeader v-if="!activeLabel" :id="`section-header-${idx}`" class="p-0 pb-4" style="scroll-margin-top: 60px">
           <div class="flex items-center gap-3">
             <span class="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-primary/15 text-primary text-lg font-bold">
               {{ idx + 1 }}
