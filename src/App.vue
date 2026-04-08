@@ -468,7 +468,7 @@ onMounted(async () => {
   const lang = routeLang || (stored && learningLanguages.value.includes(stored) ? stored : null)
   if (lang) {
     setLanguage(lang)
-    await loadWorkshopsForLanguage(lang)
+    // Views load their own workshop data — App.vue only sets the language
   }
 })
 

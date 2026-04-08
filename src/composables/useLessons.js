@@ -412,33 +412,53 @@ export function useLessons() {
     }
   }
 
-  // Load workshop details for a new language from already-known sources
+  // Load workshop details for a language — all sources or just one workshop
   // Uses promise cache to prevent parallel duplicate loads (race condition)
   const sourceLoadPromises = {}
-  async function loadSourcesForLanguage(lang) {
-    if (loadedSourceLangs.has(lang)) return
-    if (sourceLoadPromises[lang]) return sourceLoadPromises[lang]
-    sourceLoadPromises[lang] = (async () => {
-      console.log(`📡 Loading source workshop details for language: ${lang}`)
+  async function loadSourcesForLanguage(lang, workshopHint) {
+    const cacheKey = workshopHint ? `${lang}:${workshopHint}` : lang
+    if (!workshopHint && loadedSourceLangs.has(lang)) return
+    if (sourceLoadPromises[cacheKey]) return sourceLoadPromises[cacheKey]
+    sourceLoadPromises[cacheKey] = (async () => {
       await loadDefaultSources()
       const contentSources = getAllContentSources()
-      await Promise.all(
-        contentSources.map(sourceUrl =>
-          loadContentSource(sourceUrl, availableContent.value, languageCodes.value, lang)
+
+      if (workshopHint && !loadedSourceLangs.has(lang)) {
+        // Deep link: only load the source that matches the workshop
+        const matching = contentSources.filter(url => url.includes(workshopHint))
+        if (matching.length > 0) {
+          console.log(`📡 Loading source for workshop: ${workshopHint} (lang: ${lang})`)
+          await Promise.all(
+            matching.map(url => loadContentSource(url, availableContent.value, languageCodes.value, lang))
+          )
+        } else {
+          // Workshop not found in sources — might be built-in, load all
+          console.log(`📡 Loading all sources for language: ${lang}`)
+          await Promise.all(
+            contentSources.map(url => loadContentSource(url, availableContent.value, languageCodes.value, lang))
+          )
+          loadedSourceLangs.add(lang)
+        }
+      } else if (!loadedSourceLangs.has(lang)) {
+        // Workshop overview: load all sources
+        console.log(`📡 Loading all sources for language: ${lang}`)
+        await Promise.all(
+          contentSources.map(url => loadContentSource(url, availableContent.value, languageCodes.value, lang))
         )
-      )
-      if (import.meta.env.DEV) {
-        await loadLocalWorkshops(availableContent.value, languageCodes.value, lang)
+        if (import.meta.env.DEV) {
+          await loadLocalWorkshops(availableContent.value, languageCodes.value, lang)
+        }
+        loadedSourceLangs.add(lang)
       }
-      loadedSourceLangs.add(lang)
-      delete sourceLoadPromises[lang]
+      delete sourceLoadPromises[cacheKey]
     })()
-    return sourceLoadPromises[lang]
+    return sourceLoadPromises[cacheKey]
   }
 
-  async function loadWorkshopsForLanguage(lang) {
+  // workshopHint: if set, only load the source matching this workshop (for deep links)
+  async function loadWorkshopsForLanguage(lang, workshopHint) {
     try {
-      console.log(`📚 Loading workshops for language: ${lang}`)
+      console.log(`📚 Loading workshops for language: ${lang}${workshopHint ? ` (workshop: ${workshopHint})` : ''}`)
 
       // Ensure languages are loaded first
       if (!availableContent.value[lang]) {
@@ -450,8 +470,8 @@ export function useLessons() {
         }
       }
 
-      // Load workshop details from sources for this language (if not yet loaded)
-      await loadSourcesForLanguage(lang)
+      // Load workshop details from sources for this language
+      await loadSourcesForLanguage(lang, workshopHint)
 
       console.log(`✅ Workshops loaded for ${lang}`)
     } catch (error) {
@@ -463,10 +483,10 @@ export function useLessons() {
     try {
       console.log(`📚 Loading lesson list for ${lang}/${workshop}`)
 
-      // Ensure workshops are loaded first
+      // Ensure workshops are loaded first — only load the source for this workshop
       if (!availableContent.value[lang] || availableContent.value[lang][workshop] === undefined) {
         console.log('⚠️ Workshops not loaded yet, loading now...')
-        await loadWorkshopsForLanguage(lang)
+        await loadWorkshopsForLanguage(lang, workshop)
 
         if (!availableContent.value[lang] || availableContent.value[lang][workshop] === undefined) {
           throw new Error(`Workshop ${workshop} not found for language ${lang}`)
