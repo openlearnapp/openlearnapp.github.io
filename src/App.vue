@@ -1,7 +1,7 @@
 <template>
   <div class="w-full md:max-w-6xl md:mx-auto bg-primary md:rounded-xl md:shadow-2xl">
     <!-- Header with unified navigation - sticky on desktop -->
-    <header v-if="!isHomePage && !isStoryMode" class="bg-primary text-white py-4 px-4 relative sticky top-0 z-50">
+    <header v-if="!isHomePage && !isStoryMode" class="bg-primary text-white py-4 px-4 relative sticky top-0 z-50" style="padding-top: calc(1rem + env(safe-area-inset-top, 0px))">
       <div class="flex items-center justify-between gap-2">
         <!-- Left side: language dropdown + nav buttons -->
         <div class="flex items-center gap-2 min-w-fit">
