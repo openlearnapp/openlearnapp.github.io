@@ -3,7 +3,7 @@
     <!-- Header with unified navigation - sticky on desktop -->
     <!-- Safe area spacer for iOS PWA (pushes header below status bar) -->
     <div v-if="!isHomePage && !isStoryMode" class="bg-primary sticky top-0 z-50" style="height: env(safe-area-inset-top, 0px)"></div>
-    <header v-if="!isHomePage && !isStoryMode" class="bg-primary text-white py-2 md:py-4 px-4 relative sticky z-50" style="top: env(safe-area-inset-top, 0px)">
+    <header v-if="!isHomePage && !isStoryMode" class="bg-primary text-white pt-1 pb-2 md:py-4 px-4 relative sticky z-50" style="top: env(safe-area-inset-top, 0px)">
       <div class="flex items-center justify-between gap-2">
         <!-- Left side: language dropdown + nav buttons -->
         <div class="flex items-center gap-2 min-w-fit">
@@ -77,7 +77,7 @@
         </div>
 
         <!-- Title (grows to fill available space) -->
-        <h1 class="text-lg sm:text-xl md:text-3xl font-bold flex-grow truncate px-3 flex items-center gap-2">
+        <h1 class="text-lg sm:text-xl md:text-3xl font-bold flex-grow truncate px-3 flex items-center gap-2 overflow-hidden min-w-0">
           <span class="truncate">{{ pageTitle }}</span>
           <span v-if="!online" class="flex-shrink-0 inline-flex items-center gap-1 bg-white/20 text-white/80 text-xs font-medium px-2 py-0.5 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="22" y1="2" y2="22"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 4.17-2.65"/><path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"/><path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"/><path d="M5 12.86a10 10 0 0 1 5.17-2.94"/></svg>
