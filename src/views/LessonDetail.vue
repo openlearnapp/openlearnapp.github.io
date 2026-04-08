@@ -284,7 +284,7 @@
       class="md:hidden fixed bottom-20 right-6 w-16 h-16 rounded-full shadow-lg text-3xl z-50"
       :title="isLoadingAudio ? $t('nav.loading') : (isPlaying ? $t('nav.pause') : $t('nav.play'))"
       :aria-label="isLoadingAudio ? $t('nav.loadingAudio') : (isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio'))">
-      <span v-if="isLoadingAudio" class="animate-spin">⏳</span>
+      <span v-if="isLoadingAudio">⏳</span>
       <span v-else>{{ isPlaying ? '⏸' : '▶️' }}</span>
     </Button>
   </div>

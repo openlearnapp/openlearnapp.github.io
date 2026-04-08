@@ -37,6 +37,85 @@ Learners can mark workshops as favorites. Favorited workshops appear at the top 
 
 A dark theme is available and can be toggled from the Settings page. The preference is persisted across sessions. All pages, cards, and interactive elements adapt to the selected theme.
 
+## Mobile Navigation
+
+On mobile, the top nav must be compact — max 3-4 small buttons on the right. Space is reserved for the title.
+
+### Header layout (mobile)
+
+```
+[ 🇩🇪 ] [ Back ]     Title        [ Story ] [ Toggle ] [ ☰ ]
+```
+
+- **Left**: Language dropdown (workshop overview only) or back button
+- **Center**: Dynamic title (truncated if needed)
+- **Right**: Action buttons (compact, 40×40px)
+
+### Header sizing
+
+- Mobile: `py-2` (slimmer)
+- Desktop: `py-4`
+- iOS PWA: separate safe-area spacer div above the header to push content below the status bar. The header uses `top: env(safe-area-inset-top)` for sticky positioning.
+
+### Right-side buttons (mobile)
+
+| Button | When visible | Icon |
+|--------|-------------|------|
+| **Story mode** | Lesson detail + lessons overview | Book (open book SVG) |
+| **Toggle** | Lesson detail, lessons overview, items, results | Cycles between views (see below) |
+| **Burger menu** | Always (except home) | Hamburger → X when open |
+
+### Toggle button cycle (mobile)
+
+One button replaces the individual Items/Results/Lesson buttons on desktop. It cycles through views, showing the icon for the **next** view:
+
+| Current page | Icon shown | Tap goes to |
+|-------------|-----------|-------------|
+| Lesson detail | List (lines) | Learning items |
+| Lessons overview | List (lines) | Learning items |
+| Learning items | Clipboard | Assessment results |
+| Assessment results | Lesson number or "123" | Back to lesson / lessons overview |
+
+Icons must be visually distinct:
+- **Items**: horizontal lines with dots (list icon) — NOT the book icon (that's story mode)
+- **Results**: clipboard with checklist
+- **Lesson**: lesson number as text (e.g. "3"), or "123" for lessons overview
+
+### Floating play button (mobile)
+
+The play/pause button is a **floating action button** on lesson detail pages (mobile only):
+
+- Position: `fixed bottom-20 right-6`
+- Size: `w-16 h-16` (large touch target)
+- Visible when audio is available or loading
+- Loading state: hourglass emoji ⏳ (static, NOT spinning)
+- Hidden on desktop (play button is in the top nav instead)
+
+### Desktop right-side buttons
+
+On desktop (`md:` breakpoint and up), individual buttons are shown:
+
+| Button | When visible |
+|--------|-------------|
+| Play/Pause | Lesson detail |
+| Story mode | Lesson detail + lessons overview |
+| Results toggle | Lesson detail, items, results |
+| Items toggle | Lesson detail, items, results |
+| Burger menu | Always |
+
+### Burger menu
+
+Replaces individual Settings/Profile/Workshops buttons. Contains:
+- Settings (gear icon)
+- Profile (person icon)
+- Workshops (grid icon, only on subpages)
+
+### PWA behavior
+
+- Home page is skipped in PWA — redirects to workshop overview
+- Workshop back button hidden in single-workshop PWA
+- Story mode X button always visible (exits to lessons overview)
+
 ## Responsive Design
 
 The interface works across screen sizes:
@@ -44,7 +123,7 @@ The interface works across screen sizes:
 - **Mobile**: Single-column layouts, touch-friendly controls, floating play/pause button positioned at the bottom-right corner.
 - **Desktop**: Multi-column grids (2-3 columns) for workshop and lesson cards, inline audio controls in the navbar.
 
-All interactive elements — assessments, learning item toggles, audio controls — are designed for touch input.
+All interactive elements — assessments, learning item toggles, audio controls — are designed for touch input. Never use hover-only interactions — all controls must be always visible and tappable.
 
 ## Label Filtering
 
