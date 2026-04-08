@@ -641,7 +641,6 @@ watch(currentItem, async (newItem) => {
 
   let element = null
   if (newItem.type === 'lesson-title') {
-    // Scroll to top of page for lesson title
     window.scrollTo({ top: 0, behavior: 'smooth' })
     return
   } else if (newItem.type === 'section-title') {
@@ -660,7 +659,10 @@ watch(currentItem, async (newItem) => {
   }
 
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // Use 'center' for examples, 'start' for section headings
+    // scroll-margin-top handles the sticky header offset
+    element.style.scrollMarginTop = '80px'
+    element.scrollIntoView({ behavior: 'smooth', block: newItem.type === 'section-title' ? 'start' : 'center' })
   }
 })
 

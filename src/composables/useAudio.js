@@ -329,8 +329,8 @@ async function playNextItem(settings) {
     const audio = audioElements.value[item.audioUrl]
 
     if (!audio) {
-      console.warn('⚠️ Audio not found for:', item.audioUrl, '- stopping')
-      stop()
+      console.warn('⚠️ Audio not found for:', item.audioUrl, '- skipping')
+      if (isPlaying.value) { playNextItem(settings) }
       return
     }
 
@@ -392,8 +392,8 @@ async function playNextItem(settings) {
     }
 
     audio.onerror = (e) => {
-      console.error('❌ Audio playback error:', e, '- stopping')
-      stop()
+      console.error('❌ Audio playback error:', e, '- skipping')
+      if (isPlaying.value) { playNextItem(settings) }
     }
 
     // Play
@@ -401,8 +401,8 @@ async function playNextItem(settings) {
     console.log('▶️ Playing audio:', item.audioUrl)
 
   } catch (error) {
-    console.error('❌ Error playing audio:', error, '- stopping')
-    stop()
+    console.error('❌ Error playing audio:', error, '- skipping')
+    if (isPlaying.value) { playNextItem(settings) }
   }
 }
 
@@ -440,8 +440,8 @@ async function playCurrentItem(settings) {
     const audio = audioElements.value[item.audioUrl]
 
     if (!audio) {
-      console.warn('⚠️ Audio not found for:', item.audioUrl, '- stopping')
-      stop()
+      console.warn('⚠️ Audio not found for:', item.audioUrl, '- skipping')
+      if (isPlaying.value) { playNextItem(settings) }
       return
     }
 
