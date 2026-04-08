@@ -638,10 +638,29 @@ function togglePlayPause() {
 watch(currentItem, async (newItem) => {
   if (!newItem) return
   await nextTick()
-  const elementId = `example-${newItem.sectionIdx}-${newItem.exampleIdx}`
-  const element = document.getElementById(elementId)
+
+  let element = null
+  if (newItem.type === 'lesson-title') {
+    // Scroll to top of page for lesson title
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    return
+  } else if (newItem.type === 'section-title') {
+    // Scroll to the section heading — find by matching sectionIdx
+    const sections = document.querySelectorAll('[id^="section-"]')
+    for (const el of sections) {
+      const idx = parseInt(el.id.split('-')[1])
+      const section = filteredSections.value[idx]
+      if (section && section._originalSectionIdx === newItem.sectionIdx) {
+        element = el
+        break
+      }
+    }
+  } else {
+    element = document.getElementById(`example-${newItem.sectionIdx}-${newItem.exampleIdx}`)
+  }
+
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 })
 
