@@ -659,7 +659,10 @@ watch(currentItem, async (newItem) => {
   }
 
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    // Section titles: scroll to top so header image below is visible
+    // Examples: center in viewport
+    const block = newItem.type === 'section-title' ? 'start' : 'center'
+    element.scrollIntoView({ behavior: 'smooth', block })
   }
 })
 
