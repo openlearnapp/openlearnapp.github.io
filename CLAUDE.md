@@ -454,6 +454,14 @@ This project follows a spec-driven process. See `docs/development-process.md` fo
 - `docs/` is for practical how-to guides (dev setup, workshop creation, audio generation)
 - Small bugfixes don't need a spec, but do need their own PR
 
+## Versioning
+
+The app version is set manually in `package.json` (`version` field). Only major and minor versions are tracked — there is no auto-increment.
+
+The burger menu shows: `v1.0 · #192` — version + last merged PR number. The PR number is extracted from the git commit message at build time (Vite `__APP_VERSION__` and `__APP_LAST_PR__`). This tells users which deployment they're running without any CI complexity.
+
+To bump the version: edit `version` in `package.json` and commit. Do this for significant releases, not for every PR.
+
 ## Changelog
 
 Maintain `CHANGELOG.md` in the project root. When creating a PR, add an entry to the changelog under the current date. Group entries by **Features**, **Fixes**, and **Docs & CI**. Include the PR number in parentheses.

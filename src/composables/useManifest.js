@@ -1,14 +1,16 @@
 import { ref, computed } from 'vue'
 
+const origin = typeof window !== 'undefined' ? window.location.origin : ''
+
 const DEFAULT_MANIFEST = {
   name: 'Open Learn',
   short_name: 'Open Learn',
   description: 'Learn any workshop by examples — offline capable',
-  start_url: '/',
+  start_url: `${origin}/`,
   display: 'standalone',
   background_color: '#000000',
   theme_color: '#000000',
-  icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }]
+  icons: [{ src: `${origin}/favicon.svg`, sizes: 'any', type: 'image/svg+xml' }]
 }
 
 // Current active manifest (reactive)
@@ -40,11 +42,11 @@ function setWorkshopManifest(workshopTitle, language, workshop) {
     name: workshopTitle,
     short_name: workshopTitle,
     description: `${workshopTitle} — Open Learn workshop`,
-    start_url: `/#/${language}/${workshop}/lessons`,
+    start_url: `${origin}/#/${language}/${workshop}/lessons`,
     display: 'standalone',
     background_color: '#000000',
     theme_color: '#000000',
-    icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }]
+    icons: [{ src: `${origin}/favicon.svg`, sizes: 'any', type: 'image/svg+xml' }]
   })
 }
 
