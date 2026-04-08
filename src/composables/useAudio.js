@@ -329,8 +329,11 @@ async function playNextItem(settings) {
     const audio = audioElements.value[item.audioUrl]
 
     if (!audio) {
-      console.warn('⚠️ Audio not found for:', item.audioUrl, '- skipping')
-      if (isPlaying.value) { playNextItem(settings) }
+      console.error('🛑 AUDIO STOP: not in preload cache')
+      console.error('🛑 Looking for:', item.audioUrl)
+      console.error('🛑 Preloaded URLs:', Object.keys(audioElements.value))
+      console.error('🛑 Item:', { type: item.type, text: item.text?.substring(0, 50), sectionIdx: item.sectionIdx, exampleIdx: item.exampleIdx })
+      stop()
       return
     }
 
@@ -392,8 +395,9 @@ async function playNextItem(settings) {
     }
 
     audio.onerror = (e) => {
-      console.error('❌ Audio playback error:', e, '- skipping')
-      if (isPlaying.value) { playNextItem(settings) }
+      console.error('🛑 AUDIO STOP: playback error', e)
+      console.error('🛑 URL:', item.audioUrl)
+      stop()
     }
 
     // Play
@@ -401,8 +405,9 @@ async function playNextItem(settings) {
     console.log('▶️ Playing audio:', item.audioUrl)
 
   } catch (error) {
-    console.error('❌ Error playing audio:', error, '- skipping')
-    if (isPlaying.value) { playNextItem(settings) }
+    console.error('🛑 AUDIO STOP: play() rejected', error)
+    console.error('🛑 URL:', item.audioUrl)
+    stop()
   }
 }
 
