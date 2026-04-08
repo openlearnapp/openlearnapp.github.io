@@ -153,7 +153,7 @@
             :title="isOnItemsPage ? $t('nav.backToLessons') : $t('nav.learningItems')"
             :aria-label="isOnItemsPage ? $t('nav.backToLessons') : $t('nav.learningItems')">
             <span v-if="isOnItemsPage && fromLessonNumber" class="text-sm font-bold">{{ fromLessonNumber }}</span>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
           </Button>
 
           <!-- Burger menu (replaces Settings, Profile, Workshops buttons) -->
