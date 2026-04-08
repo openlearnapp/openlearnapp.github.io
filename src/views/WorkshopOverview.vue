@@ -24,9 +24,9 @@
           <button
             v-for="label in allLabels"
             :key="label"
-            @click="activeFilter = activeFilter === label ? null : label"
+            @click="toggleFilter(label)"
             class="px-3 py-1 rounded-full text-xs font-medium transition-all"
-            :class="activeFilter === label
+            :class="activeFilters.has(label)
               ? 'bg-primary text-primary-foreground'
               : 'bg-accent text-muted-foreground hover:text-foreground'">
             {{ getDisplayLabel(label) }}
@@ -84,18 +84,18 @@
 
             <div v-if="getWorkshopLabels(ws).length > 0 || isActive(ws)" class="flex flex-wrap gap-1.5 mb-2">
               <span v-if="isActive(ws)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all"
-                :class="activeFilter === 'active'
+                :class="activeFilters.has('active')
                   ? 'bg-green-200 dark:bg-green-800/40 text-green-800 dark:text-green-300 font-medium'
                   : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'">
-                <button @click.stop="activeFilter = activeFilter === 'active' ? null : 'active'">{{ isDE ? 'Aktiv' : 'Active' }}</button>
+                <button @click.stop="toggleFilter('active')">{{ isDE ? 'Aktiv' : 'Active' }}</button>
                 <button @click.stop="deactivateWorkshop(ws)" class="hover:text-red-500 transition" title="Remove active">✕</button>
               </span>
               <button
                 v-for="label in getWorkshopLabels(ws)"
                 :key="label"
-                @click.stop="activeFilter = activeFilter === label ? null : label"
+                @click.stop="toggleFilter(label)"
                 class="px-2 py-0.5 rounded-full text-xs transition-all"
-                :class="activeFilter === label
+                :class="activeFilters.has(label)
                   ? 'bg-primary/20 text-primary font-medium'
                   : 'bg-accent text-muted-foreground hover:text-foreground'">
                 {{ getDisplayLabel(label) }}
@@ -194,7 +194,7 @@ const isStandalone = computed(() =>
 let deferredInstallPrompt = null
 
 const workshopsLoading = ref(true)
-const activeFilter = ref(null)
+const activeFilters = ref(new Set())
 const copiedWorkshop = ref(null)
 const addedNotice = ref(null)
 const favorites = ref(JSON.parse(localStorage.getItem('workshopFavorites') || '[]'))
@@ -245,75 +245,67 @@ function getWorkshopLabels(workshop) {
   return meta.labels || []
 }
 
-// Filter matching: "IT" matches workshops with "IT" or "IT/Linux" etc.
-function isWorkshopMatchingFilter(ws, filter) {
+function workshopMatchesFilter(ws, filter) {
   if (filter === 'active') return isActive(ws)
-  const labels = getWorkshopLabels(ws)
-  return labels.some(l => l === filter || l.startsWith(filter + '/'))
+  return getWorkshopLabels(ws).includes(filter)
+}
+
+function toggleFilter(label) {
+  const filters = new Set(activeFilters.value)
+  if (filters.has(label)) {
+    filters.delete(label)
+  } else {
+    filters.add(label)
+  }
+  activeFilters.value = filters
 }
 
 const filteredWorkshops = computed(() => {
-  if (!activeFilter.value) return workshops.value
-  return workshops.value.filter(ws => isWorkshopMatchingFilter(ws, activeFilter.value))
+  if (activeFilters.value.size === 0) return workshops.value
+  return workshops.value.filter(ws =>
+    [...activeFilters.value].every(f => workshopMatchesFilter(ws, f))
+  )
 })
 
-// Hierarchical labels: show top-level by default, sub-labels when filtered
-// e.g. labels: ["IT", "IT/Linux"] → default shows "IT", filter "IT" reveals "Linux"
 function getDisplayLabel(label) {
   if (label === 'active') return isDE.value ? 'Aktiv' : 'Active'
   if (label === 'local-dev') return '🔧 local-dev'
-  // If it's a sub-label under the active filter, show only the suffix
-  if (activeFilter.value && label.startsWith(activeFilter.value + '/')) {
-    return label.slice(activeFilter.value.length + 1)
-  }
   return label
 }
 
+// Labels from filtered workshops, sorted by count (most common first)
+// Active filters always shown so they can be deselected
 const allLabels = computed(() => {
-  const labels = new Set()
+  const counts = {}
   const source = filteredWorkshops.value
 
-  if (source.some(ws => isActive(ws)) || activeFilter.value === 'active') {
-    labels.add('active')
+  if (source.some(ws => isActive(ws)) || activeFilters.value.has('active')) {
+    counts['active'] = source.filter(ws => isActive(ws)).length
   }
 
   for (const ws of source) {
     for (const label of getWorkshopLabels(ws)) {
-      labels.add(label)
+      counts[label] = (counts[label] || 0) + 1
     }
   }
 
-  // Always include the active filter so it can be deselected
-  if (activeFilter.value && activeFilter.value !== 'active') {
-    labels.add(activeFilter.value)
+  // Always include active filters so they can be deselected
+  for (const f of activeFilters.value) {
+    if (!(f in counts)) counts[f] = 0
   }
-
-  // Filter to appropriate level:
-  // - No active filter: show only top-level (no /) + special labels
-  // - With active filter: show the active filter + its direct children
-  const visible = [...labels].filter(l => {
-    if (l === 'active' || l === 'local-dev') return true
-    if (l === activeFilter.value) return true
-    if (!activeFilter.value) return !l.includes('/')
-    // Show direct children of active filter
-    if (l.startsWith(activeFilter.value + '/')) {
-      const rest = l.slice(activeFilter.value.length + 1)
-      return !rest.includes('/') // only direct children, not deeper
-    }
-    // Also show other top-level labels still present in results
-    return !l.includes('/')
-  })
-
   const special = ['active', 'local-dev']
-  const sorted = visible.filter(l => !special.includes(l)).sort()
-  // Prepend special labels (active, local-dev) in order if present
-  if (visible.includes('local-dev')) sorted.unshift('local-dev')
-  if (visible.includes('active')) sorted.unshift('active')
+  const regular = Object.keys(counts).filter(l => !special.includes(l))
+  regular.sort((a, b) => counts[b] - counts[a])
+
+  const sorted = []
+  if ('active' in counts) sorted.push('active')
+  if ('local-dev' in counts) sorted.push('local-dev')
+  sorted.push(...regular)
   return sorted
 })
 
 function labelCount(label) {
-  return filteredWorkshops.value.filter(ws => isWorkshopMatchingFilter(ws, label)).length
+  return filteredWorkshops.value.filter(ws => workshopMatchesFilter(ws, label)).length
 }
 
 const availableWorkshops = computed(() => {
