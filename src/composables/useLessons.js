@@ -413,20 +413,27 @@ export function useLessons() {
   }
 
   // Load workshop details for a new language from already-known sources
+  // Uses promise cache to prevent parallel duplicate loads (race condition)
+  const sourceLoadPromises = {}
   async function loadSourcesForLanguage(lang) {
     if (loadedSourceLangs.has(lang)) return
-    console.log(`📡 Loading source workshop details for language: ${lang}`)
-    await loadDefaultSources()
-    const contentSources = getAllContentSources()
-    await Promise.all(
-      contentSources.map(sourceUrl =>
-        loadContentSource(sourceUrl, availableContent.value, languageCodes.value, lang)
+    if (sourceLoadPromises[lang]) return sourceLoadPromises[lang]
+    sourceLoadPromises[lang] = (async () => {
+      console.log(`📡 Loading source workshop details for language: ${lang}`)
+      await loadDefaultSources()
+      const contentSources = getAllContentSources()
+      await Promise.all(
+        contentSources.map(sourceUrl =>
+          loadContentSource(sourceUrl, availableContent.value, languageCodes.value, lang)
+        )
       )
-    )
-    if (import.meta.env.DEV) {
-      await loadLocalWorkshops(availableContent.value, languageCodes.value, lang)
-    }
-    loadedSourceLangs.add(lang)
+      if (import.meta.env.DEV) {
+        await loadLocalWorkshops(availableContent.value, languageCodes.value, lang)
+      }
+      loadedSourceLangs.add(lang)
+      delete sourceLoadPromises[lang]
+    })()
+    return sourceLoadPromises[lang]
   }
 
   async function loadWorkshopsForLanguage(lang) {
