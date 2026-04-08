@@ -173,10 +173,20 @@ export default defineConfig(({ command }) => ({
       }
     })
   ],
-  define: {
-    __APP_VERSION__: JSON.stringify(JSON.parse(fs.readFileSync('./package.json', 'utf-8')).version),
-    __APP_LAST_PR__: JSON.stringify(JSON.parse(fs.readFileSync('./package.json', 'utf-8'))._lastPR || ''),
-  },
+  define: (() => {
+    const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'))
+    // Extract PR number from last git commit message (e.g. "fix: something (#192)")
+    let lastPR = ''
+    try {
+      const msg = require('child_process').execSync('git log -1 --pretty=%s', { encoding: 'utf-8' })
+      const match = msg.match(/#(\d+)/)
+      if (match) lastPR = '#' + match[1]
+    } catch {}
+    return {
+      __APP_VERSION__: JSON.stringify(pkg.version),
+      __APP_LAST_PR__: JSON.stringify(lastPR),
+    }
+  })(),
   base: '/',
   server: {
     cors: true  // Enable CORS for cross-origin requests

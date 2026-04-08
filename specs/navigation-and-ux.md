@@ -76,17 +76,32 @@ One button replaces the individual Items/Results/Lesson buttons on desktop. It c
 | Learning items | Clipboard | Assessment results |
 | Assessment results | Lesson number or "123" | Back to lesson / lessons overview |
 
-Icons must be visually distinct:
-- **Items**: horizontal lines with dots (list icon) — NOT the book icon (that's story mode)
-- **Results**: clipboard with checklist
-- **Lesson**: lesson number as text (e.g. "3"), or "123" for lessons overview
+### Icon inventory
+
+Each icon must be visually distinct. No two buttons share the same icon.
+
+| Function | Icon | Description |
+|----------|------|-------------|
+| **Story mode** | Open book SVG | Two pages side by side |
+| **Learning items** | Flashcard SVG | Rectangle with vertical divider and horizontal line |
+| **Results** | Clipboard SVG | Clipboard with checklist dots |
+| **Back to lesson** | Lesson number (e.g. "3") | Bold text, or "123" from lessons overview |
+| **Play/Pause** | Play triangle / Pause bars SVG | Standard media controls |
+| **Loading** | ⏳ hourglass emoji | Static (NOT spinning) |
+| **Burger menu** | Hamburger lines / X SVG | Three lines → X when open |
+
+Desktop toggle buttons (Results, Items) must also cycle their icons:
+- On the target page → show lesson number or "123" (to go back)
+- On lesson/overview → show the target icon (flashcard / clipboard)
 
 ### Floating play button (mobile)
 
 The play/pause button is a **floating action button** on lesson detail pages (mobile only):
 
 - Position: `fixed bottom-20 right-6`
-- Size: `w-16 h-16` (large touch target)
+- Size: `w-12 h-12` (48px, with border)
+- Style: `bg-primary text-white border-2 border-primary-foreground/30`
+- SVG icons (not emoji) for proper centering
 - Visible when audio is available or loading
 - Loading state: hourglass emoji ⏳ (static, NOT spinning)
 - Hidden on desktop (play button is in the top nav instead)
@@ -109,6 +124,8 @@ Replaces individual Settings/Profile/Workshops buttons. Contains:
 - Settings (gear icon)
 - Profile (person icon)
 - Workshops (grid icon, only on subpages)
+- Coach (robot icon, only when workshop has coach)
+- Version info at the bottom: `v1.0 · #192` (version + last merged PR)
 
 ### PWA behavior
 
