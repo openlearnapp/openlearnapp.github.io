@@ -507,11 +507,6 @@ onMounted(async () => {
     await loadWorkshopsForLanguage(learning.value)
   }
   workshopsLoading.value = false
-  // Debug: log colors for all workshops
-  for (const ws of workshops.value) {
-    const meta = getWorkshopMeta(learning.value, ws)
-    console.log(`🎨 [WorkshopOverview] ${ws}: color="${meta.color}", primaryColor="${meta.primaryColor}"`)
-  }
   emit('update-title', 'Workshops')
 })
 

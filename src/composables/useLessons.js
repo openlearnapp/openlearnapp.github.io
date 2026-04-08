@@ -453,6 +453,8 @@ export function useLessons() {
         }
         loadedSourceLangs.add(lang)
       }
+      const wsCount = Object.keys(availableContent.value[lang] || {}).length
+      console.log(`📚 Loaded ${wsCount} workshops for ${lang}`)
       delete sourceLoadPromises[cacheKey]
     })()
     return sourceLoadPromises[cacheKey]
