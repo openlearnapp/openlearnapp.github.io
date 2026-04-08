@@ -276,17 +276,17 @@
     </div>
 
     <!-- Floating play/pause button for mobile — only shown when audio is available -->
-    <Button
+    <button
       v-if="lesson && (isLoadingAudio || hasAudio)"
-      size="icon"
       @click="togglePlayPause"
       :disabled="isLoadingAudio"
-      class="md:hidden fixed bottom-20 right-6 w-16 h-16 rounded-full shadow-lg text-3xl z-50"
+      class="md:hidden fixed bottom-20 right-6 w-12 h-12 rounded-full shadow-lg z-50 flex items-center justify-center bg-primary text-white border-2 border-primary-foreground/30 disabled:opacity-50"
       :title="isLoadingAudio ? $t('nav.loading') : (isPlaying ? $t('nav.pause') : $t('nav.play'))"
       :aria-label="isLoadingAudio ? $t('nav.loadingAudio') : (isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio'))">
-      <span v-if="isLoadingAudio">⏳</span>
-      <span v-else>{{ isPlaying ? '⏸' : '▶️' }}</span>
-    </Button>
+      <svg v-if="isLoadingAudio" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      <svg v-else-if="isPlaying" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+    </button>
   </div>
 </template>
 
