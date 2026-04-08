@@ -659,10 +659,7 @@ watch(currentItem, async (newItem) => {
   }
 
   if (element) {
-    // Use 'center' for examples, 'start' for section headings
-    // scroll-margin-top handles the sticky header offset
-    element.style.scrollMarginTop = '80px'
-    element.scrollIntoView({ behavior: 'smooth', block: newItem.type === 'section-title' ? 'start' : 'center' })
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 })
 
