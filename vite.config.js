@@ -180,8 +180,8 @@ export default defineConfig(({ command }) => ({
     let lastPR = ''
     try {
       const msg = execSync('git log -1 --pretty=%s', { encoding: 'utf-8' })
-      const match = msg.match(/#(\d+)/)
-      if (match) lastPR = '#' + match[1]
+      const matches = [...msg.matchAll(/#(\d+)/g)]
+      if (matches.length) lastPR = '#' + matches[matches.length - 1][1]
     } catch {}
     return {
       __APP_VERSION__: JSON.stringify(pkg.version),
