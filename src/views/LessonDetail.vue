@@ -134,8 +134,19 @@
             ]">
             <div :class="example.image ? 'flex gap-4' : ''">
               <div :class="example.image ? 'flex-1 min-w-0' : ''">
-                <div class="text-lg font-semibold text-foreground mb-2" @click.stop="handleQuestionClick(example)">
-                  <span v-if="isAssessmentCorrect(example)" class="text-green-600 dark:text-green-400 mr-1">✓</span>{{ example.q }}
+                <div class="text-lg font-semibold text-foreground mb-2 flex items-start gap-2">
+                  <div class="flex-1">
+                    <span v-if="isAssessmentCorrect(example)" class="text-green-600 dark:text-green-400 mr-1">✓</span>{{ example.q }}
+                  </div>
+                  <!-- Reveal answer button (only when answers are hidden and example has an answer) -->
+                  <button
+                    v-if="!isAssessmentType(example) && !settings.showAnswers && example.a"
+                    @click.stop="handleQuestionClick(example)"
+                    class="flex-shrink-0 mt-0.5 p-1 rounded-md text-muted-foreground/40 hover:text-primary hover:bg-primary/10 transition"
+                    :title="revealedAnswers[draftKey(example)] ? 'Hide answer' : 'Show answer'">
+                    <svg v-if="!revealedAnswers[draftKey(example)]" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>
+                  </button>
                 </div>
 
             <template v-if="!example.type || example.type === 'qa'">
