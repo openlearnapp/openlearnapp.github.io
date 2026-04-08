@@ -193,6 +193,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
                 <span>{{ $t('nav.coach') }}</span>
               </button>
+              <!-- Version -->
+              <div class="px-4 py-2 text-xs text-muted-foreground/50 border-t">
+                v{{ appVersion }}<span v-if="lastPR"> · {{ lastPR }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -266,6 +270,8 @@ const { locale } = useI18n()
 const pageTitle = ref('🎓 Open Learn')
 const showLanguageMenu = ref(false)
 const showBurgerMenu = ref(false)
+const appVersion = __APP_VERSION__
+const lastPR = __APP_LAST_PR__
 
 const { isLoadingAudio, isPlaying, play, pause, resume } = useAudio()
 const { settings } = useSettings()
