@@ -152,7 +152,7 @@ export function useLessons() {
         fetchUrl = sourceUrl.replace(/\/$/, '') + '/index.yaml'
       }
 
-      console.log(`📡 Loading content source: ${fetchUrl}${targetLang ? ` (lang: ${targetLang})` : ''}`)
+
       const response = await fetch(fetchUrl)
       if (!response.ok) {
         console.warn(`⚠️ Failed to fetch ${fetchUrl}: ${response.status}`)
@@ -251,7 +251,7 @@ export function useLessons() {
         }
       }
 
-      console.log(`✅ Content source loaded: ${sourceUrl}`)
+
     } catch (error) {
       console.warn(`⚠️ Error loading content source ${sourceUrl}:`, error)
     }
@@ -266,7 +266,7 @@ export function useLessons() {
       const { workshops } = await res.json()
       if (!workshops?.length) return
 
-      console.log(`🔧 Loading ${workshops.length} local workshop(s)...`)
+
 
       for (const workshopName of workshops) {
         const baseUrl = `/__local/${workshopName}`
@@ -329,7 +329,7 @@ export function useLessons() {
                 labels: [...(ws.labels || []), 'local-dev']
               }
 
-              console.log(`  🔧 Local: ${langKey}/${localSlug} → ${workshopUrl}`)
+
             }
           }
         } catch (e) {
@@ -355,7 +355,7 @@ export function useLessons() {
 
   async function doLoadAvailableContent(targetLang) {
     try {
-      console.log(`📚 Loading available content${targetLang ? ` (lang: ${targetLang})` : ''}...`)
+
       isLoading.value = true
       const response = await fetch('languages.yaml')
 
@@ -365,7 +365,7 @@ export function useLessons() {
 
       const text = await response.text()
       const data = yaml.load(text)
-      console.log(`📖 Loaded ${data.languages?.length || 0} languages`)
+
 
       const content = {}
       const codes = {}
@@ -405,7 +405,10 @@ export function useLessons() {
       languageCodes.value = codes
       if (targetLang) loadedSourceLangs.add(targetLang)
       isLoading.value = false
-      console.log('✅ Content loaded successfully')
+      const langCount = Object.keys(content).length
+      const wsCount = Object.values(content).reduce((n, ws) => n + Object.keys(ws).length, 0)
+      console.log(`📚 Loaded ${langCount} languages, ${wsCount} workshops${targetLang ? ` (${targetLang})` : ''}`)
+
     } catch (error) {
       console.error('❌ Error loading available content:', error)
       isLoading.value = false
@@ -427,13 +430,13 @@ export function useLessons() {
         // Deep link: only load the source that matches the workshop
         const matching = contentSources.filter(url => url.includes(workshopHint))
         if (matching.length > 0) {
-          console.log(`📡 Loading source for workshop: ${workshopHint} (lang: ${lang})`)
+    
           await Promise.all(
             matching.map(url => loadContentSource(url, availableContent.value, languageCodes.value, lang))
           )
         } else {
           // Workshop not found in sources — might be built-in, load all
-          console.log(`📡 Loading all sources for language: ${lang}`)
+    
           await Promise.all(
             contentSources.map(url => loadContentSource(url, availableContent.value, languageCodes.value, lang))
           )
@@ -441,7 +444,7 @@ export function useLessons() {
         }
       } else if (!loadedSourceLangs.has(lang)) {
         // Workshop overview: load all sources
-        console.log(`📡 Loading all sources for language: ${lang}`)
+  
         await Promise.all(
           contentSources.map(url => loadContentSource(url, availableContent.value, languageCodes.value, lang))
         )
@@ -458,11 +461,11 @@ export function useLessons() {
   // workshopHint: if set, only load the source matching this workshop (for deep links)
   async function loadWorkshopsForLanguage(lang, workshopHint) {
     try {
-      console.log(`📚 Loading workshops for language: ${lang}${workshopHint ? ` (workshop: ${workshopHint})` : ''}`)
+
 
       // Ensure languages are loaded first
       if (!availableContent.value[lang]) {
-        console.log('⚠️ Languages not loaded yet, loading now...')
+
         await loadAvailableContent(lang)
 
         if (!availableContent.value[lang]) {
@@ -473,7 +476,7 @@ export function useLessons() {
       // Load workshop details from sources for this language
       await loadSourcesForLanguage(lang, workshopHint)
 
-      console.log(`✅ Workshops loaded for ${lang}`)
+
     } catch (error) {
       console.error(`❌ Error loading workshops for ${lang}:`, error)
     }
@@ -481,11 +484,11 @@ export function useLessons() {
 
   async function loadLessonsForWorkshop(lang, workshop) {
     try {
-      console.log(`📚 Loading lesson list for ${lang}/${workshop}`)
+
 
       // Ensure workshops are loaded first — only load the source for this workshop
       if (!availableContent.value[lang] || availableContent.value[lang][workshop] === undefined) {
-        console.log('⚠️ Workshops not loaded yet, loading now...')
+
         await loadWorkshopsForLanguage(lang, workshop)
 
         if (!availableContent.value[lang] || availableContent.value[lang][workshop] === undefined) {
@@ -518,10 +521,10 @@ export function useLessons() {
 
       const text = await response.text()
       const data = yaml.load(text)
-      console.log(`📖 Loaded lessons list for ${lang}/${workshop}:`, data.lessons)
+
 
       availableContent.value[lang][workshop] = data.lessons
-      console.log(`✅ Lesson list loaded: ${data.lessons.length} lessons found`)
+
     } catch (error) {
       console.error(`❌ Error loading lessons for ${lang}/${workshop}:`, error)
     }
@@ -532,7 +535,7 @@ export function useLessons() {
       const sourceDisplay = typeof filenameOrSource === 'string'
         ? filenameOrSource
         : JSON.stringify(filenameOrSource)
-      console.log(`📄 Loading lesson: ${lang}/${workshop}/${sourceDisplay}`)
+
 
       // Parse lesson source (can be string, folder object, or url object)
       const source = parseSource(filenameOrSource)
@@ -571,7 +574,7 @@ export function useLessons() {
       const lesson = yaml.load(text)
 
       if (lesson) {
-        console.log(`  ✓ Lesson loaded: #${lesson.number} - ${lesson.title}`)
+
         // Store the source path for audio loading
         lesson._source = source
         lesson._filename = source.path
@@ -588,7 +591,7 @@ export function useLessons() {
 
   async function loadAllLessonsForWorkshop(lang, workshop) {
     try {
-      console.log(`📚 Loading all lessons for ${lang}/${workshop}`)
+
 
       // Load the lesson list first (this will ensure workshops are loaded too)
       await loadLessonsForWorkshop(lang, workshop)
@@ -600,7 +603,7 @@ export function useLessons() {
         return []
       }
 
-      console.log(`📖 Found ${lessonFiles.length} lesson files to load`)
+
 
       // Load all lessons in parallel (#119)
       const loaded = await Promise.all(
@@ -616,7 +619,7 @@ export function useLessons() {
       const lessons = loaded.filter(Boolean)
 
       const sortedLessons = lessons.sort((a, b) => a.number - b.number)
-      console.log(`✅ All lessons loaded and sorted: ${sortedLessons.length} lessons`)
+      console.log(`📖 Loaded ${sortedLessons.length} lessons for ${workshop}`)
 
       return sortedLessons
     } catch (error) {
