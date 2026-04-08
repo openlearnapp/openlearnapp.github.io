@@ -395,9 +395,8 @@ async function playNextItem(settings) {
     }
 
     audio.onerror = (e) => {
-      console.error('🛑 AUDIO STOP: playback error', e)
-      console.error('🛑 URL:', item.audioUrl)
-      stop()
+      console.warn('⚠️ Audio error, retrying:', item.audioUrl)
+      retryPlay(item, settings)
     }
 
     // Play
@@ -405,8 +404,36 @@ async function playNextItem(settings) {
     console.log('▶️ Playing audio:', item.audioUrl)
 
   } catch (error) {
-    console.error('🛑 AUDIO STOP: play() rejected', error)
-    console.error('🛑 URL:', item.audioUrl)
+    console.warn('⚠️ play() failed, retrying:', item.audioUrl, error.message)
+    retryPlay(item, settings)
+  }
+}
+
+// Retry playing by creating a fresh audio element
+async function retryPlay(item, settings) {
+  if (!isPlaying.value) return
+  try {
+    const fresh = new Audio(item.audioUrl)
+    fresh.playbackRate = item.type === 'section-title'
+      ? (settings.audioSpeed || 1.0) * 0.7
+      : (settings.audioSpeed || 1.0)
+    fresh.onended = () => {
+      if (isPlaying.value) {
+        const pauseDuration = item.type === 'section-title' ? 1200
+          : item.type === 'lesson-title' ? 1000 : 800
+        setTimeout(() => { if (isPlaying.value) playNextItem(settings) }, pauseDuration)
+      }
+    }
+    fresh.onerror = () => {
+      console.error('🛑 AUDIO STOP: retry also failed for', item.audioUrl)
+      stop()
+    }
+    currentAudio.value = fresh
+    audioElements.value[item.audioUrl] = fresh
+    await fresh.play()
+    console.log('🔄 Retry succeeded:', item.audioUrl)
+  } catch (e) {
+    console.error('🛑 AUDIO STOP: retry failed', item.audioUrl, e.message)
     stop()
   }
 }
