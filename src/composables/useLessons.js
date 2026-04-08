@@ -401,8 +401,6 @@ export function useLessons() {
         }
       }
 
-      // Clear cache when content is rebuilt so sources reload correctly
-      loadedSourceLangs.clear()
       availableContent.value = content
       languageCodes.value = codes
       if (targetLang) loadedSourceLangs.add(targetLang)
