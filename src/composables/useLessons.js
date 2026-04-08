@@ -405,9 +405,7 @@ export function useLessons() {
       languageCodes.value = codes
       if (targetLang) loadedSourceLangs.add(targetLang)
       isLoading.value = false
-      const langCount = Object.keys(content).length
-      const wsCount = Object.values(content).reduce((n, ws) => n + Object.keys(ws).length, 0)
-      console.log(`📚 Loaded ${langCount} languages, ${wsCount} workshops${targetLang ? ` (${targetLang})` : ''}`)
+      console.log(`📚 Loaded ${Object.keys(content).length} languages`)
 
     } catch (error) {
       console.error('❌ Error loading available content:', error)
