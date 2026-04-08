@@ -276,6 +276,15 @@ function goToWorkshops(lang) {
 
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
+
+  // In PWA mode, skip home page — go directly to workshop overview
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+  if (isStandalone) {
+    const lang = selectedLanguage.value || localStorage.getItem('lastLearningLanguage') || 'deutsch'
+    router.replace({ name: 'workshop-overview', params: { learning: lang } })
+    return
+  }
+
   if (Object.keys(availableContent.value).length === 0) {
     await loadAvailableContent()
   }
