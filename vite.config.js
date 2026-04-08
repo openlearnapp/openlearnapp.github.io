@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 import fs from 'fs'
+import { execSync } from 'child_process'
 
 // Auto-detect sibling workshop directories (../workshop-*) and built-in workshops (public/workshop-*)
 // In dev mode, serves local workshop files and provides a manifest
@@ -178,7 +179,7 @@ export default defineConfig(({ command }) => ({
     // Extract PR number from last git commit message (e.g. "fix: something (#192)")
     let lastPR = ''
     try {
-      const msg = require('child_process').execSync('git log -1 --pretty=%s', { encoding: 'utf-8' })
+      const msg = execSync('git log -1 --pretty=%s', { encoding: 'utf-8' })
       const match = msg.match(/#(\d+)/)
       if (match) lastPR = '#' + match[1]
     } catch {}

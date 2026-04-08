@@ -244,7 +244,7 @@ export function useLessons() {
               labels: workshopSource.labels || []
             }
 
-            console.log(`  ✓ Remote workshop: ${slug} → ${workshopUrl} (${workshopSource.code || 'no code'})`)
+            // verbose: console.log(`  ✓ Remote workshop: ${slug} → ${workshopUrl}`)
           }
         } catch (e) {
           console.warn(`⚠️ Failed to load workshops for ${langKey}:`, e)
@@ -365,7 +365,7 @@ export function useLessons() {
 
       const text = await response.text()
       const data = yaml.load(text)
-      console.log('📖 Loaded languages data:', data)
+      console.log(`📖 Loaded ${data.languages?.length || 0} languages`)
 
       const content = {}
       const codes = {}
@@ -381,7 +381,7 @@ export function useLessons() {
         const key = source.path
         content[key] = {}
         codes[key] = source.code || null
-        console.log(`  ✓ Language: ${key} (${source.type}) (${source.code || 'no code'})`)
+        // verbose: console.log(`  ✓ Language: ${key} (${source.type}) (${source.code || 'no code'})`)
       }
 
       // Only load workshop sources if a target language is selected
