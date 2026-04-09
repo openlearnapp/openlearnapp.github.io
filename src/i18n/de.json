@@ -93,8 +93,8 @@
       "zeroInfraDesc": "Läuft als statische Seite. Kein Server, keine Datenbank. Offline-fähig. Optionaler P2P-Sync zwischen Geräten"
     },
     "steps": {
-      "pickLang": "Sprache wählen",
-      "pickLangDesc": "Wähle oben links deine Sprache — die Oberfläche passt sich an.",
+      "pickLang": "Ich spreche…",
+      "pickLangDesc": "Wähle die Sprache, die du bereits kannst — Workshops werden darin angezeigt.",
       "startWorkshop": "Workshop starten",
       "startWorkshopDesc": "Klicke auf einen Workshop und starte sofort — kein Konto nötig.",
       "learnTrack": "Lernen & Fortschritt",
