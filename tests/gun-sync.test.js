@@ -9,28 +9,33 @@ const onCallbacks = {} // path → [cb, cb, ...]
 const onceResponses = {} // path → value to return
 
 function makeNode(path) {
-  return {
+  const node = {
     get(key) {
       return makeNode(path ? `${path}.${key}` : key)
     },
     put(val) {
       gunLog.push({ path, val })
+      return node
     },
     once(cb) {
       const val = onceResponses[path]
       if (val !== undefined) cb(val)
       else cb(null)
+      return node
     },
     on(cb) {
       if (!onCallbacks[path]) onCallbacks[path] = []
       onCallbacks[path].push(cb)
+      return node
     },
     off(cb) {
       if (onCallbacks[path]) {
         onCallbacks[path] = onCallbacks[path].filter(c => c !== cb)
       }
+      return node
     }
   }
+  return node
 }
 
 const mockAuth = vi.fn()
@@ -62,6 +67,8 @@ async function loginAndGetGun() {
   mockAuth.mockImplementation((alias, pass, cb) => cb({ ok: 0 }))
   await gun.initGun()
   await gun.login('testuser', 'testpass')
+  // autoSyncAll runs in background (not awaited in login) — wait for it to settle
+  await new Promise(r => setTimeout(r, 50))
   return gun
 }
 

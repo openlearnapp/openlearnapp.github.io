@@ -398,20 +398,66 @@ function teardownSyncListener() {
   }
 }
 
-// Auto-sync: push all current localStorage data to Gun
+// Auto-sync on login: pull remote data first, merge with local, then push.
+// This prevents a fresh device from overwriting remote data with empty local state.
 async function autoSyncAll() {
   if (!isLoggedIn.value) return
 
   isSyncing.value = true
 
   try {
+    // 1. Pull remote data and merge into local state
+    for (const key of SYNC_KEYS) {
+      const val = await new Promise((resolve) => {
+        gun.user().get('openlearn').get(key).once((v) => resolve(v))
+        setTimeout(() => resolve(null), 3000)
+      })
+
+      if (!val || typeof val !== 'string') continue
+
+      try {
+        const remoteData = JSON.parse(val)
+        const localRaw = localStorage.getItem(key)
+        const localData = localRaw ? JSON.parse(localRaw) : null
+
+        // Merge strategy depends on data type
+        if (key === 'settings') {
+          // Settings: remote fills in missing keys, local takes precedence
+          if (localData) {
+            const merged = { ...remoteData, ...localData }
+            localStorage.setItem(key, JSON.stringify(merged))
+          } else {
+            localStorage.setItem(key, JSON.stringify(remoteData))
+          }
+        } else if (key === 'contentSources') {
+          // Content sources: additive merge (union of arrays)
+          const local = Array.isArray(localData) ? localData : []
+          const remote = Array.isArray(remoteData) ? remoteData : []
+          const merged = [...new Set([...local, ...remote])]
+          localStorage.setItem(key, JSON.stringify(merged))
+        } else {
+          // Progress, assessments: additive merge at nested key level
+          const merged = localData ? { ...localData } : {}
+          for (const [k, v] of Object.entries(remoteData)) {
+            if (!merged[k]) {
+              merged[k] = v
+            } else if (typeof v === 'object' && v !== null) {
+              merged[k] = { ...v, ...merged[k] }
+            }
+          }
+          localStorage.setItem(key, JSON.stringify(merged))
+        }
+      } catch {
+        // skip parse errors
+      }
+    }
+
+    // 2. Push merged result to Gun
     for (const key of SYNC_KEYS) {
       const saved = localStorage.getItem(key)
       if (saved) {
         try {
-          const data = JSON.parse(saved)
-          // Write data directly without triggering writeSyncMarker per key
-          const payload = JSON.stringify(data)
+          const payload = JSON.stringify(JSON.parse(saved))
           syncStats.bytesSent += payload.length
           syncStats.pushCount++
           syncStats.lastPushAt = Date.now()
@@ -421,6 +467,21 @@ async function autoSyncAll() {
         }
       }
     }
+
+    // 3. Notify composables of merged state so UI updates
+    _applyingRemote = true
+    for (const key of SYNC_KEYS) {
+      const saved = localStorage.getItem(key)
+      if (saved) {
+        try {
+          const data = JSON.parse(saved)
+          window.dispatchEvent(new CustomEvent('gun-sync', { detail: { key, data, method: 'once (login)' } }))
+        } catch { /* skip */ }
+      }
+    }
+    await new Promise(r => setTimeout(r, 0))
+    _applyingRemote = false
+
     // Single sync marker after all keys are written
     writeSyncMarker()
   } finally {
