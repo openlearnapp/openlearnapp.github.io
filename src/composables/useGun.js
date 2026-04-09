@@ -39,7 +39,7 @@ let _applyingRemote = false
 
 const SESSION_KEY = 'gun-session'
 const PEERS_KEY = 'gun-peers'
-const SYNC_KEYS = ['settings', 'progress', 'assessments']
+const SYNC_KEYS = ['settings', 'progress', 'assessments', 'contentSources']
 
 // Default public Gun relay peers (verified working)
 const DEFAULT_PEERS = [
@@ -217,6 +217,17 @@ function writeSyncMarker() {
   gun.user().get('openlearn').get('lastSync').put(marker)
 }
 
+// Read the current sync marker from Gun (for debug display)
+function readSyncMarker() {
+  if (!isLoggedIn.value || !gun) return Promise.resolve(null)
+  return new Promise((resolve) => {
+    gun.user().get('openlearn').get('lastSync').once((val) => {
+      resolve(val || null)
+    })
+    setTimeout(() => resolve(null), 3000)
+  })
+}
+
 // Sync data to Gun (encrypted under user space)
 async function syncToGun(key, data) {
   if (_applyingRemote) return // Don't echo remote data back
@@ -303,6 +314,25 @@ async function pullFromRemote() {
     _applyingRemote = false
     isSyncing.value = false
   }
+
+  // After merge, push the merged result back to Gun so both sides converge.
+  // The sync marker will carry this device's ID, so the other device won't
+  // re-pull (it already triggered this pull and has the same base data).
+  for (const key of SYNC_KEYS) {
+    const merged = localStorage.getItem(key)
+    if (merged) {
+      try {
+        const payload = JSON.stringify(JSON.parse(merged))
+        syncStats.bytesSent += payload.length
+        syncStats.pushCount++
+        syncStats.lastPushAt = Date.now()
+        gun.user().get('openlearn').get(key).put(payload)
+      } catch {
+        // skip invalid data
+      }
+    }
+  }
+  writeSyncMarker()
 }
 
 // Set up a single .on() listener on the lastSync marker.
@@ -409,6 +439,7 @@ export function useGun() {
     logout,
     autoLogin,
     syncToGun,
+    readSyncMarker,
     loadFromGun,
     autoSyncAll,
     DEFAULT_PEERS,
