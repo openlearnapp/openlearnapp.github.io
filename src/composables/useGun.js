@@ -13,6 +13,28 @@ const authError = ref('')
 const isSyncing = ref(false)
 
 const SESSION_KEY = 'gun-session'
+const PEERS_KEY = 'gun-peers'
+
+// Default public Gun relay peers
+const DEFAULT_PEERS = [
+  'https://gun-manhattan.herokuapp.com/gun',
+  'https://gun-us.herokuapp.com/gun',
+]
+
+function getSavedPeers() {
+  try {
+    const saved = localStorage.getItem(PEERS_KEY)
+    return saved ? JSON.parse(saved) : null
+  } catch { return null }
+}
+
+function savePeers(peers) {
+  localStorage.setItem(PEERS_KEY, JSON.stringify(peers))
+}
+
+function getActivePeers() {
+  return getSavedPeers() || DEFAULT_PEERS
+}
 
 // Initialize Gun (browser-only, with WebRTC for peer discovery)
 async function initGun() {
@@ -29,11 +51,14 @@ async function initGun() {
     // WebRTC module not available, continue without peer sync
   }
 
+  const peers = getActivePeers()
+  console.log(`🔗 Gun peers: ${peers.length > 0 ? peers.join(', ') : 'none (local only)'}`)
+
   gun = Gun({
     localStorage: true,
     radisk: false,
     file: 'gun-data',
-    peers: [],       // No relay server — local peer discovery only
+    peers,
     multicast: true  // Enable WLAN multicast for local device discovery
   })
   user = gun.user().recall({ sessionStorage: true })
@@ -251,6 +276,9 @@ export function useGun() {
     autoLogin,
     syncToGun,
     loadFromGun,
-    autoSyncAll
+    autoSyncAll,
+    DEFAULT_PEERS,
+    getActivePeers,
+    savePeers
   }
 }
