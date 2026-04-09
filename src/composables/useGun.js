@@ -317,8 +317,8 @@ async function pullFromRemote() {
   }
 
   // After merge, push the merged result back to Gun so both sides converge.
-  // The sync marker will carry this device's ID, so the other device won't
-  // re-pull (it already triggered this pull and has the same base data).
+  // No sync marker — this is a silent push. Writing a marker here would cause
+  // the other device to pull again, creating an infinite loop.
   for (const key of SYNC_KEYS) {
     const merged = localStorage.getItem(key)
     if (merged) {
@@ -335,7 +335,6 @@ async function pullFromRemote() {
       }
     }
   }
-  writeSyncMarker()
 }
 
 // Set up a single .on() listener on the lastSync marker.
