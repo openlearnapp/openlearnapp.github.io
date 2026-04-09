@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import yaml from 'js-yaml'
+import { useGun } from './useGun'
 
 // Helper function to resolve IPFS URLs to HTTP gateway URLs
 function resolveUrl(urlOrPath) {
@@ -87,9 +88,13 @@ export function useLessons() {
     return defaultContentSources.includes(url)
   }
 
-  // Save content sources to localStorage
+  // Save content sources to localStorage and sync to Gun
   function saveContentSources(sources) {
     localStorage.setItem('contentSources', JSON.stringify(sources))
+    const { isLoggedIn, syncToGun } = useGun()
+    if (isLoggedIn.value) {
+      syncToGun('contentSources', sources)
+    }
   }
 
   // Add a content source
@@ -636,6 +641,27 @@ export function useLessons() {
   // Get workshop code for a workshop folder
   function getWorkshopCode(langFolder, workshopFolder) {
     return workshopCodes.value[langFolder]?.[workshopFolder] || getLanguageCode(langFolder)
+  }
+
+  // Listen for real-time Gun sync events for content sources (register once)
+  if (typeof window !== 'undefined' && !window._gunSyncContentSourcesRegistered) {
+    window._gunSyncContentSourcesRegistered = true
+    window.addEventListener('gun-sync', (e) => {
+      if (e.detail.key === 'contentSources' && Array.isArray(e.detail.data)) {
+        // Additive merge: add any sources we don't already have
+        const current = getContentSources()
+        let changed = false
+        for (const url of e.detail.data) {
+          if (!current.includes(url)) {
+            current.push(url)
+            changed = true
+          }
+        }
+        if (changed) {
+          localStorage.setItem('contentSources', JSON.stringify(current))
+        }
+      }
+    })
   }
 
   return {

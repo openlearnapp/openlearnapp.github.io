@@ -167,6 +167,7 @@ function getAssessments() {
 }
 
 // Merge imported assessments into existing (additive)
+// Merge imported assessments into existing (additive)
 function mergeAssessments(imported) {
   for (const [lessonKey, answers] of Object.entries(imported)) {
     if (!assessments.value[lessonKey]) {
@@ -174,7 +175,9 @@ function mergeAssessments(imported) {
     }
     Object.assign(assessments.value[lessonKey], answers)
   }
-  saveAssessments()
+  // Persist immediately — the watcher also saves, but callers may read
+  // localStorage synchronously after merge (e.g. import flow, tests).
+  localStorage.setItem('assessments', JSON.stringify(assessments.value))
 }
 
 export function useAssessments() {

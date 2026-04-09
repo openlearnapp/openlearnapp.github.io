@@ -249,7 +249,9 @@ function mergeProgress(imported) {
     }
     Object.assign(progress.value[workshopKey], items)
   }
-  saveProgress()
+  // Persist immediately — the watcher also saves, but callers may read
+  // localStorage synchronously after merge (e.g. import flow, tests).
+  localStorage.setItem('progress', JSON.stringify(progress.value))
 }
 
 export function useProgress() {
