@@ -15,10 +15,10 @@ const isSyncing = ref(false)
 const SESSION_KEY = 'gun-session'
 const PEERS_KEY = 'gun-peers'
 
-// Default public Gun relay peers
+// Default public Gun relay peers (verified working)
 const DEFAULT_PEERS = [
-  'https://gun-manhattan.herokuapp.com/gun',
-  'https://gun-us.herokuapp.com/gun',
+  'https://toplocs.com/gun',
+  'https://relay.peer.ooo/gun',
 ]
 
 function getSavedPeers() {
