@@ -430,11 +430,21 @@ async function autoSyncAll() {
             localStorage.setItem(key, JSON.stringify(remoteData))
           }
         } else if (key === 'contentSources') {
-          // Content sources: additive merge (union of arrays)
-          const local = Array.isArray(localData) ? localData : []
-          const remote = Array.isArray(remoteData) ? remoteData : []
-          const merged = [...new Set([...local, ...remote])]
-          localStorage.setItem(key, JSON.stringify(merged))
+          // Content sources: timestamp map merge — highest absolute value wins
+          // Handles legacy array format (migrate to map)
+          const toMap = (d) => {
+            if (Array.isArray(d)) {
+              const m = {}; for (const url of d) m[url] = Date.now(); return m
+            }
+            return (d && typeof d === 'object') ? d : {}
+          }
+          const local = toMap(localData)
+          const remote = toMap(remoteData)
+          for (const [url, ts] of Object.entries(remote)) {
+            const localTs = local[url] || 0
+            if (Math.abs(ts) > Math.abs(localTs)) local[url] = ts
+          }
+          localStorage.setItem(key, JSON.stringify(local))
         } else {
           // Progress, assessments: additive merge at nested key level
           const merged = localData ? { ...localData } : {}
