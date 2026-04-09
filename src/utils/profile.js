@@ -44,7 +44,7 @@ export function calcTotalLearned(progressObj) {
 export function calcTotalAssessments(assessmentsObj) {
   let count = 0
   for (const lesson of Object.values(assessmentsObj)) {
-    count += Object.keys(lesson).length
+    count += Object.values(lesson).filter(v => v && !v._cleared).length
   }
   return count
 }

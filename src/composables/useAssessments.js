@@ -3,6 +3,8 @@ import { useGun } from './useGun'
 
 // Shared assessment state (singleton pattern)
 // Structure: { "learning:workshop:lessonNumber": { "sectionIdx-exampleIdx": { type, answer, submittedAt, correct } } }
+// Cleared answers get a tombstone: { _cleared: true, submittedAt: "..." }
+// Merge: most recent submittedAt wins.
 const assessments = ref({})
 
 let isInitialized = false
@@ -38,7 +40,9 @@ function loadAssessments() {
 function getAnswer(learning, workshop, lessonNumber, sectionIdx, exampleIdx) {
   const key = getKey(learning, workshop, lessonNumber)
   const itemKey = getItemKey(sectionIdx, exampleIdx)
-  return assessments.value[key]?.[itemKey] || null
+  const val = assessments.value[key]?.[itemKey]
+  if (!val || val._cleared) return null
+  return val
 }
 
 function saveAnswer(learning, workshop, lessonNumber, sectionIdx, exampleIdx, answerData) {
@@ -59,7 +63,13 @@ function saveAnswer(learning, workshop, lessonNumber, sectionIdx, exampleIdx, an
 
 function clearAnswers(learning, workshop, lessonNumber) {
   const key = getKey(learning, workshop, lessonNumber)
-  delete assessments.value[key]
+  if (assessments.value[key]) {
+    // Write tombstones so the clear syncs to other devices
+    const now = new Date().toISOString()
+    for (const itemKey of Object.keys(assessments.value[key])) {
+      assessments.value[key][itemKey] = { _cleared: true, submittedAt: now }
+    }
+  }
   saveAssessments()
 }
 
@@ -166,14 +176,21 @@ function getAssessments() {
   return assessments.value
 }
 
-// Merge imported assessments into existing (additive)
-// Merge imported assessments into existing (additive)
+// Merge imported assessments — most recent submittedAt wins per item.
 function mergeAssessments(imported) {
   for (const [lessonKey, answers] of Object.entries(imported)) {
     if (!assessments.value[lessonKey]) {
       assessments.value[lessonKey] = {}
     }
-    Object.assign(assessments.value[lessonKey], answers)
+    for (const [itemKey, remoteVal] of Object.entries(answers)) {
+      const localVal = assessments.value[lessonKey][itemKey]
+      const remoteTs = remoteVal?.submittedAt || ''
+      const localTs = localVal?.submittedAt || ''
+      // Most recent submittedAt wins (ISO string comparison works for dates)
+      if (remoteTs > localTs) {
+        assessments.value[lessonKey][itemKey] = remoteVal
+      }
+    }
   }
   // Persist immediately — the watcher also saves, but callers may read
   // localStorage synchronously after merge (e.g. import flow, tests).
