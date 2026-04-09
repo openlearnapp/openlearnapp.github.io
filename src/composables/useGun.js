@@ -287,6 +287,12 @@ async function pullFromRemote() {
   isSyncing.value = true
   syncStats.lastPullAt = Date.now()
 
+  // Snapshot local state before merge so we can detect what actually changed
+  const beforeMerge = {}
+  for (const key of SYNC_KEYS) {
+    beforeMerge[key] = localStorage.getItem(key)
+  }
+
   try {
     for (const key of SYNC_KEYS) {
       const val = await new Promise((resolve) => {
@@ -316,16 +322,14 @@ async function pullFromRemote() {
     isSyncing.value = false
   }
 
-  // After merge, push the merged result back to Gun so both sides converge.
-  // No sync marker and _applyingRemote stays true — this is a silent push.
-  // Without the guard, the gun-sync event would trigger Vue watchers →
-  // syncToGun → writeSyncMarker → other device pulls → infinite loop.
+  // Only push back keys where the merge actually produced new data.
+  // If local didn't change, the remote already has the same data — no push needed.
   _applyingRemote = true
   for (const key of SYNC_KEYS) {
-    const merged = localStorage.getItem(key)
-    if (merged) {
+    const after = localStorage.getItem(key)
+    if (after && after !== beforeMerge[key]) {
       try {
-        const data = JSON.parse(merged)
+        const data = JSON.parse(after)
         const payload = JSON.stringify(data)
         syncStats.bytesSent += payload.length
         syncStats.pushCount++
