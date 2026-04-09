@@ -2,7 +2,9 @@ import { ref, watch } from 'vue'
 import { useGun } from './useGun'
 
 // Shared progress state (singleton pattern)
-// Structure: { "learning:workshop": { "itemId": true, ... } }
+// Structure: { "learning:workshop": { "itemId": timestamp, ... } }
+// Positive timestamp = learned, negative = unlearned. Merge: highest absolute wins.
+// Legacy format (itemId: true) is supported for reads and migrated on write.
 const progress = ref({})
 
 // Last visited lesson per workshop: { "learning:workshop": "lesson-number" }
@@ -73,10 +75,11 @@ function getLastVisited(learning, workshop) {
   return lastVisited.value[getWorkshopKey(learning, workshop)] || null
 }
 
-// Check if an item is learned
+// Check if an item is learned (positive timestamp or legacy true)
 function isItemLearned(learning, workshop, itemId) {
   const workshopKey = getWorkshopKey(learning, workshop)
-  return progress.value[workshopKey]?.[itemId] === true
+  const val = progress.value[workshopKey]?.[itemId]
+  return val === true || (typeof val === 'number' && val > 0)
 }
 
 // Toggle learned status for an item
@@ -87,10 +90,10 @@ function toggleItemLearned(learning, workshop, itemId) {
     progress.value[workshopKey] = {}
   }
 
-  if (progress.value[workshopKey][itemId]) {
-    delete progress.value[workshopKey][itemId]
+  if (isItemLearned(learning, workshop, itemId)) {
+    progress.value[workshopKey][itemId] = -Date.now()
   } else {
-    progress.value[workshopKey][itemId] = true
+    progress.value[workshopKey][itemId] = Date.now()
   }
 
   saveProgress()
@@ -241,13 +244,21 @@ function getProgress() {
   return progress.value
 }
 
-// Merge imported progress into existing (additive)
+// Merge imported progress — timestamp-aware, highest absolute value wins.
+// Supports legacy format (true) by treating it as a low positive timestamp.
 function mergeProgress(imported) {
   for (const [workshopKey, items] of Object.entries(imported)) {
     if (!progress.value[workshopKey]) {
       progress.value[workshopKey] = {}
     }
-    Object.assign(progress.value[workshopKey], items)
+    for (const [itemId, val] of Object.entries(items)) {
+      const remoteTs = val === true ? 1 : (typeof val === 'number' ? val : 0)
+      const localVal = progress.value[workshopKey][itemId]
+      const localTs = localVal === true ? 1 : (typeof localVal === 'number' ? localVal : 0)
+      if (Math.abs(remoteTs) > Math.abs(localTs)) {
+        progress.value[workshopKey][itemId] = remoteTs
+      }
+    }
   }
   // Persist immediately — the watcher also saves, but callers may read
   // localStorage synchronously after merge (e.g. import flow, tests).

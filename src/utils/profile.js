@@ -36,7 +36,7 @@ export function computeStreak(today) {
 export function calcTotalLearned(progressObj) {
   let count = 0
   for (const items of Object.values(progressObj)) {
-    count += Object.values(items).filter(v => v === true).length
+    count += Object.values(items).filter(v => v === true || (typeof v === 'number' && v > 0)).length
   }
   return count
 }

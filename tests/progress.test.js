@@ -40,13 +40,13 @@ describe('useProgress', () => {
     it('persists to localStorage', () => {
       progress.toggleItemLearned('de', 'pt', 'sei')
       const stored = JSON.parse(localStorage.getItem('progress'))
-      expect(stored['de:pt']['sei']).toBe(true)
+      expect(stored['de:pt']['sei']).toBeGreaterThan(0)
     })
 
     it('creates workshop key if missing', () => {
       progress.toggleItemLearned('en', 'de', 'hello')
       expect(progress.progress.value['en:de']).toBeDefined()
-      expect(progress.progress.value['en:de']['hello']).toBe(true)
+      expect(progress.progress.value['en:de']['hello']).toBeGreaterThan(0)
     })
 
     it('handles multiple items in same workshop', () => {
@@ -127,7 +127,7 @@ describe('useProgress', () => {
     it('returns raw progress object', () => {
       progress.toggleItemLearned('de', 'pt', 'sei')
       const raw = progress.getProgress()
-      expect(raw['de:pt']['sei']).toBe(true)
+      expect(raw['de:pt']['sei']).toBeGreaterThan(0)
     })
   })
 
@@ -154,7 +154,8 @@ describe('useProgress', () => {
     it('persists merged progress to localStorage', () => {
       progress.mergeProgress({ 'de:pt': { 'sei': true } })
       const stored = JSON.parse(localStorage.getItem('progress'))
-      expect(stored['de:pt']['sei']).toBe(true)
+      // Legacy true is treated as timestamp 1 during merge
+      expect(stored['de:pt']['sei']).toBeGreaterThan(0)
     })
   })
 })

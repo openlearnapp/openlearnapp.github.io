@@ -446,13 +446,22 @@ async function autoSyncAll() {
           }
           localStorage.setItem(key, JSON.stringify(local))
         } else {
-          // Progress, assessments: additive merge at nested key level
+          // Progress, assessments: timestamp-aware merge at item level.
+          // Highest absolute value wins (supports legacy true values).
           const merged = localData ? { ...localData } : {}
           for (const [k, v] of Object.entries(remoteData)) {
             if (!merged[k]) {
               merged[k] = v
             } else if (typeof v === 'object' && v !== null) {
-              merged[k] = { ...v, ...merged[k] }
+              if (!merged[k] || typeof merged[k] !== 'object') merged[k] = {}
+              for (const [itemId, remoteVal] of Object.entries(v)) {
+                const rTs = remoteVal === true ? 1 : (typeof remoteVal === 'number' ? remoteVal : 0)
+                const localVal = merged[k][itemId]
+                const lTs = localVal === true ? 1 : (typeof localVal === 'number' ? localVal : 0)
+                if (Math.abs(rTs) > Math.abs(lTs)) {
+                  merged[k][itemId] = rTs
+                }
+              }
             }
           }
           localStorage.setItem(key, JSON.stringify(merged))
