@@ -37,7 +37,10 @@
           {{ isSyncing ? (isDE ? '● Verbunden' : '● Connected') : (isDE ? '○ Nicht verbunden' : '○ Not connected') }}
         </p>
         <div class="space-y-2 mb-3">
-          <div v-for="(peer, idx) in peerList" :key="idx" class="flex gap-2">
+          <div v-for="(peer, idx) in peerList" :key="idx" class="flex gap-2 items-center">
+            <span class="flex-shrink-0 text-xs" :title="peerStatus[peer] || 'Unknown'">
+              {{ peerStatus[peer] === 'ok' ? '🟢' : peerStatus[peer] === 'fail' ? '🔴' : '⚪' }}
+            </span>
             <input
               :value="peer"
               @input="updatePeer(idx, $event.target.value)"
@@ -48,6 +51,7 @@
         </div>
         <div class="flex gap-2">
           <Button variant="outline" size="sm" @click="addPeer">+ {{ isDE ? 'Server hinzufügen' : 'Add peer' }}</Button>
+          <Button variant="outline" size="sm" @click="checkPeers">{{ isDE ? 'Prüfen' : 'Check' }}</Button>
           <Button v-if="peersChanged" variant="secondary" size="sm" @click="resetPeers">{{ isDE ? 'Standard wiederherstellen' : 'Reset to defaults' }}</Button>
         </div>
         <p v-if="peersSaved" class="mt-2 text-xs text-green-600 dark:text-green-400">{{ isDE ? 'Gespeichert — Seite neu laden um zu verbinden.' : 'Saved — reload page to connect.' }}</p>
@@ -275,6 +279,24 @@ function removePeer(idx) {
   peersSaved.value = true
   setTimeout(() => { peersSaved.value = false }, 3000)
 }
+
+const peerStatus = ref({})
+
+async function checkPeers() {
+  for (const peer of peerList.value) {
+    if (!peer.trim()) continue
+    peerStatus.value[peer] = 'checking'
+    try {
+      const res = await fetch(peer, { mode: 'no-cors', signal: AbortSignal.timeout(5000) })
+      peerStatus.value = { ...peerStatus.value, [peer]: 'ok' }
+    } catch {
+      peerStatus.value = { ...peerStatus.value, [peer]: 'fail' }
+    }
+  }
+}
+
+// Check on mount
+checkPeers()
 
 function resetPeers() {
   peerList.value = [...DEFAULT_PEERS]
