@@ -82,33 +82,49 @@ On app startup (`main.js`):
 
 ## Sync Mechanisms
 
-There are three distinct sync paths:
+There are three distinct sync paths, coordinated by a lightweight **sync marker**.
+
+### Sync Marker
+
+Instead of attaching `.on()` listeners to each data key (which causes Gun to fire callbacks on every relay sync even without changes), we use a single marker:
+
+```
+gun.user().get('openlearn').get('lastSync') → "1712345678901:a1b2c3d4"
+```
+
+Format: `timestamp:deviceId`. Each browser tab gets a random device ID on load. When a device pushes data, it writes a new marker. Other devices listen only to this marker with `.on()` — when they see a new timestamp from a different device ID, they pull the actual data via `.once()`.
+
+This design means:
+- **1 listener** instead of 3 (one per data key)
+- The listener payload is ~25 bytes (just a timestamp + ID)
+- Actual data is only fetched when something actually changed
+- Own writes are ignored by comparing the device ID
 
 ### 1. Auto-Sync on Login (Push)
 
 **Trigger**: Successful login or session recall.
 
-`autoSyncAll()` iterates over the three keys (`settings`, `progress`, `assessments`), reads each from localStorage, and writes to Gun:
+`autoSyncAll()` iterates over the three keys (`settings`, `progress`, `assessments`), reads each from localStorage, writes to Gun, then writes a single sync marker:
 
 ```
 localStorage → JSON.parse → gun.user().get('openlearn').get(key).put(JSON.stringify(data))
+                          → gun.user().get('openlearn').get('lastSync').put("ts:deviceId")
 ```
 
 This ensures the relay peers always have the latest local state after login.
 
-### 2. Real-Time Listeners (Pull)
+### 2. Sync Marker Listener (Pull)
 
-**Trigger**: `setupListeners()` called on login.
+**Trigger**: `setupSyncListener()` called on login.
 
-For each of the three keys, a `.on()` listener is attached to the Gun graph node. When data changes on any connected peer (another device, another tab), GunDB pushes the update:
+A single `.on()` listener on `lastSync`. When the marker changes:
 
-```
-gun.user().get('openlearn').get(key).on(callback)
-  → callback parses JSON
-  → dispatches window CustomEvent('gun-sync', { key, data })
-```
+1. Parse `timestamp:deviceId` from the marker
+2. If `deviceId === ownDeviceId` → skip (own write)
+3. If `timestamp <= lastKnownTimestamp` → skip (already seen)
+4. Otherwise → `pullFromRemote()`: fetch all three keys via `.once()` and dispatch `gun-sync` events
 
-Each composable listens for its own key:
+Each composable listens for its own key via `gun-sync` window events:
 
 | Composable | Listens for | Merge Strategy |
 |------------|-------------|----------------|
@@ -116,7 +132,7 @@ Each composable listens for its own key:
 | `useProgress` | `gun-sync` where `key === 'progress'` | `mergeProgress()` — additive, never removes items |
 | `useAssessments` | `gun-sync` where `key === 'assessments'` | `mergeAssessments()` — additive, never removes answers |
 
-Listeners are torn down on logout.
+The listener is torn down on logout.
 
 ### 3. Composable Watchers (Push)
 
@@ -128,6 +144,7 @@ Each composable has a Vue `watch(..., { deep: true })` on its reactive state. Wh
 watch(settings) → saveSettings()
   → localStorage.setItem('settings', JSON.stringify(data))
   → if (isLoggedIn) syncToGun('settings', data)
+      → gun.put(data) + writeSyncMarker()
 ```
 
 This means every local interaction (toggling dark mode, marking an item as learned, answering an assessment) is immediately persisted to localStorage **and** pushed to Gun if logged in.
@@ -162,8 +179,8 @@ This is distinct from `isSyncing`, which is only `true` during active data trans
 
 ### Additional Connectivity
 
-- **WebRTC**: Loaded optionally (`gun/lib/webrtc`) for direct browser-to-browser connections, bypassing relay servers
-- **Multicast**: Enabled (`multicast: true`) for local network device discovery on the same WLAN
+- **Multicast**: Enabled (`multicast: true`) for local network device discovery on the same WLAN via UDP multicast
+- **WebRTC**: Disabled — was polluting the Gun graph with `/RTC/` signaling entries per page visit. Multicast covers LAN discovery without WebRTC.
 
 ## Connection Status UI
 
@@ -187,51 +204,53 @@ Three states are displayed based on two flags:
 ```
 User action (e.g. mark item as learned)
   │
-  ├─► localStorage.setItem('progress', ...)      ← always
+  ├─► localStorage.setItem('progress', ...)       ← always
   │
   └─► if logged in:
-        syncToGun('progress', data)               ← push to relay peers
+        syncToGun('progress', data)
           │
-          ▼
-      Relay peer stores data
-          │
-          ▼
-      Other device's .on() listener fires
-          │
-          ▼
-      window.dispatchEvent('gun-sync')
-          │
-          ▼
-      useProgress listens → mergeProgress()       ← additive merge
-          │
-          ▼
-      Vue watcher fires → saveProgress()
-          │
-          ▼
-      localStorage.setItem('progress', ...)       ← persisted on other device
+          ├─► gun.put(data)                        ← push data to relay
+          └─► gun.put("ts:deviceId")               ← write sync marker
+                  │
+                  ▼
+              Other device's lastSync .on() fires
+                  │
+                  ▼
+              Is deviceId different? Is timestamp new?
+                  │ yes
+                  ▼
+              pullFromRemote() → .once() for each key
+                  │
+                  ▼
+              window.dispatchEvent('gun-sync')
+                  │
+                  ▼
+              useProgress listens → mergeProgress() ← additive merge
+                  │
+                  ▼
+              Vue watcher fires → saveProgress()
+                  │
+                  ├─► localStorage.setItem(...)     ← persisted
+                  └─► syncToGun() → _applyingRemote ← blocked (no echo)
 ```
 
 ## Echo-Back Guard
 
-When device B receives data from device A via a `.on()` listener, the `Object.assign` on reactive state triggers Vue watchers, which call `syncToGun()` — pushing the same data right back to Gun. This creates a feedback loop that can cause GunDB's conflict resolution to pick stale values.
+When device B receives data from device A, the `Object.assign` on reactive state triggers Vue watchers, which call `syncToGun()`. Two mechanisms prevent echo-back:
 
-To prevent this, `useGun.js` uses a `_applyingRemote` flag:
-
-1. Before dispatching the `gun-sync` event, `_applyingRemote = true`
-2. `syncToGun()` returns early if the flag is set
-3. After Vue watchers have flushed (via `setTimeout(..., 0)`), the flag resets
-
-This ensures only intentional local changes are pushed to Gun.
+1. **Sync marker device ID**: The `.on()` listener only triggers `pullFromRemote()` when the marker's device ID differs from our own. Own writes are ignored.
+2. **`_applyingRemote` flag**: During `pullFromRemote()`, this flag is set. `syncToGun()` returns early if the flag is set. The flag resets after Vue watchers have flushed.
 
 ## Debug Page
 
 Navigate to `#/debug/gun` to inspect the sync system in real time:
 
-- **Connection status**: login state, peers, connected/disconnected
+- **Connection status**: login state, device ID, peers, connected/disconnected
+- **Sync stats**: bytes pushed/received, operation counts, own writes ignored, network traffic
 - **Gun data**: raw JSON for each synced key as stored on relay peers
 - **Local vs Remote diff**: whether local and remote data match
 - **Actions**: manual refresh (pull) and push all
-- **Sync Events**: live log of incoming `gun-sync` events with timestamp, key, and data preview
+- **Sync Events**: live log of incoming `gun-sync` events with full JSON data
 
 ## Limitations
 

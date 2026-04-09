@@ -16,6 +16,7 @@
         <div class="space-y-1 text-sm font-mono">
           <div><span class="text-muted-foreground">Logged in:</span> {{ isLoggedIn }}</div>
           <div><span class="text-muted-foreground">Username:</span> {{ username || '—' }}</div>
+          <div><span class="text-muted-foreground">Device ID:</span> {{ DEVICE_ID }}</div>
           <div><span class="text-muted-foreground">Syncing:</span> {{ isSyncing }}</div>
           <div><span class="text-muted-foreground">Configured peers:</span> {{ activePeers.join(', ') || 'none' }}</div>
         </div>
@@ -70,8 +71,7 @@
         </div>
 
         <div class="space-y-1 text-xs font-mono text-muted-foreground">
-          <div>Echoes blocked: {{ syncStats.echoesBlocked }}</div>
-          <div>Duplicates skipped: {{ syncStats.duplicatesSkipped }}</div>
+          <div>Own writes ignored: {{ syncStats.duplicatesSkipped }}</div>
           <div>Last push: {{ formatTimestamp(syncStats.lastPushAt) }}</div>
           <div>Last pull: {{ formatTimestamp(syncStats.lastPullAt) }}</div>
           <div>Uptime: {{ uptime }}</div>
@@ -198,7 +198,7 @@ import { Button } from '@/components/ui/button'
 const emit = defineEmits(['update-title'])
 emit('update-title', '🔍 Gun Debug')
 
-const { isLoggedIn, username, isSyncing, isConnected, connectedPeerList, syncStats, resetSyncStats, getActivePeers, syncToGun } = useGun()
+const { isLoggedIn, username, isSyncing, isConnected, connectedPeerList, syncStats, resetSyncStats, DEVICE_ID, getActivePeers, syncToGun } = useGun()
 
 const syncKeys = ['settings', 'progress', 'assessments']
 const activePeers = ref(getActivePeers())
