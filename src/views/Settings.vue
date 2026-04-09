@@ -55,7 +55,7 @@
           <Button v-if="peersChanged" variant="secondary" size="sm" @click="resetPeers">{{ isDE ? 'Standard wiederherstellen' : 'Reset to defaults' }}</Button>
         </div>
         <p v-if="peersSaved" class="mt-2 text-xs text-green-600 dark:text-green-400">{{ isDE ? 'Gespeichert — Seite neu laden um zu verbinden.' : 'Saved — reload page to connect.' }}</p>
-        <router-link to="/debug/gun" class="inline-block mt-3 text-xs text-muted-foreground hover:text-foreground underline underline-offset-2">
+        <router-link to="/settings/debug" class="inline-block mt-3 text-xs text-muted-foreground hover:text-foreground underline underline-offset-2">
           🔍 {{ isDE ? 'Sync Debug' : 'Sync Debug' }}
         </router-link>
       </CardContent>
