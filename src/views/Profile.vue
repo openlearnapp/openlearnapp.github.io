@@ -107,6 +107,14 @@
             <div class="text-xs text-muted-foreground mt-1">{{ $t('profile.workshopsStarted') }}</div>
           </CardContent>
         </Card>
+        <Card class="text-center col-span-2">
+          <CardContent class="pt-4 pb-4">
+            <div class="text-lg font-bold" :class="isSyncing ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground/50'">
+              {{ isSyncing ? '● Synced' : '○ Not synced' }}
+            </div>
+            <div class="text-xs text-muted-foreground mt-1">{{ isSyncing ? 'Connected to relay peers' : 'Local only — configure peers in Settings' }}</div>
+          </CardContent>
+        </Card>
       </div>
 
       <!-- Edit profile form -->
@@ -203,7 +211,7 @@ const emit = defineEmits(['update-title'])
 const { t } = useI18n()
 const router = useRouter()
 
-const { isLoggedIn, username, authError, login, register, logout, loadFromGun } = useGun()
+const { isLoggedIn, username, authError, isSyncing, login, register, logout, loadFromGun } = useGun()
 const { progress, lastVisited, mergeProgress } = useProgress()
 const { assessments, mergeAssessments } = useAssessments()
 const { selectedLanguage } = useLanguage()
