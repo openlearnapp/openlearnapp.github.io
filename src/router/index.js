@@ -11,6 +11,7 @@ import Settings from '../views/Settings.vue'
 import AddSource from '../views/AddSource.vue'
 import Creators from '../views/Creators.vue'
 import Profile from '../views/Profile.vue'
+import GunDebug from '../views/GunDebug.vue'
 
 const routes = [
   {
@@ -88,6 +89,12 @@ const routes = [
     name: 'profile',
     component: Profile,
     meta: { title: null }
+  },
+  {
+    path: '/debug/gun',
+    name: 'gun-debug',
+    component: GunDebug,
+    meta: { title: '🔍 Gun Debug' }
   }
 ]
 

@@ -11,6 +11,14 @@ const isLoggedIn = ref(false)
 const username = ref('')
 const authError = ref('')
 const isSyncing = ref(false)
+const isConnected = ref(false)
+let connectedPeers = 0
+
+// Guard: prevents echo-back when applying remote data.
+// When a .on() listener fires, the dispatched gun-sync event triggers Object.assign
+// on reactive state, which triggers Vue watchers, which call syncToGun — pushing
+// the same data right back. This flag suppresses that echo.
+let _applyingRemote = false
 
 const SESSION_KEY = 'gun-session'
 const PEERS_KEY = 'gun-peers'
@@ -62,6 +70,16 @@ async function initGun() {
     multicast: true  // Enable WLAN multicast for local device discovery
   })
   user = gun.user().recall({ sessionStorage: true })
+
+  // Track peer connectivity
+  gun.on('hi', () => {
+    connectedPeers++
+    isConnected.value = true
+  })
+  gun.on('bye', () => {
+    connectedPeers = Math.max(0, connectedPeers - 1)
+    isConnected.value = connectedPeers > 0
+  })
 
   // Listen for recall-based session restoration
   gun.on('auth', () => {
@@ -157,6 +175,7 @@ async function autoLogin() {
 
 // Sync data to Gun (encrypted under user space)
 async function syncToGun(key, data) {
+  if (_applyingRemote) return // Don't echo remote data back
   if (!isLoggedIn.value || !gun) return
 
   try {
@@ -216,8 +235,14 @@ function setupListeners() {
 
       try {
         const data = JSON.parse(val)
-        // Dispatch custom event so composables can react
+        // Set guard before dispatching — the event handlers will Object.assign
+        // reactive state, triggering Vue watchers synchronously or on next tick.
+        // The flag stays true until after watchers flush, preventing syncToGun echo.
+        _applyingRemote = true
         window.dispatchEvent(new CustomEvent('gun-sync', { detail: { key, data } }))
+        // Reset after Vue watchers have flushed (watchers run as microtasks,
+        // setTimeout runs as macrotask — guaranteed to come after)
+        setTimeout(() => { _applyingRemote = false }, 0)
       } catch {
         // ignore parse errors
       }
@@ -269,6 +294,7 @@ export function useGun() {
     username,
     authError,
     isSyncing,
+    isConnected,
     initGun,
     register,
     login,
