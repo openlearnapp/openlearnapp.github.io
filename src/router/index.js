@@ -91,7 +91,7 @@ const routes = [
     meta: { title: null }
   },
   {
-    path: '/debug/gun',
+    path: '/settings/debug',
     name: 'gun-debug',
     component: GunDebug,
     meta: { title: '🔍 Gun Debug' }
