@@ -185,6 +185,10 @@
             <button @click="event.open = !event.open" class="w-full flex items-center gap-2 p-2 text-left hover:bg-muted/50 transition-colors text-xs font-mono">
               <span class="text-muted-foreground/60">{{ event.open ? '▼' : '▶' }}</span>
               <span class="text-muted-foreground">{{ event.time }}</span>
+              <span class="px-1.5 py-0.5 rounded text-xs"
+                :class="event.method.startsWith('put') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : event.method === 'on' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'">
+                {{ event.method }}
+              </span>
               <span class="font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">{{ event.key }}</span>
               <span class="text-muted-foreground">{{ event.size }}</span>
             </button>
@@ -313,18 +317,21 @@ function handleReset() {
 }
 
 function onGunSync(e) {
-  const { key, data } = e.detail
+  const { key, data, method = '?' } = e.detail
   const now = new Date()
   const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
   const raw = JSON.stringify(data, null, 2)
   const size = formatBytes(raw.length)
-  events.value.unshift({ time, key, size, data: raw, open: false })
+  events.value.unshift({ time, key, method, size, data: raw, open: false })
   if (events.value.length > 100) events.value.pop()
 
-  gunData.value[key] = data
-  remotePullCount.value++
-  // Refresh the sync marker since a remote pull just happened
-  fetchSyncMarker()
+  if (key !== 'lastSync') {
+    gunData.value[key] = data
+  }
+  if (method === 'once' || method === 'on') {
+    remotePullCount.value++
+    fetchSyncMarker()
+  }
 }
 
 async function fetchSyncMarker() {

@@ -240,6 +240,7 @@ async function syncToGun(key, data) {
     syncStats.lastPushAt = Date.now()
     gun.user().get('openlearn').get(key).put(payload)
     writeSyncMarker()
+    window.dispatchEvent(new CustomEvent('gun-sync', { detail: { key, data, method: 'put' } }))
   } catch (e) {
     console.error('Gun sync error:', e)
   }
@@ -301,7 +302,7 @@ async function pullFromRemote() {
       try {
         const data = JSON.parse(val)
         _applyingRemote = true
-        window.dispatchEvent(new CustomEvent('gun-sync', { detail: { key, data } }))
+        window.dispatchEvent(new CustomEvent('gun-sync', { detail: { key, data, method: 'once' } }))
         // Reset after Vue watchers have flushed (watchers run as microtasks,
         // setTimeout runs as macrotask — guaranteed to come after)
         await new Promise(r => setTimeout(r, 0))
@@ -322,11 +323,13 @@ async function pullFromRemote() {
     const merged = localStorage.getItem(key)
     if (merged) {
       try {
-        const payload = JSON.stringify(JSON.parse(merged))
+        const data = JSON.parse(merged)
+        const payload = JSON.stringify(data)
         syncStats.bytesSent += payload.length
         syncStats.pushCount++
         syncStats.lastPushAt = Date.now()
         gun.user().get('openlearn').get(key).put(payload)
+        window.dispatchEvent(new CustomEvent('gun-sync', { detail: { key, data, method: 'put (merge-back)' } }))
       } catch {
         // skip invalid data
       }
@@ -365,6 +368,9 @@ function setupSyncListener() {
     }
 
     console.log(`🔄 Remote sync from device ${deviceId} at ${new Date(ts).toLocaleTimeString()}`)
+    window.dispatchEvent(new CustomEvent('gun-sync', {
+      detail: { key: 'lastSync', data: { timestamp: ts, deviceId }, method: 'on' }
+    }))
     _lastOwnSync = ts
     pullFromRemote()
   }
