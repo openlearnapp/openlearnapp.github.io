@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 
 // Gun is loaded dynamically to avoid SSR issues
 let Gun = null
@@ -12,7 +12,22 @@ const username = ref('')
 const authError = ref('')
 const isSyncing = ref(false)
 const isConnected = ref(false)
+const connectedPeerList = ref([]) // tracks which peers are actually connected
 let connectedPeers = 0
+
+// Sync metrics — tracks bytes, operations, and timing
+const syncStats = reactive({
+  bytesSent: 0,
+  bytesReceived: 0,
+  pushCount: 0,
+  pullCount: 0,
+  echoesBlocked: 0,
+  lastPushAt: null,
+  lastPullAt: null,
+  startedAt: null,
+  networkRequests: 0,
+  networkBytes: 0,
+})
 
 // Guard: prevents echo-back when applying remote data.
 // When a .on() listener fires, the dispatched gun-sync event triggers Object.assign
@@ -44,20 +59,14 @@ function getActivePeers() {
   return getSavedPeers() || DEFAULT_PEERS
 }
 
-// Initialize Gun (browser-only, with WebRTC for peer discovery)
+
+// Initialize Gun (browser-only, multicast for LAN discovery)
 async function initGun() {
   if (gun) return
 
   const GunModule = await import('gun/gun')
   Gun = GunModule.default || GunModule
   await import('gun/sea')
-
-  // WebRTC enables browser-to-browser mesh networking (same WLAN discovery)
-  try {
-    await import('gun/lib/webrtc')
-  } catch {
-    // WebRTC module not available, continue without peer sync
-  }
 
   const peers = getActivePeers()
   console.log(`🔗 Gun peers: ${peers.length > 0 ? peers.join(', ') : 'none (local only)'}`)
@@ -67,17 +76,43 @@ async function initGun() {
     radisk: false,
     file: 'gun-data',
     peers,
-    multicast: true  // Enable WLAN multicast for local device discovery
+    multicast: true  // UDP multicast for same-WLAN device discovery (no WebRTC needed)
   })
   user = gun.user().recall({ sessionStorage: true })
 
-  // Track peer connectivity
-  gun.on('hi', () => {
-    connectedPeers++
+  syncStats.startedAt = Date.now()
+
+  // Track actual network traffic to Gun relay peers via Resource Timing API
+  const peerOrigins = peers.map(p => { try { return new URL(p).origin } catch { return null } }).filter(Boolean)
+  if (typeof PerformanceObserver !== 'undefined' && peerOrigins.length) {
+    try {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (peerOrigins.some(o => entry.name.startsWith(o))) {
+            syncStats.networkRequests++
+            syncStats.networkBytes += entry.transferSize || 0
+          }
+        }
+      })
+      observer.observe({ type: 'resource', buffered: false })
+    } catch {
+      // PerformanceObserver not supported, skip
+    }
+  }
+
+  // Track peer connectivity — Gun passes the peer object to hi/bye
+  gun.on('hi', (peer) => {
+    const id = peer?.url || peer?.id || 'unknown'
+    if (!connectedPeerList.value.includes(id)) {
+      connectedPeerList.value.push(id)
+    }
+    connectedPeers = connectedPeerList.value.length
     isConnected.value = true
   })
-  gun.on('bye', () => {
-    connectedPeers = Math.max(0, connectedPeers - 1)
+  gun.on('bye', (peer) => {
+    const id = peer?.url || peer?.id || 'unknown'
+    connectedPeerList.value = connectedPeerList.value.filter(p => p !== id)
+    connectedPeers = connectedPeerList.value.length
     isConnected.value = connectedPeers > 0
   })
 
@@ -175,11 +210,18 @@ async function autoLogin() {
 
 // Sync data to Gun (encrypted under user space)
 async function syncToGun(key, data) {
-  if (_applyingRemote) return // Don't echo remote data back
+  if (_applyingRemote) {
+    syncStats.echoesBlocked++
+    return
+  }
   if (!isLoggedIn.value || !gun) return
 
   try {
-    gun.user().get('openlearn').get(key).put(JSON.stringify(data))
+    const payload = JSON.stringify(data)
+    syncStats.bytesSent += payload.length
+    syncStats.pushCount++
+    syncStats.lastPushAt = Date.now()
+    gun.user().get('openlearn').get(key).put(payload)
   } catch (e) {
     console.error('Gun sync error:', e)
   }
@@ -235,6 +277,9 @@ function setupListeners() {
 
       try {
         const data = JSON.parse(val)
+        syncStats.bytesReceived += val.length
+        syncStats.pullCount++
+        syncStats.lastPullAt = Date.now()
         // Set guard before dispatching — the event handlers will Object.assign
         // reactive state, triggering Vue watchers synchronously or on next tick.
         // The flag stays true until after watchers flush, preventing syncToGun echo.
@@ -288,6 +333,14 @@ async function autoSyncAll() {
   }
 }
 
+function resetSyncStats() {
+  Object.assign(syncStats, {
+    bytesSent: 0, bytesReceived: 0, pushCount: 0, pullCount: 0,
+    echoesBlocked: 0, lastPushAt: null, lastPullAt: null,
+    startedAt: Date.now(), networkRequests: 0, networkBytes: 0,
+  })
+}
+
 export function useGun() {
   return {
     isLoggedIn,
@@ -295,6 +348,9 @@ export function useGun() {
     authError,
     isSyncing,
     isConnected,
+    connectedPeerList,
+    syncStats,
+    resetSyncStats,
     initGun,
     register,
     login,
