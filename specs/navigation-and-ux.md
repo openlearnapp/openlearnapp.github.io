@@ -76,19 +76,38 @@ One button replaces the individual Items/Results/Lesson buttons on desktop. It c
 | Learning items | Clipboard | Assessment results |
 | Assessment results | Lesson number or "123" | Back to lesson / lessons overview |
 
+### Icon Component (`src/components/Icon.vue`)
+
+All icons are defined in a central `Icon.vue` component. No inline SVGs — every icon is referenced by name:
+
+```html
+<Icon name="story" />
+<Icon name="items" />
+<Icon name="results" />
+<Icon name="play" />
+```
+
+The Icon component:
+- Renders an SVG with consistent size, stroke, and `pointer-events-none`
+- Single source of truth — change an icon in one place, updates everywhere
+- Available icons: `menu`, `close`, `story`, `items`, `results`, `lessons`, `workshops`, `play`, `pause`, `loading`, `settings`, `profile`, `coach`, `eye`, `eye-off`, `link`, `heart`, `check`, `wifi-off`, `chevron-down`, `back`
+
 ### Icon inventory
 
 Each icon must be visually distinct. No two buttons share the same icon.
 
-| Function | Icon | Description |
-|----------|------|-------------|
-| **Story mode** | Open book SVG | Two pages side by side |
-| **Learning items** | Flashcard SVG | Rectangle with vertical divider and horizontal line |
-| **Results** | Clipboard SVG | Clipboard with checklist dots |
-| **Back to lesson** | Lesson number (e.g. "3") | Bold text, or "123" from lessons overview |
-| **Play/Pause** | Play triangle / Pause bars SVG | Standard media controls |
-| **Loading** | ⏳ hourglass emoji | Static (NOT spinning) |
-| **Burger menu** | Hamburger lines / X SVG | Three lines → X when open |
+| Function | Icon name | Description |
+|----------|-----------|-------------|
+| **Story mode** | `story` | Open book (two pages) |
+| **Learning items** | `items` | Flashcard (rectangle with divider) |
+| **Results** | `results` | Clipboard with checklist |
+| **Back to lesson** | — | Lesson number (text), or "123" |
+| **Play/Pause** | `play` / `pause` | Standard media controls |
+| **Loading** | `loading` | Arc spinner (NOT spinning) |
+| **Burger menu** | `menu` / `close` | Three lines → X |
+| **Settings** | `settings` | Gear |
+| **Profile** | `profile` | Person silhouette |
+| **Coach** | `coach` | Robot |
 
 Desktop toggle buttons (Results, Items) must also cycle their icons:
 - On the target page → show lesson number or "123" (to go back)
