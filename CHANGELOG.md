@@ -8,6 +8,10 @@
 
 Tippen links oder rechts (egal wo auf dem Bildschirm) springt jetzt zum nächsten bzw. vorherigen Absatz innerhalb der aktuellen Section — ohne die Section zu wechseln. Audio spielt sofort den neuen Absatz ab. Die Section wechselt erst automatisch nach dem letzten Absatz.
 
+#### Lektion-Bilder auf Lernpfadseite nicht sichtbar (lokal)
+- `resolveLessonImage` berücksichtigt jetzt auch Pfade mit `/`-Präfix (lokale Workshops via `/__local/...`)
+- Verhindert doppelten Slash (`//`) bei URL-Konstruktion für lokale Workshop-Bilder
+
 ## 2026-04-12
 
 ### Fixes
