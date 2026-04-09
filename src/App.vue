@@ -97,9 +97,9 @@
             class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             :title="isLoadingAudio ? $t('nav.loading') : (isPlaying ? $t('nav.pause') : $t('nav.play'))"
             :aria-label="isLoadingAudio ? $t('nav.loadingAudio') : (isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio'))">
-            <svg v-if="isLoadingAudio" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-            <svg v-else-if="isPlaying" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            <Icon v-if="isLoadingAudio" name="loading" />
+            <Icon v-else-if="isPlaying" name="pause" />
+            <Icon v-else name="play" />
           </Button>
 
           <!-- Story mode button (visible on lesson/overview pages) -->
@@ -111,7 +111,7 @@
             class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
             title="Story Mode"
             aria-label="Story Mode">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <Icon name="story" />
           </Button>
 
           <!-- Mobile: single toggle button cycling lesson → items → results -->
@@ -125,8 +125,8 @@
             :aria-label="toggleButtonTitle">
             <span v-if="toggleButtonMode === 'number'" class="text-sm font-bold">{{ fromLessonNumber }}</span>
             <span v-else-if="toggleButtonMode === 'lessons'" class="text-xs font-bold">123</span>
-            <svg v-else-if="toggleButtonMode === 'items'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+            <Icon v-else-if="toggleButtonMode === 'items'" name="items" />
+            <Icon v-else name="results" />
           </Button>
 
           <!-- Desktop: individual buttons (hidden on mobile) -->
@@ -141,7 +141,7 @@
             :aria-label="isOnResultsPage ? $t('nav.backToLessons') : $t('nav.assessmentResults')">
             <span v-if="isOnResultsPage && fromLessonNumber" class="text-sm font-bold">{{ fromLessonNumber }}</span>
             <span v-else-if="isOnResultsPage" class="text-xs font-bold">123</span>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+            <Icon v-else name="results" />
           </Button>
 
           <!-- Items / Lesson# toggle button -->
@@ -155,7 +155,7 @@
             :aria-label="isOnItemsPage ? $t('nav.backToLessons') : $t('nav.learningItems')">
             <span v-if="isOnItemsPage && fromLessonNumber" class="text-sm font-bold">{{ fromLessonNumber }}</span>
             <span v-else-if="isOnItemsPage" class="text-xs font-bold">123</span>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M12 4v14"/><path d="M2 8h20"/></svg>
+            <Icon v-else name="items" />
           </Button>
 
           <!-- Burger menu (replaces Settings, Profile, Workshops buttons) -->
@@ -167,8 +167,8 @@
               class="bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
               :title="showBurgerMenu ? $t('nav.closeMenu') : $t('nav.menu')"
               :aria-label="showBurgerMenu ? $t('nav.closeMenu') : $t('nav.menu')">
-              <svg v-if="!showBurgerMenu" class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-              <svg v-else class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+              <Icon v-if="!showBurgerMenu" name="menu" />
+              <Icon v-else name="close" :stroke-width="2.5" />
             </Button>
 
             <!-- Dropdown menu -->
@@ -264,6 +264,7 @@ import { useGun } from './composables/useGun'
 import { isRtlLocale } from './i18n'
 import { formatLangName } from './utils/formatters'
 import { Button } from '@/components/ui/button'
+import Icon from '@/components/Icon.vue'
 
 const router = useRouter()
 const route = useRoute()

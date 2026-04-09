@@ -93,8 +93,8 @@
       "zeroInfraDesc": "Runs as a static site. No server, no database. Works offline. Optional P2P sync across devices"
     },
     "steps": {
-      "pickLang": "Pick a Language",
-      "pickLangDesc": "Choose your language in the top-left dropdown — the interface adapts.",
+      "pickLang": "I speak…",
+      "pickLangDesc": "Choose the language you already know — workshops will be presented in it.",
       "startWorkshop": "Start a Workshop",
       "startWorkshopDesc": "Click any workshop and start immediately — no sign-up required.",
       "learnTrack": "Learn & Track",
