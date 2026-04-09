@@ -317,8 +317,10 @@ async function pullFromRemote() {
   }
 
   // After merge, push the merged result back to Gun so both sides converge.
-  // No sync marker — this is a silent push. Writing a marker here would cause
-  // the other device to pull again, creating an infinite loop.
+  // No sync marker and _applyingRemote stays true — this is a silent push.
+  // Without the guard, the gun-sync event would trigger Vue watchers →
+  // syncToGun → writeSyncMarker → other device pulls → infinite loop.
+  _applyingRemote = true
   for (const key of SYNC_KEYS) {
     const merged = localStorage.getItem(key)
     if (merged) {
@@ -335,6 +337,9 @@ async function pullFromRemote() {
       }
     }
   }
+  // Reset after Vue watchers flush
+  await new Promise(r => setTimeout(r, 0))
+  _applyingRemote = false
 }
 
 // Set up a single .on() listener on the lastSync marker.
