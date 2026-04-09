@@ -681,6 +681,10 @@ export function useLessons() {
         }
         if (changed) {
           localStorage.setItem('contentSources', JSON.stringify(local))
+          // Clear workshop cache so next navigation loads the new sources
+          loadedSourceLangs.clear()
+          // Notify the app that sources changed (views can reload)
+          window.dispatchEvent(new CustomEvent('content-sources-changed'))
         }
       }
     })
