@@ -307,7 +307,7 @@ const activeWorkshops = computed(() => {
     if (seen.has(key)) continue
     seen.add(key)
     const [learning, workshop] = key.split(':')
-    const learnedCount = Object.values(items).filter(v => v === true).length
+    const learnedCount = Object.values(items).filter(v => v === true || (typeof v === 'number' && v > 0)).length
     result.push({
       key, learning, workshop,
       displayName: formatLangName(workshop),
