@@ -261,7 +261,7 @@ function getAnsweredCount(lesson) {
   const key = `${learning.value}:${workshop.value}:${lesson.number}`
   const answers = assessmentData[key]
   if (!answers) return 0
-  return Object.keys(answers).length
+  return Object.values(answers).filter(v => v && !v._cleared).length
 }
 
 function handleReorder(orderedNumbers) {
