@@ -477,8 +477,16 @@ async function installFullApp() {
   }
 }
 
+// Reload workshops when content sources change via sync
+async function onSourcesChanged() {
+  if (learning.value) {
+    await loadWorkshopsForLanguage(learning.value)
+  }
+}
+
 onMounted(async () => {
   window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+  window.addEventListener('content-sources-changed', onSourcesChanged)
   setDefaultManifest()
   cleanupLegacySources()
   // Show notification if redirected from add source with language mismatch
@@ -504,5 +512,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+  window.removeEventListener('content-sources-changed', onSourcesChanged)
 })
 </script>
