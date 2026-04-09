@@ -24,6 +24,36 @@
       </CardContent>
     </Card>
 
+    <!-- Sync Peers Section -->
+    <Card>
+      <CardHeader>
+        <CardTitle class="text-2xl">🔗 {{ isDE ? 'Sync-Server' : 'Sync Peers' }}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p class="text-sm text-muted-foreground mb-2">
+          {{ isDE ? 'GunDB Relay-Server für die Synchronisierung zwischen Geräten.' : 'GunDB relay servers for cross-device sync.' }}
+        </p>
+        <p class="text-xs mb-3" :class="isSyncing ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground/60'">
+          {{ isSyncing ? (isDE ? '● Verbunden' : '● Connected') : (isDE ? '○ Nicht verbunden' : '○ Not connected') }}
+        </p>
+        <div class="space-y-2 mb-3">
+          <div v-for="(peer, idx) in peerList" :key="idx" class="flex gap-2">
+            <input
+              :value="peer"
+              @input="updatePeer(idx, $event.target.value)"
+              class="flex-1 px-3 py-2 text-sm rounded-lg border border-input bg-background"
+              placeholder="https://gun-relay.example.com/gun" />
+            <Button variant="ghost" size="icon" @click="removePeer(idx)" class="flex-shrink-0 text-muted-foreground hover:text-red-500">✕</Button>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <Button variant="outline" size="sm" @click="addPeer">+ {{ isDE ? 'Server hinzufügen' : 'Add peer' }}</Button>
+          <Button v-if="peersChanged" variant="secondary" size="sm" @click="resetPeers">{{ isDE ? 'Standard wiederherstellen' : 'Reset to defaults' }}</Button>
+        </div>
+        <p v-if="peersSaved" class="mt-2 text-xs text-green-600 dark:text-green-400">{{ isDE ? 'Gespeichert — Seite neu laden um zu verbinden.' : 'Saved — reload page to connect.' }}</p>
+      </CardContent>
+    </Card>
+
     <!-- Appearance Section -->
     <Card>
       <CardHeader>
@@ -218,10 +248,40 @@ const router = useRouter()
 const { settings } = useSettings()
 const { progress, getProgress, mergeProgress } = useProgress()
 const { assessments, getAssessments, mergeAssessments } = useAssessments()
-const { isLoggedIn, username: gunUser, isSyncing } = useGun()
+const { isLoggedIn, username: gunUser, isSyncing, DEFAULT_PEERS, getActivePeers, savePeers } = useGun()
 const { getOfflineWorkshops, removeWorkshop, getStorageEstimate } = useOffline()
 
 const storageUsage = ref(0)
+
+// Peer management
+const peerList = ref([...getActivePeers()])
+const peersSaved = ref(false)
+const peersChanged = computed(() => JSON.stringify(peerList.value) !== JSON.stringify(DEFAULT_PEERS))
+
+function updatePeer(idx, value) {
+  peerList.value[idx] = value
+  savePeers(peerList.value.filter(p => p.trim()))
+  peersSaved.value = true
+  setTimeout(() => { peersSaved.value = false }, 3000)
+}
+
+function addPeer() {
+  peerList.value.push('')
+}
+
+function removePeer(idx) {
+  peerList.value.splice(idx, 1)
+  savePeers(peerList.value.filter(p => p.trim()))
+  peersSaved.value = true
+  setTimeout(() => { peersSaved.value = false }, 3000)
+}
+
+function resetPeers() {
+  peerList.value = [...DEFAULT_PEERS]
+  savePeers(DEFAULT_PEERS)
+  peersSaved.value = true
+  setTimeout(() => { peersSaved.value = false }, 3000)
+}
 const isDE = computed(() => settings.value.language === 'deutsch' || navigator.language?.startsWith('de'))
 
 const offlineWorkshopList = computed(() => getOfflineWorkshops())
