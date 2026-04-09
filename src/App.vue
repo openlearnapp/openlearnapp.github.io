@@ -39,9 +39,9 @@
             </div>
           </div>
 
-          <!-- Back button (on settings and profile pages) -->
+          <!-- Back button (on settings, profile, and debug pages) -->
           <Button
-            v-if="route.name === 'settings' || route.name === 'profile'"
+            v-if="route.name === 'settings' || route.name === 'profile' || route.name === 'gun-debug'"
             variant="ghost"
             size="icon"
             @click="goBack"
@@ -300,6 +300,18 @@ const learningLanguages = computed(() => {
   return [...new Set(Object.keys(availableContent.value))]
 })
 
+// Track the last content route so settings/profile back button can return there
+const previousContentRoute = ref(null)
+const utilityPages = ['settings', 'profile', 'gun-debug', 'creators']
+watch(() => route.fullPath, (_, oldPath) => {
+  if (oldPath) {
+    const resolved = router.resolve(oldPath)
+    if (resolved.name && !utilityPages.includes(resolved.name)) {
+      previousContentRoute.value = { path: oldPath }
+    }
+  }
+})
+
 const isHomePage = computed(() => route.name === 'home')
 const isStoryMode = computed(() => route.meta?.storyMode === true)
 const isWorkshopOverview = computed(() => route.name === 'workshop-overview')
@@ -529,8 +541,15 @@ function goBackToLesson() {
   }
 }
 
+// Navigate back from settings/profile to the last content page.
+// Falls back to workshop overview if no history is available.
 function goBack() {
-  router.back()
+  if (previousContentRoute.value) {
+    router.push(previousContentRoute.value)
+  } else {
+    const lang = selectedLanguage.value || 'deutsch'
+    router.push({ name: 'workshop-overview', params: { learning: lang } })
+  }
 }
 
 function goToSettings() {
