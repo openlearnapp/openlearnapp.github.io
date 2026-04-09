@@ -4,7 +4,7 @@ import { ref, reactive } from 'vue'
 let Gun = null
 let gun = null
 let user = null
-let listeners = []
+let syncListener = null
 
 // Reactive state
 const isLoggedIn = ref(false)
@@ -13,7 +13,6 @@ const authError = ref('')
 const isSyncing = ref(false)
 const isConnected = ref(false)
 const connectedPeerList = ref([]) // tracks which peers are actually connected
-let connectedPeers = 0
 
 // Sync metrics — tracks bytes, operations, and timing
 const syncStats = reactive({
@@ -21,7 +20,6 @@ const syncStats = reactive({
   bytesReceived: 0,
   pushCount: 0,
   pullCount: 0,
-  echoesBlocked: 0,
   duplicatesSkipped: 0,
   lastPushAt: null,
   lastPullAt: null,
@@ -30,18 +28,18 @@ const syncStats = reactive({
   networkBytes: 0,
 })
 
-// Guard: prevents echo-back when applying remote data.
-// When a .on() listener fires, the dispatched gun-sync event triggers Object.assign
-// on reactive state, which triggers Vue watchers, which call syncToGun — pushing
-// the same data right back. This flag suppresses that echo.
-let _applyingRemote = false
+// Each device gets a unique ID to distinguish own writes from remote ones
+const DEVICE_ID = Math.random().toString(36).slice(2, 10)
 
-// Deduplication: Gun's .on() fires on every put, even if data hasn't changed.
-// We cache the last received JSON string per key to skip redundant processing.
-const _lastReceived = {}
+// Track the last sync timestamp we wrote, so we can ignore our own .on() echo
+let _lastOwnSync = 0
+
+// Guard: prevents echo-back when applying remote data
+let _applyingRemote = false
 
 const SESSION_KEY = 'gun-session'
 const PEERS_KEY = 'gun-peers'
+const SYNC_KEYS = ['settings', 'progress', 'assessments']
 
 // Default public Gun relay peers (verified working)
 const DEFAULT_PEERS = [
@@ -63,7 +61,6 @@ function savePeers(peers) {
 function getActivePeers() {
   return getSavedPeers() || DEFAULT_PEERS
 }
-
 
 // Initialize Gun (browser-only, multicast for LAN discovery)
 async function initGun() {
@@ -111,14 +108,12 @@ async function initGun() {
     if (!connectedPeerList.value.includes(id)) {
       connectedPeerList.value.push(id)
     }
-    connectedPeers = connectedPeerList.value.length
     isConnected.value = true
   })
   gun.on('bye', (peer) => {
     const id = peer?.url || peer?.id || 'unknown'
     connectedPeerList.value = connectedPeerList.value.filter(p => p !== id)
-    connectedPeers = connectedPeerList.value.length
-    isConnected.value = connectedPeers > 0
+    isConnected.value = connectedPeerList.value.length > 0
   })
 
   // Listen for recall-based session restoration
@@ -128,7 +123,7 @@ async function initGun() {
       // After recall(), gun.user().is.alias contains the public key, not the human-readable name.
       // The readable alias is stored in localStorage under SESSION_KEY.
       username.value = localStorage.getItem(SESSION_KEY) || ''
-      setupListeners()
+      setupSyncListener()
       autoSyncAll()
     }
   })
@@ -170,7 +165,7 @@ async function login(alias, pass) {
         username.value = alias
         // Only store alias — never the password. Session is handled by Gun's recall().
         localStorage.setItem(SESSION_KEY, alias)
-        setupListeners()
+        setupSyncListener()
         autoSyncAll()
         resolve(true)
       }
@@ -180,7 +175,7 @@ async function login(alias, pass) {
 
 // Logout
 function logout() {
-  teardownListeners()
+  teardownSyncListener()
   if (gun && gun.user()) {
     gun.user().leave()
   }
@@ -213,12 +208,18 @@ async function autoLogin() {
   })
 }
 
+// Write a sync marker so other devices know data changed.
+// Format: "timestamp:deviceId" — the deviceId lets us ignore our own writes.
+function writeSyncMarker() {
+  if (!isLoggedIn.value || !gun) return
+  _lastOwnSync = Date.now()
+  const marker = `${_lastOwnSync}:${DEVICE_ID}`
+  gun.user().get('openlearn').get('lastSync').put(marker)
+}
+
 // Sync data to Gun (encrypted under user space)
 async function syncToGun(key, data) {
-  if (_applyingRemote) {
-    syncStats.echoesBlocked++
-    return
-  }
+  if (_applyingRemote) return // Don't echo remote data back
   if (!isLoggedIn.value || !gun) return
 
   try {
@@ -227,6 +228,7 @@ async function syncToGun(key, data) {
     syncStats.pushCount++
     syncStats.lastPushAt = Date.now()
     gun.user().get('openlearn').get(key).put(payload)
+    writeSyncMarker()
   } catch (e) {
     console.error('Gun sync error:', e)
   }
@@ -238,11 +240,10 @@ async function loadFromGun() {
 
   isSyncing.value = true
 
-  const keys = ['settings', 'progress', 'assessments']
   const results = {}
 
   try {
-    for (const key of keys) {
+    for (const key of SYNC_KEYS) {
       const data = await new Promise((resolve) => {
         gun.user().get('openlearn').get(key).once((val) => {
           if (val && typeof val === 'string') {
@@ -267,58 +268,90 @@ async function loadFromGun() {
   return results
 }
 
-// Set up real-time listeners for cross-tab/device sync
-function setupListeners() {
-  teardownListeners()
-
+// Pull all data from Gun and dispatch gun-sync events for each key
+async function pullFromRemote() {
   if (!isLoggedIn.value || !gun) return
 
-  const keys = ['settings', 'progress', 'assessments']
+  isSyncing.value = true
+  syncStats.lastPullAt = Date.now()
 
-  for (const key of keys) {
-    const gunRef = gun.user().get('openlearn').get(key)
-    const cb = (val) => {
-      if (!val || typeof val !== 'string') return
+  try {
+    for (const key of SYNC_KEYS) {
+      const val = await new Promise((resolve) => {
+        gun.user().get('openlearn').get(key).once((v) => resolve(v))
+        setTimeout(() => resolve(null), 3000)
+      })
 
-      // Deduplicate: Gun's .on() fires on every relay sync even if data is identical
-      if (_lastReceived[key] === val) {
-        syncStats.duplicatesSkipped++
-        return
-      }
-      _lastReceived[key] = val
+      if (!val || typeof val !== 'string') continue
+
+      syncStats.bytesReceived += val.length
+      syncStats.pullCount++
 
       try {
         const data = JSON.parse(val)
-        syncStats.bytesReceived += val.length
-        syncStats.pullCount++
-        syncStats.lastPullAt = Date.now()
-        // Set guard before dispatching — the event handlers will Object.assign
-        // reactive state, triggering Vue watchers synchronously or on next tick.
-        // The flag stays true until after watchers flush, preventing syncToGun echo.
         _applyingRemote = true
         window.dispatchEvent(new CustomEvent('gun-sync', { detail: { key, data } }))
         // Reset after Vue watchers have flushed (watchers run as microtasks,
         // setTimeout runs as macrotask — guaranteed to come after)
-        setTimeout(() => { _applyingRemote = false }, 0)
+        await new Promise(r => setTimeout(r, 0))
+        _applyingRemote = false
       } catch {
         // ignore parse errors
       }
     }
-    gunRef.on(cb)
-    listeners.push({ ref: gunRef, cb })
+  } finally {
+    _applyingRemote = false
+    isSyncing.value = false
   }
 }
 
-// Remove listeners — pass callback reference for proper cleanup
-function teardownListeners() {
-  for (const { ref: gunRef, cb } of listeners) {
+// Set up a single .on() listener on the lastSync marker.
+// When another device writes a new marker, we pull all data via .once().
+function setupSyncListener() {
+  teardownSyncListener()
+
+  if (!isLoggedIn.value || !gun) return
+
+  const syncRef = gun.user().get('openlearn').get('lastSync')
+  const cb = (val) => {
+    if (!val || typeof val !== 'string') return
+
+    // Parse "timestamp:deviceId"
+    const colonIdx = val.indexOf(':')
+    if (colonIdx === -1) return
+    const ts = parseInt(val.slice(0, colonIdx), 10)
+    const deviceId = val.slice(colonIdx + 1)
+
+    // Ignore our own writes
+    if (deviceId === DEVICE_ID) {
+      syncStats.duplicatesSkipped++
+      return
+    }
+
+    // Ignore if we've already seen this timestamp
+    if (ts <= _lastOwnSync) {
+      syncStats.duplicatesSkipped++
+      return
+    }
+
+    console.log(`🔄 Remote sync from device ${deviceId} at ${new Date(ts).toLocaleTimeString()}`)
+    _lastOwnSync = ts
+    pullFromRemote()
+  }
+  syncRef.on(cb)
+  syncListener = { ref: syncRef, cb }
+}
+
+// Remove the sync listener
+function teardownSyncListener() {
+  if (syncListener) {
     try {
-      gunRef.off(cb)
+      syncListener.ref.off(syncListener.cb)
     } catch {
       // ignore
     }
+    syncListener = null
   }
-  listeners = []
 }
 
 // Auto-sync: push all current localStorage data to Gun
@@ -328,18 +361,24 @@ async function autoSyncAll() {
   isSyncing.value = true
 
   try {
-    const keys = ['settings', 'progress', 'assessments']
-    for (const key of keys) {
+    for (const key of SYNC_KEYS) {
       const saved = localStorage.getItem(key)
       if (saved) {
         try {
           const data = JSON.parse(saved)
-          await syncToGun(key, data)
+          // Write data directly without triggering writeSyncMarker per key
+          const payload = JSON.stringify(data)
+          syncStats.bytesSent += payload.length
+          syncStats.pushCount++
+          syncStats.lastPushAt = Date.now()
+          gun.user().get('openlearn').get(key).put(payload)
         } catch {
           // skip invalid data
         }
       }
     }
+    // Single sync marker after all keys are written
+    writeSyncMarker()
   } finally {
     isSyncing.value = false
   }
@@ -348,7 +387,7 @@ async function autoSyncAll() {
 function resetSyncStats() {
   Object.assign(syncStats, {
     bytesSent: 0, bytesReceived: 0, pushCount: 0, pullCount: 0,
-    echoesBlocked: 0, duplicatesSkipped: 0, lastPushAt: null, lastPullAt: null,
+    duplicatesSkipped: 0, lastPushAt: null, lastPullAt: null,
     startedAt: Date.now(), networkRequests: 0, networkBytes: 0,
   })
 }
@@ -363,6 +402,7 @@ export function useGun() {
     connectedPeerList,
     syncStats,
     resetSyncStats,
+    DEVICE_ID,
     initGun,
     register,
     login,
