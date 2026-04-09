@@ -22,6 +22,7 @@ const syncStats = reactive({
   pushCount: 0,
   pullCount: 0,
   echoesBlocked: 0,
+  duplicatesSkipped: 0,
   lastPushAt: null,
   lastPullAt: null,
   startedAt: null,
@@ -34,6 +35,10 @@ const syncStats = reactive({
 // on reactive state, which triggers Vue watchers, which call syncToGun — pushing
 // the same data right back. This flag suppresses that echo.
 let _applyingRemote = false
+
+// Deduplication: Gun's .on() fires on every put, even if data hasn't changed.
+// We cache the last received JSON string per key to skip redundant processing.
+const _lastReceived = {}
 
 const SESSION_KEY = 'gun-session'
 const PEERS_KEY = 'gun-peers'
@@ -275,6 +280,13 @@ function setupListeners() {
     const cb = (val) => {
       if (!val || typeof val !== 'string') return
 
+      // Deduplicate: Gun's .on() fires on every relay sync even if data is identical
+      if (_lastReceived[key] === val) {
+        syncStats.duplicatesSkipped++
+        return
+      }
+      _lastReceived[key] = val
+
       try {
         const data = JSON.parse(val)
         syncStats.bytesReceived += val.length
@@ -336,7 +348,7 @@ async function autoSyncAll() {
 function resetSyncStats() {
   Object.assign(syncStats, {
     bytesSent: 0, bytesReceived: 0, pushCount: 0, pullCount: 0,
-    echoesBlocked: 0, lastPushAt: null, lastPullAt: null,
+    echoesBlocked: 0, duplicatesSkipped: 0, lastPushAt: null, lastPullAt: null,
     startedAt: Date.now(), networkRequests: 0, networkBytes: 0,
   })
 }

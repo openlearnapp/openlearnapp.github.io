@@ -71,6 +71,7 @@
 
         <div class="space-y-1 text-xs font-mono text-muted-foreground">
           <div>Echoes blocked: {{ syncStats.echoesBlocked }}</div>
+          <div>Duplicates skipped: {{ syncStats.duplicatesSkipped }}</div>
           <div>Last push: {{ formatTimestamp(syncStats.lastPushAt) }}</div>
           <div>Last pull: {{ formatTimestamp(syncStats.lastPullAt) }}</div>
           <div>Uptime: {{ uptime }}</div>
@@ -171,13 +172,15 @@
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div v-if="!events.length" class="text-sm text-muted-foreground italic">No events yet. Changes on other devices will appear here.</div>
-        <div v-else class="space-y-1 max-h-64 overflow-y-auto">
-          <div v-for="(event, i) in events" :key="i" class="text-xs font-mono flex gap-2">
-            <span class="text-muted-foreground flex-shrink-0">{{ event.time }}</span>
-            <span class="text-primary flex-shrink-0">{{ event.key }}</span>
-            <span class="flex-shrink-0">{{ event.size }}</span>
-            <span class="truncate text-muted-foreground">{{ event.preview }}</span>
+        <div v-if="!events.length" class="text-sm text-muted-foreground italic">No events yet. Changes on other devices will appear here in real time.</div>
+        <div v-else class="space-y-3 max-h-[32rem] overflow-y-auto">
+          <div v-for="(event, i) in events" :key="i" class="border border-border rounded-lg p-3">
+            <div class="flex items-center gap-2 mb-2 text-xs font-mono">
+              <span class="text-muted-foreground">{{ event.time }}</span>
+              <span class="font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">{{ event.key }}</span>
+              <span class="text-muted-foreground">{{ event.size }}</span>
+            </div>
+            <pre class="text-xs font-mono bg-muted rounded p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto">{{ event.data }}</pre>
           </div>
         </div>
       </CardContent>
@@ -290,10 +293,9 @@ function onGunSync(e) {
   const { key, data } = e.detail
   const now = new Date()
   const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
-  const raw = JSON.stringify(data)
+  const raw = JSON.stringify(data, null, 2)
   const size = formatBytes(raw.length)
-  const preview = raw.slice(0, 60)
-  events.value.unshift({ time, key, size, preview })
+  events.value.unshift({ time, key, size, data: raw })
   if (events.value.length > 50) events.value.pop()
 
   gunData.value[key] = data
