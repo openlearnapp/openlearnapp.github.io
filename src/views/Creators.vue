@@ -90,12 +90,12 @@
       <h3 class="text-lg font-semibold text-foreground mb-2">{{ t('ctaTitle') }}</h3>
       <p class="text-sm text-muted-foreground mb-4">{{ t('ctaDesc') }}</p>
       <div class="flex flex-wrap justify-center gap-3">
-        <a href="https://github.com/felixboehm/open-learn"
+        <a href="https://github.com/openlearnapp/openlearnapp.github.io"
           target="_blank" rel="noopener"
           class="inline-block px-5 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition">
           {{ t('viewOnGitHub') }}
         </a>
-        <a href="https://github.com/felixboehm/open-learn/tree/main/docs"
+        <a href="https://github.com/openlearnapp/openlearnapp.github.io/tree/main/docs"
           target="_blank" rel="noopener"
           class="inline-block px-5 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/5 transition">
           {{ t('fullDocs') }}

@@ -163,7 +163,7 @@
               <p class="text-xs text-muted-foreground">{{ item.desc }}</p>
             </div>
             <a v-if="item.issue"
-              :href="'https://github.com/felixboehm/open-learn/issues/' + item.issue"
+              :href="'https://github.com/openlearnapp/openlearnapp.github.io/issues/' + item.issue"
               target="_blank" rel="noopener"
               class="text-xs text-primary hover:underline flex-shrink-0"
               @click.stop>
@@ -177,7 +177,7 @@
       <div class="mb-8 p-5 rounded-lg border border-primary/20 bg-primary/5 text-center">
         <h3 class="text-lg font-semibold text-foreground mb-2">{{ $t('home.openSourceTitle') }}</h3>
         <p class="text-sm text-muted-foreground mb-4">{{ $t('home.openSourceDesc') }}</p>
-        <a href="https://github.com/felixboehm/open-learn"
+        <a href="https://github.com/openlearnapp/openlearnapp.github.io"
           target="_blank" rel="noopener"
           class="inline-block px-5 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition">
           {{ $t('home.viewOnGitHub') }}
