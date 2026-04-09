@@ -64,13 +64,32 @@ async function loadDefaultSources() {
 
 export function useLessons() {
 
-  // Get content sources from localStorage
-  function getContentSources() {
+  // Content sources storage format:
+  // Map: { url: timestamp } — positive = active, negative = removed.
+  // Merge: highest absolute timestamp wins.
+  // Migrates from legacy array format on first read.
+
+  // Read the raw source map from localStorage
+  function getSourceMap() {
     try {
-      return JSON.parse(localStorage.getItem('contentSources') || '[]')
+      const raw = JSON.parse(localStorage.getItem('contentSources') || '{}')
+      // Migrate from legacy array format
+      if (Array.isArray(raw)) {
+        const map = {}
+        for (const url of raw) map[url] = Date.now()
+        localStorage.setItem('contentSources', JSON.stringify(map))
+        return map
+      }
+      return raw
     } catch {
-      return []
+      return {}
     }
+  }
+
+  // Get active content source URLs (positive timestamps only)
+  function getContentSources() {
+    const map = getSourceMap()
+    return Object.keys(map).filter(url => map[url] > 0)
   }
 
   // Get all content sources (default + user-added), deduplicated
@@ -88,28 +107,27 @@ export function useLessons() {
     return defaultContentSources.includes(url)
   }
 
-  // Save content sources to localStorage and sync to Gun
-  function saveContentSources(sources) {
-    localStorage.setItem('contentSources', JSON.stringify(sources))
+  // Save source map to localStorage and sync to Gun
+  function saveSourceMap(map) {
+    localStorage.setItem('contentSources', JSON.stringify(map))
     const { isLoggedIn, syncToGun } = useGun()
     if (isLoggedIn.value) {
-      syncToGun('contentSources', sources)
+      syncToGun('contentSources', map)
     }
   }
 
   // Add a content source
   function addContentSource(url) {
-    const sources = getContentSources()
-    if (!sources.includes(url)) {
-      sources.push(url)
-      saveContentSources(sources)
-    }
+    const map = getSourceMap()
+    map[url] = Date.now()
+    saveSourceMap(map)
   }
 
   // Remove a content source
   function removeContentSource(url) {
-    const sources = getContentSources().filter(s => s !== url)
-    saveContentSources(sources)
+    const map = getSourceMap()
+    map[url] = -Date.now()
+    saveSourceMap(map)
   }
 
   // Check if a workshop key is from a remote content source
@@ -647,18 +665,22 @@ export function useLessons() {
   if (typeof window !== 'undefined' && !window._gunSyncContentSourcesRegistered) {
     window._gunSyncContentSourcesRegistered = true
     window.addEventListener('gun-sync', (e) => {
-      if (e.detail.key === 'contentSources' && Array.isArray(e.detail.data)) {
-        // Additive merge: add any sources we don't already have
-        const current = getContentSources()
+      if (e.detail.key === 'contentSources' && e.detail.data && typeof e.detail.data === 'object') {
+        const remote = e.detail.data
+        // Handle legacy array format from remote
+        if (Array.isArray(remote)) return // ignore legacy format
+        const local = getSourceMap()
         let changed = false
-        for (const url of e.detail.data) {
-          if (!current.includes(url)) {
-            current.push(url)
+        for (const [url, ts] of Object.entries(remote)) {
+          const localTs = local[url] || 0
+          // Highest absolute timestamp wins
+          if (Math.abs(ts) > Math.abs(localTs)) {
+            local[url] = ts
             changed = true
           }
         }
         if (changed) {
-          localStorage.setItem('contentSources', JSON.stringify(current))
+          localStorage.setItem('contentSources', JSON.stringify(local))
         }
       }
     })
