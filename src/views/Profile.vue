@@ -59,9 +59,15 @@
               </h2>
               <p class="text-sm text-muted-foreground truncate">@{{ username }}</p>
             </div>
-            <Button variant="ghost" size="sm" @click="handleLogout" class="flex-shrink-0 mb-1 text-muted-foreground">
-              {{ $t('settings.logout') }}
-            </Button>
+            <div class="flex flex-col items-end gap-1 flex-shrink-0 mb-1">
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full"
+                :class="isSyncing ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : isConnected ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-muted text-muted-foreground'">
+                {{ isSyncing ? (isDE ? '⟳ Synchronisiert…' : '⟳ Syncing…') : isConnected ? (isDE ? '● Verbunden' : '● Synced') : (isDE ? '○ Nicht verbunden' : '○ Not connected') }}
+              </span>
+              <Button variant="ghost" size="sm" @click="handleLogout" class="text-muted-foreground h-7 px-2 text-xs">
+                {{ $t('settings.logout') }}
+              </Button>
+            </div>
           </div>
 
           <!-- Profile info pills -->
@@ -105,14 +111,6 @@
           <CardContent class="pt-4 pb-4">
             <div class="text-3xl font-bold text-primary">{{ activeWorkshops.length }}</div>
             <div class="text-xs text-muted-foreground mt-1">{{ $t('profile.workshopsStarted') }}</div>
-          </CardContent>
-        </Card>
-        <Card class="text-center col-span-2">
-          <CardContent class="pt-4 pb-4">
-            <div class="text-lg font-bold" :class="isSyncing ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground/50'">
-              {{ isSyncing ? '● Synced' : '○ Not synced' }}
-            </div>
-            <div class="text-xs text-muted-foreground mt-1">{{ isSyncing ? 'Connected to relay peers' : 'Local only — configure peers in Settings' }}</div>
           </CardContent>
         </Card>
       </div>
@@ -211,13 +209,14 @@ const emit = defineEmits(['update-title'])
 const { t } = useI18n()
 const router = useRouter()
 
-const { isLoggedIn, username, authError, isSyncing, login, register, logout, loadFromGun } = useGun()
+const { isLoggedIn, username, authError, isSyncing, isConnected, login, register, logout, loadFromGun } = useGun()
 const { progress, lastVisited, mergeProgress } = useProgress()
 const { assessments, mergeAssessments } = useAssessments()
 const { selectedLanguage } = useLanguage()
 
 emit('update-title', t('profile.title'))
 
+const isDE = computed(() => selectedLanguage.value === 'deutsch' || navigator.language?.startsWith('de'))
 const gunUsername = ref('')
 const gunPassword = ref('')
 const authMessage = ref('')

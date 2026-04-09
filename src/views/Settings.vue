@@ -33,8 +33,8 @@
         <p class="text-sm text-muted-foreground mb-2">
           {{ isDE ? 'GunDB Relay-Server für die Synchronisierung zwischen Geräten.' : 'GunDB relay servers for cross-device sync.' }}
         </p>
-        <p class="text-xs mb-3" :class="isSyncing ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground/60'">
-          {{ isSyncing ? (isDE ? '● Verbunden' : '● Connected') : (isDE ? '○ Nicht verbunden' : '○ Not connected') }}
+        <p class="text-xs mb-3" :class="isConnected ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground/60'">
+          {{ isConnected ? (isDE ? '● Verbunden' : '● Connected') : (isDE ? '○ Nicht verbunden' : '○ Not connected') }}
         </p>
         <div class="space-y-2 mb-3">
           <div v-for="(peer, idx) in peerList" :key="idx" class="flex gap-2 items-center">
@@ -252,7 +252,7 @@ const router = useRouter()
 const { settings } = useSettings()
 const { progress, getProgress, mergeProgress } = useProgress()
 const { assessments, getAssessments, mergeAssessments } = useAssessments()
-const { isLoggedIn, username: gunUser, isSyncing, DEFAULT_PEERS, getActivePeers, savePeers } = useGun()
+const { isLoggedIn, username: gunUser, isSyncing, isConnected, DEFAULT_PEERS, getActivePeers, savePeers } = useGun()
 const { getOfflineWorkshops, removeWorkshop, getStorageEstimate } = useOffline()
 
 const storageUsage = ref(0)
