@@ -98,25 +98,30 @@ public/audio/deutsch/portugiesisch/01-basic-verbs/
 
 ### Features
 
-1. **Pre-loading**: All audio files for a lesson are pre-loaded when the lesson loads
+1. **Instant loading**: Audio elements are created and `load()` is called without blocking on `canplaythrough`. Cached files (from the service worker `workshop-content` cache) are ready immediately; uncached files buffer in the background while the learner starts playing.
 2. **Variable Speed**: 3 playback speeds (0.6x, 0.8x, 1.0x) adjustable in settings
 3. **Lock Screen Controls**: Media Session API provides play/pause/next/previous on iOS lock screen
 4. **Smart Pausing**: 800ms pause between examples, 1800ms pause between sections for better comprehension
 5. **Click-to-Play**: Click any example to hear its audio immediately
 6. **Resume Support**: Pause and resume maintain position in the queue
+7. **Continuous play across lessons**: Double-click the play button to auto-advance to the next lesson at the end of each one — works in the iOS lock screen without re-entering the app
+8. **Next-lesson preload**: While the current lesson plays, the next lesson's audio is preloaded in the background so the transition is seamless
 
 ### Implementation: `src/composables/useAudio.js`
 
 #### Key Functions
 
 **`initializeAudio(lesson, learning, workshop, settings)`**
-- Pre-loads all audio files for the lesson
+- Idempotent: if the composable is already showing this exact lesson (e.g. during a continuous-mode transition), returns immediately without re-initialization
+- Pre-creates Audio elements and kicks off `load()` (no `canplaythrough` wait — fast path for cached files)
 - Sets up Media Session API for lock screen
 - Builds reading queue from lesson structure
+- If continuous mode is on, kicks off a background preload of the next lesson
 
 **`play(settings)`**
 - Starts or resumes playback
 - Respects pause position
+- Safe to call while playback is already in progress (no-op)
 
 **`pause()`**
 - Pauses current audio
@@ -130,6 +135,20 @@ public/audio/deutsch/portugiesisch/01-basic-verbs/
 **`skipToNext()` / `skipToPrevious()`**
 - Navigate between items
 - Triggered by lock screen controls
+- In continuous mode, `skipToNext()` at end of queue transitions to the next lesson
+
+**`enableContinuousMode(nextLessonProvider)` / `disableContinuousMode()`**
+- Toggles continuous playback across lessons
+- `nextLessonProvider` is an async callback returning `{ lesson, learning, workshop }` for the next lesson, or `null` at the end of the workshop
+- When enabled, the composable:
+  - Preloads the next lesson's audio in the background while the current one plays
+  - Transitions in-place at the end of each lesson (no audio-element teardown)
+  - Bumps `lessonTransitionTick` so the view layer updates the URL via `router.replace`
+  - Keeps the iOS Media Session alive across lesson boundaries
+
+**`cleanup()`**
+- Called by `LessonDetail.vue` in `onBeforeUnmount`
+- Skipped automatically when `isTransitioning` is true or when the composable has already moved on to a different lesson (in-place continuous transition), so the active audio element and iOS media session survive component remount
 
 #### Reading Queue
 
@@ -271,22 +290,25 @@ Native macOS voices provide high-quality, natural-sounding speech:
 
 ## Performance
 
-### Pre-loading
-- All audio files for a lesson are pre-loaded on lesson load
-- Typical lesson: 40-60 files, ~4-5MB total
-- Pre-loading time: 1-3 seconds (depends on connection)
+### Loading
+- Audio elements are created and `load()` is called eagerly but **without waiting** for `canplaythrough`. This removes the previous 1–3 second blocking delay that affected every lesson, even for cached files.
+- When a workshop has been downloaded via `useOffline.downloadWorkshop()`, all audio files live in the `workshop-content` cache (managed by Workbox). The browser then serves them instantly — the first play starts with no perceptible delay.
+- When the workshop is not downloaded, the browser buffers each file on demand. The `play()` call triggers the same buffering path as any other `<audio>` element; continuous play still auto-advances because `onended` fires when the current item completes.
+
+### Next-lesson preload (continuous mode)
+- While lesson N is playing, `preloadNextLesson()` builds the queue and creates Audio elements for lesson N+1 in the background.
+- At the end of lesson N, `transitionToNextLesson()` swaps the queue in-place and starts playing lesson N+1's first item — within the same event chain that handled the last item's `onended`. This is what keeps the iOS media session alive across lesson boundaries.
 
 ### Memory Usage
-- Audio elements persist in memory while lesson is active
-- Cleaned up when leaving lesson page
-- Typical memory: ~10-15MB per lesson
+- Audio elements persist in memory while the lesson is active.
+- Old audio elements are released ~200ms after a continuous-mode transition, once the new lesson has taken over.
+- Cleaned up when leaving the lesson page (except during a continuous-mode transition).
+- Typical memory: ~10–15 MB per lesson, plus ~10–15 MB for the preloaded next lesson.
 
 ## Future Enhancements
 
 Potential improvements:
-- [ ] Progressive loading (load as needed vs. all upfront)
-- [ ] Audio caching (Service Worker)
 - [ ] Waveform visualization
 - [ ] Speed adjustment UI in lesson view
-- [ ] Keyboard shortcuts for playback control
-- [ ] Playlist mode (auto-advance to next lesson)
+- [ ] Keyboard shortcuts beyond spacebar
+- [ ] "Repeat lesson" mode (loop a single lesson instead of advancing)

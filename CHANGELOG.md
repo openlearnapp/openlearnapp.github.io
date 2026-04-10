@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-04-10
+
+### Fixes
+
+#### Autoplay stops on iOS lock screen at end of each lesson
+- Continuous playback now keeps the audio context alive across lesson boundaries. When a lesson ends, the composable swaps the queue for the next lesson in-place instead of tearing down audio elements on component remount — so iOS holds the Media Session open and the lock-screen controls stay responsive.
+- `LessonDetail.vue` cleanup is now skipped during a continuous-mode transition.
+- `initializeAudio` is idempotent for the same lesson: re-mounting the view after an in-place transition is a no-op.
+
+#### Long audio loading delay even for downloaded / offline workshops
+- `preloadAudioFiles()` no longer blocks on `canplaythrough` for every file. Audio elements are created, `load()` is kicked off, and playback starts as soon as the browser has enough data. Cached files (from the `workshop-content` service-worker cache) play instantly.
+- The "loading audio…" spinner now only appears for the short queue-build phase.
+
+### Features
+
+#### Continuous play mode (double-click play button)
+- **Single click** on the play button: start / pause the current lesson (unchanged).
+- **Double click**: start continuous play — auto-advance through the whole workshop, including from the iOS lock screen.
+- A small repeat badge and yellow ring on the play button indicate continuous mode is active.
+- The next lesson's audio is preloaded in the background while the current one plays, so transitions are seamless.
+- When online and a workshop is not downloaded, continuous play still auto-advances; the next lesson loads in the background.
+- A second double click turns continuous play off without stopping playback.
+
+### Docs & CI
+
+- Updated `specs/audio-system.md` and `docs/audio-system.md` with continuous play, lock-screen behaviour, and the new instant-load semantics.
+
 ## 2026-04-03
 
 ### Features

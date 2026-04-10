@@ -8,6 +8,7 @@
     "pauseAudio": "إيقاف الصوت",
     "playAudio": "تشغيل الصوت",
     "loadingAudio": "جاري تحميل الصوت...",
+    "continuousPlayActive": "تشغيل متواصل (نقر مزدوج للإيقاف)",
     "assessmentResults": "نتائج التقييم",
     "coach": "المدرب",
     "learningItems": "عناصر التعلم",

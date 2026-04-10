@@ -287,16 +287,25 @@
     </div>
 
     <!-- Floating play/pause button for mobile — only shown when audio is available -->
+    <!-- Single click: play/pause current lesson. Double click: continuous play across lessons. -->
     <button
       v-if="lesson && (isLoadingAudio || hasAudio)"
-      @click="togglePlayPause"
+      @click="handlePlayButtonClick"
+      @dblclick.prevent="handlePlayButtonDoubleClick"
       :disabled="isLoadingAudio"
-      class="md:hidden fixed bottom-20 right-6 w-12 h-12 rounded-full shadow-lg z-50 flex items-center justify-center bg-primary text-white border-2 border-primary-foreground/30 disabled:opacity-50"
-      :title="isLoadingAudio ? $t('nav.loading') : (isPlaying ? $t('nav.pause') : $t('nav.play'))"
-      :aria-label="isLoadingAudio ? $t('nav.loadingAudio') : (isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio'))">
+      :class="[
+        'md:hidden fixed bottom-20 right-6 w-12 h-12 rounded-full shadow-lg z-50 flex items-center justify-center bg-primary text-white border-2 disabled:opacity-50',
+        continuousMode ? 'border-yellow-300 ring-2 ring-yellow-300/70' : 'border-primary-foreground/30'
+      ]"
+      :title="playButtonTitle"
+      :aria-label="playButtonAriaLabel">
       <svg v-if="isLoadingAudio" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
       <svg v-else-if="isPlaying" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
       <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+      <!-- Continuous mode indicator: small repeat badge -->
+      <span v-if="continuousMode && !isLoadingAudio" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-yellow-300 text-primary flex items-center justify-center" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+      </span>
     </button>
   </div>
 </template>
@@ -329,7 +338,13 @@ const emit = defineEmits(['update-title'])
 const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
 const { settings } = useSettings()
 const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress, setLastVisited } = useProgress()
-const { isLoadingAudio, isPlaying, isPaused, playbackFinished, hasAudio, currentItem, initializeAudio, jumpToExample, cleanup, play, pause } = useAudio()
+const {
+  isLoadingAudio, isPlaying, isPaused, playbackFinished, hasAudio, currentItem,
+  lessonMetadata: audioLessonMetadata,
+  initializeAudio, jumpToExample, cleanup, play, pause,
+  continuousMode, enableContinuousMode, disableContinuousMode, isTransitioning,
+  lessonTransitionTick,
+} = useAudio()
 const { getAnswer, saveAnswer, validateAnswer } = useAssessments()
 const { setLessonFooter, clearLessonFooter } = useFooter()
 
@@ -635,6 +650,64 @@ function togglePlayPause() {
   }
 }
 
+// Debounced click handler so a double click does not also fire a single click
+// that would pause playback right after continuous mode starts.
+let playClickTimer = null
+const PLAY_DOUBLE_CLICK_DELAY = 260 // ms
+
+function handlePlayButtonClick() {
+  if (playClickTimer) return // double click in progress
+  playClickTimer = setTimeout(() => {
+    playClickTimer = null
+    togglePlayPause()
+  }, PLAY_DOUBLE_CLICK_DELAY)
+}
+
+function handlePlayButtonDoubleClick() {
+  if (playClickTimer) {
+    clearTimeout(playClickTimer)
+    playClickTimer = null
+  }
+  if (continuousMode.value) {
+    // Already continuous — second double click turns it off but keeps playing
+    disableContinuousMode()
+    return
+  }
+  startContinuousPlay()
+}
+
+function startContinuousPlay() {
+  enableContinuousMode(resolveNextLessonForAudio)
+  if (!isPlaying.value) {
+    play(audioSettings.value)
+  }
+}
+
+// Provider used by the audio composable to fetch the next lesson when the
+// current one finishes in continuous mode. Returns null at end of workshop.
+async function resolveNextLessonForAudio() {
+  if (!nextLessonNumber.value) return null
+  const nextLesson = allLessons.value.find(l => l.number === nextLessonNumber.value)
+  if (!nextLesson) return null
+  return {
+    lesson: nextLesson,
+    learning: learning.value,
+    workshop: workshop.value,
+  }
+}
+
+const playButtonTitle = computed(() => {
+  if (isLoadingAudio.value) return t('nav.loading')
+  if (continuousMode.value) return t('nav.continuousPlayActive')
+  return isPlaying.value ? t('nav.pause') : t('nav.play')
+})
+
+const playButtonAriaLabel = computed(() => {
+  if (isLoadingAudio.value) return t('nav.loadingAudio')
+  if (continuousMode.value) return t('nav.continuousPlayActive')
+  return isPlaying.value ? t('nav.pauseAudio') : t('nav.playAudio')
+})
+
 watch(currentItem, async (newItem) => {
   if (!newItem) return
   await nextTick()
@@ -666,13 +739,35 @@ watch(currentItem, async (newItem) => {
   }
 })
 
-// Auto-advance to next lesson when audio playback finishes
+// Auto-advance to next lesson when audio playback finishes (non-continuous mode).
+// Navigate with ?autoplay=true so the next lesson starts a fresh playback.
 watch(playbackFinished, (finished) => {
-  if (finished && nextLessonNumber.value) {
-    const query = { autoplay: 'true' }
-    if (activeLabel.value) query.label = activeLabel.value
-    router.replace({ path: `/${learning.value}/${workshop.value}/lesson/${nextLessonNumber.value}`, query })
-  }
+  if (!finished || !nextLessonNumber.value) return
+  if (continuousMode.value) return // handled by lessonTransitionTick watcher
+
+  const query = { autoplay: 'true' }
+  if (activeLabel.value) query.label = activeLabel.value
+  router.replace({ path: `/${learning.value}/${workshop.value}/lesson/${nextLessonNumber.value}`, query })
+})
+
+// Continuous-mode URL sync: whenever the audio composable swaps to a new lesson
+// in-place, update the route to match. The audio is already playing, so the
+// remount that follows must be a no-op (initializeAudio is idempotent and
+// cleanup is guarded by composableMovedOn check).
+watch(lessonTransitionTick, () => {
+  const meta = audioLessonMetadata.value
+  if (!meta || !meta.learning || meta.number == null) return
+  if (
+    meta.learning === learning.value &&
+    meta.workshop === workshop.value &&
+    meta.number === lessonNumber.value
+  ) return
+  const query = {}
+  if (activeLabel.value) query.label = activeLabel.value
+  router.replace({
+    path: `/${meta.learning}/${meta.workshop}/lesson/${meta.number}`,
+    query,
+  })
 })
 
 // Sync active label to URL query param
@@ -697,7 +792,8 @@ watch(
   () => [settings.value.hideLearnedExamples, settings.value.readAnswers, activeLabel.value],
   async () => {
     if (lesson.value) {
-      await initializeAudio(lesson.value, learning.value, workshop.value, audioSettings.value)
+      // Force rebuild because these settings change the queue contents
+      await initializeAudio(lesson.value, learning.value, workshop.value, audioSettings.value, { force: true })
     }
   },
   { deep: true }
@@ -707,7 +803,8 @@ watch(
   progress,
   async () => {
     if (lesson.value && settings.value.hideLearnedExamples) {
-      await initializeAudio(lesson.value, learning.value, workshop.value, audioSettings.value)
+      // Force rebuild: hiding learned items may remove entries from the queue
+      await initializeAudio(lesson.value, learning.value, workshop.value, audioSettings.value, { force: true })
     }
   },
   { deep: true }
@@ -719,8 +816,17 @@ function handleKeydown(e) {
   }
 }
 
+// Listener for "start continuous play" requests dispatched by App.vue's
+// desktop play button (it doesn't own the lesson list, so it delegates here).
+function handleStartContinuousRequest() {
+  if (lesson.value) {
+    startContinuousPlay()
+  }
+}
+
 onMounted(async () => {
   document.addEventListener('keydown', handleKeydown)
+  window.addEventListener('open-learn:start-continuous-play', handleStartContinuousRequest)
   window.scrollTo(0, 0)
   const currentLearning = route.params.learning
   const currentWorkshop = route.params.workshop
@@ -740,10 +846,18 @@ onMounted(async () => {
     // Set footer navigation data
     setLessonFooter(currentLearning, currentWorkshop, nextLessonNumber.value)
 
+    // initializeAudio is idempotent: if the composable is already showing this
+    // lesson (continuous-mode transition), this is a no-op and playback continues.
     await initializeAudio(lesson.value, currentLearning, currentWorkshop, audioSettings.value)
     restoreDraftsFromSaved()
 
-    if (route.query.autoplay) {
+    // If continuous mode is on, (re)register the next-lesson provider so the
+    // composable can preload and transition to lesson N+1 when this one finishes.
+    if (continuousMode.value) {
+      enableContinuousMode(resolveNextLessonForAudio)
+    }
+
+    if (route.query.autoplay && !isPlaying.value) {
       play(audioSettings.value)
     }
 
@@ -759,7 +873,27 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)
-  cleanup()
+  window.removeEventListener('open-learn:start-continuous-play', handleStartContinuousRequest)
+
+  if (playClickTimer) {
+    clearTimeout(playClickTimer)
+    playClickTimer = null
+  }
+
+  // Skip cleanup during a continuous-mode transition OR when the composable
+  // has already swapped to a different lesson in-place. This keeps the active
+  // audio element alive across the component remount so iOS preserves the
+  // Media Session.
+  const meta = audioLessonMetadata.value
+  const composableMovedOn =
+    meta.learning !== learning.value ||
+    meta.workshop !== workshop.value ||
+    meta.number !== lessonNumber.value
+
+  if (!composableMovedOn && !isTransitioning.value) {
+    cleanup()
+  }
+
   clearLessonFooter()
   closeLightbox()
 })
