@@ -194,6 +194,11 @@
   "lesson": {
     "typeAnswer": "Deine Antwort eingeben...",
     "nextLesson": "Nächste Lektion",
+    "takeTest": "Test machen",
+    "openTests": "Offene Aufgaben",
+    "testAllLabel": "Test",
+    "testOpenLabel": "Offene Aufgaben",
+    "clearFilter": "Filter löschen",
     "allLessons": "Alle Lektionen",
     "loadingLesson": "Lektion wird geladen...",
     "sections": "Abschnitte",

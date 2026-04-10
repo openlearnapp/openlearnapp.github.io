@@ -22,8 +22,25 @@
       <div v-if="activeLabel" class="mb-4 flex items-center gap-2">
         <Badge class="bg-primary text-primary-foreground px-3 py-1">
           {{ activeLabel }}
-          <button @click="activeLabel = null" class="ml-2 hover:opacity-70">✕</button>
+          <button @click="activeLabel = null" class="ml-2 hover:opacity-70" :aria-label="$t('lesson.clearFilter')">✕</button>
         </Badge>
+      </div>
+
+      <!-- Take the test buttons — shown when the lesson has assessment items -->
+      <div v-if="hasAssessments && !activeLabel && !isInFocusMode" class="mb-4 flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          @click="activeLabel = LABEL_TEST">
+          📝 {{ $t('lesson.takeTest') }}
+        </Button>
+        <Button
+          v-if="hasOpenAssessments"
+          size="sm"
+          variant="outline"
+          @click="activeLabel = LABEL_OPEN">
+          ❓ {{ $t('lesson.openTests') }}
+        </Button>
       </div>
 
       <nav v-if="filteredSections.length > 1" class="mb-6 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl ring-1 ring-border/50 dark:ring-white/[0.06] shadow-sm">
@@ -365,6 +382,46 @@ const lightbox = reactive({ open: false, src: '', caption: '' })
 const revealedAnswers = reactive({})
 const activeLabel = ref(route.query.label || null)
 
+// Computed labels automatically attached to assessment examples. These are
+// real label strings (not sentinels), so the standard label filter matches
+// them like any other label. Kept short and untranslated so the URL query
+// param is stable across languages.
+const LABEL_TEST = 'Test'
+const LABEL_OPEN = 'Open'
+
+// Return the effective label list for an example: its own YAML labels plus
+// computed labels for assessments (Test, and Open for unanswered).
+function getEffectiveLabels(example, sectionIdx, exampleIdx) {
+  const labels = Array.isArray(example.labels) ? [...example.labels] : []
+  if (example.type && example.type !== 'qa') {
+    labels.push(LABEL_TEST)
+    const saved = getAnswer(learning.value, workshop.value, lessonNumber.value, sectionIdx, exampleIdx)
+    if (!saved) labels.push(LABEL_OPEN)
+  }
+  return labels
+}
+
+// True if the lesson contains any assessment items — used to decide whether
+// to show the "Take the test" buttons in the header.
+const hasAssessments = computed(() => {
+  if (!lesson.value || !lesson.value.sections) return false
+  return lesson.value.sections.some(section =>
+    section.examples.some(example => example.type && example.type !== 'qa')
+  )
+})
+
+// True if the lesson has any unanswered assessments
+const hasOpenAssessments = computed(() => {
+  if (!lesson.value || !lesson.value.sections) return false
+  return lesson.value.sections.some((section, sIdx) =>
+    section.examples.some((example, eIdx) => {
+      if (!example.type || example.type === 'qa') return false
+      const saved = getAnswer(learning.value, workshop.value, lessonNumber.value, sIdx, eIdx)
+      return !saved
+    })
+  )
+})
+
 // Captured at mount time so onBeforeUnmount has stable values even after
 // Vue has already begun tearing down route-param-based computed refs.
 let mountedLearning = null
@@ -603,8 +660,13 @@ const filteredSections = computed(() => {
         _originalExampleIdx: originalExampleIdx
       }))
       .filter(example => {
+        // Label filter — matches against effective labels (YAML labels +
+        // computed assessment labels like "Test" and "Open").
         if (activeLabel.value) {
-          if (!example.labels || !example.labels.includes(activeLabel.value)) {
+          const effective = getEffectiveLabels(
+            example, example._originalSectionIdx, example._originalExampleIdx
+          )
+          if (!effective.includes(activeLabel.value)) {
             return false
           }
         }
