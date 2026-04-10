@@ -228,6 +228,15 @@ const latestAudioSettingsRef = ref({ readAnswers: true, audioSpeed: 1.0 })
 // (e.g. during a continuous-mode transition), it returns immediately. Pass
 // `{ force: true }` to force a rebuild even when the lesson identity matches —
 // used by the settings watcher when readAnswers / hideLearnedExamples change.
+//
+// CRITICAL: Rebuilding the audio elements mid-playback tears down the currently
+// playing `<audio>` element (via audio.pause() + audio.src=''), which silently
+// breaks the `onended` → `playNextItem` chain. So even a force-rebuild is
+// skipped while the same lesson is actively playing — the new settings take
+// effect the next time the user pauses and resumes. This fixes the bug where a
+// GunDB sync tick, a remote settings update, or an item being marked learned
+// during playback caused the audio chain to stop after the currently playing
+// clip.
 async function initializeAudio(lesson, learning, workshop, settings, { force = false } = {}) {
   latestAudioSettingsRef.value = settings
 
@@ -241,6 +250,13 @@ async function initializeAudio(lesson, learning, workshop, settings, { force = f
   // the new lesson in-place. Skip re-initialization so we don't destroy
   // the active audio element and iOS media session.
   if (isSameLesson && hasAudio.value && !isLoadingAudio.value && !force) {
+    return
+  }
+
+  // Defensive: never tear down the queue of an actively playing lesson.
+  // The caller can re-trigger a rebuild after the user pauses.
+  if (isSameLesson && force && (isPlaying.value || isPaused.value)) {
+    console.log(`🎧 Skipping force rebuild of "${lesson.title}" — playback is active`)
     return
   }
 

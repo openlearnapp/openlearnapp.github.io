@@ -4,6 +4,11 @@
 
 ### Fixes
 
+#### Audio chain stops after the first clip (follow-up to #234)
+- `initializeAudio({ force: true })` no longer tears down a lesson's audio while it is actively playing or paused. Previously, any GunDB sync tick, remote settings update, or `toggleItemLearned` click would mutate `progress` / `settings` deeply, fire the `LessonDetail.vue` watchers, and call `initializeAudio` with `force: true` — which released all audio elements (including the one currently playing) and set `isPlaying.value = false`. The `onended` → `playNextItem` chain then saw `isPlaying` false and silently stopped, so the lesson only played a single clip and never advanced (and continuous mode never reached the end-of-queue transition).
+- The composable now detects this case (`isSameLesson && force && (isPlaying || isPaused)`) and skips the rebuild. The new queue gets picked up the next time the user pauses and resumes.
+- Added two regression tests in `tests/audio.test.js` that simulate a force rebuild during active playback and during a pause and assert the queue, `isPlaying`, and `currentItemIndex` are preserved.
+
 #### Autoplay stops on iOS lock screen at end of each lesson
 - Continuous playback now keeps the audio context alive across lesson boundaries. When a lesson ends, the composable swaps the queue for the next lesson in-place instead of tearing down audio elements on component remount — so iOS holds the Media Session open and the lock-screen controls stay responsive.
 - `LessonDetail.vue` cleanup is now skipped during a continuous-mode transition.

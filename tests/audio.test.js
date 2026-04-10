@@ -297,6 +297,67 @@ describe('initializeAudio and queue building', () => {
     expect(audio.readingQueue.value.length).toBe(firstLength)
   })
 
+  it('preserves playback state when force-rebuilt during active playback', async () => {
+    // Regression test: GunDB sync / progress / settings watchers would
+    // previously call initializeAudio({ force: true }) mid-playback, which
+    // tore down audioElements and set isPlaying=false — breaking the
+    // onended → playNextItem chain so the lesson stopped after one clip.
+    const lesson = {
+      title: 'Long Lesson',
+      number: 5,
+      _filename: '05-long',
+      sections: [{
+        title: 'S1',
+        examples: [
+          { q: 'Q1', a: 'A1' },
+          { q: 'Q2', a: 'A2' },
+          { q: 'Q3', a: 'A3' },
+        ]
+      }]
+    }
+
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+
+    // Simulate active playback
+    audio.isPlaying.value = true
+    audio.currentItemIndex.value = 2
+
+    const queueRef = audio.readingQueue.value
+
+    // A force rebuild during playback must be a no-op
+    await audio.initializeAudio(lesson, 'de', 'pt', settings, { force: true })
+
+    expect(audio.isPlaying.value).toBe(true)
+    expect(audio.currentItemIndex.value).toBe(2)
+    expect(audio.readingQueue.value).toBe(queueRef)
+    expect(audio.hasAudio.value).toBe(true)
+  })
+
+  it('preserves playback state when force-rebuilt during pause', async () => {
+    // Same guard: if the user paused mid-lesson and then a remote sync
+    // mutates progress, we should NOT throw away the queue. The user would
+    // otherwise lose their position on resume.
+    const lesson = {
+      title: 'Paused Lesson',
+      number: 6,
+      _filename: '06-pause',
+      sections: [{ title: 'S1', examples: [{ q: 'Q1', a: 'A1' }] }]
+    }
+
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+
+    audio.isPlaying.value = false
+    audio.isPaused.value = true
+    audio.currentItemIndex.value = 1
+
+    const queueRef = audio.readingQueue.value
+    await audio.initializeAudio(lesson, 'de', 'pt', settings, { force: true })
+
+    expect(audio.isPaused.value).toBe(true)
+    expect(audio.currentItemIndex.value).toBe(1)
+    expect(audio.readingQueue.value).toBe(queueRef)
+  })
+
   it('loads audio elements without blocking on canplaythrough', async () => {
     const lesson = {
       title: 'Test',
