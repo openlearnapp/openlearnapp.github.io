@@ -63,6 +63,28 @@ if (!globalThis.fetch) {
   globalThis.fetch = () => Promise.resolve({ ok: false, text: () => Promise.resolve('') })
 }
 
+// Stub navigator.mediaSession so the lock-screen test can inspect metadata
+// and invoke the action handlers that the iOS lock screen would fire.
+// happy-dom may not implement MediaMetadata / mediaSession on all versions.
+if (typeof globalThis.MediaMetadata === 'undefined') {
+  globalThis.MediaMetadata = class MediaMetadata {
+    constructor(init) { Object.assign(this, init) }
+  }
+}
+if (!navigator.mediaSession) {
+  const handlers = {}
+  Object.defineProperty(navigator, 'mediaSession', {
+    configurable: true,
+    value: {
+      metadata: null,
+      setActionHandler(name, fn) { handlers[name] = fn },
+      // Test helper — not part of the real API
+      __handlers: handlers,
+      __invoke(name) { return handlers[name] && handlers[name]() },
+    }
+  })
+}
+
 const { useAudio } = await import('../src/composables/useAudio')
 
 describe('useAudio', () => {
@@ -385,6 +407,150 @@ describe('initializeAudio and queue building', () => {
   })
 })
 
+describe('lock-screen / Media Session requirements', () => {
+  // These tests pin the guarantees that the iOS lock screen and Android
+  // media notification depend on. They are what makes autoplay continue
+  // working when the device is locked / the tab is backgrounded.
+  let audio
+
+  beforeEach(() => {
+    audio = useAudio()
+    // Continuous-mode transitions leave isTransitioning=true for 200ms.
+    // Clear it explicitly so cleanup() isn't skipped.
+    audio.isTransitioning.value = false
+    audio.disableContinuousMode()
+    audio.cleanup()
+    // Reset mediaSession state
+    navigator.mediaSession.metadata = null
+    for (const k of Object.keys(navigator.mediaSession.__handlers)) {
+      delete navigator.mediaSession.__handlers[k]
+    }
+  })
+
+  const settings = { readAnswers: true, hideLearnedExamples: false, audioSpeed: 1.0 }
+  const lesson1 = {
+    title: 'Lesson 1',
+    number: 1,
+    _filename: '01-one',
+    sections: [{ title: 'S1', examples: [{ q: 'Q1', a: 'A1' }] }]
+  }
+  const lesson2 = {
+    title: 'Lesson 2',
+    number: 2,
+    _filename: '02-two',
+    sections: [{ title: 'S1', examples: [{ q: 'Q2', a: 'A2' }] }]
+  }
+
+  it('populates MediaMetadata with title/artist/album/artwork when a lesson loads', async () => {
+    await audio.initializeAudio(lesson1, 'deutsch', 'portugiesisch', settings)
+
+    const meta = navigator.mediaSession.metadata
+    expect(meta).not.toBeNull()
+    expect(meta.title).toBe('Lesson 1')
+    expect(meta.artist).toContain('portugiesisch')
+    expect(meta.album).toContain('deutsch')
+    expect(Array.isArray(meta.artwork)).toBe(true)
+    expect(meta.artwork.length).toBeGreaterThan(0)
+  })
+
+  it('registers play/pause/previoustrack/nexttrack action handlers', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+
+    const h = navigator.mediaSession.__handlers
+    expect(typeof h.play).toBe('function')
+    expect(typeof h.pause).toBe('function')
+    expect(typeof h.previoustrack).toBe('function')
+    expect(typeof h.nexttrack).toBe('function')
+  })
+
+  it('lock-screen "pause" action actually pauses the composable', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.play(settings)
+    expect(audio.isPlaying.value).toBe(true)
+
+    // Simulate the iOS lock screen firing the pause action
+    navigator.mediaSession.__invoke('pause')
+
+    expect(audio.isPlaying.value).toBe(false)
+    expect(audio.isPaused.value).toBe(true)
+  })
+
+  it('lock-screen "play" action resumes from the paused position', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.play(settings)
+    audio.currentItemIndex.value = 2 // pretend we're mid-queue
+    audio.pause()
+    expect(audio.isPaused.value).toBe(true)
+
+    navigator.mediaSession.__invoke('play')
+
+    expect(audio.isPlaying.value).toBe(true)
+    expect(audio.isPaused.value).toBe(false)
+    // Position must not be reset — resume continues where it left off
+    expect(audio.currentItemIndex.value).toBe(2)
+  })
+
+  it('lock-screen "nexttrack" advances by one item', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.play(settings)
+    audio.currentItemIndex.value = 0
+
+    navigator.mediaSession.__invoke('nexttrack')
+
+    expect(audio.currentItemIndex.value).toBeGreaterThan(0)
+  })
+
+  it('lock-screen "previoustrack" steps back by one item', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.play(settings)
+    audio.currentItemIndex.value = 2
+
+    navigator.mediaSession.__invoke('previoustrack')
+
+    expect(audio.currentItemIndex.value).toBe(1)
+  })
+
+  it('updates MediaMetadata when continuous mode transitions to the next lesson', async () => {
+    await audio.initializeAudio(lesson1, 'deutsch', 'portugiesisch', settings)
+    expect(navigator.mediaSession.metadata.title).toBe('Lesson 1')
+
+    audio.enableContinuousMode(async () => ({
+      lesson: lesson2, learning: 'deutsch', workshop: 'portugiesisch'
+    }))
+
+    // Jump to end and fire end-of-queue to trigger transition
+    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
+    audio.isPlaying.value = true
+    audio.skipToNext(settings)
+
+    await new Promise(r => setTimeout(r, 20))
+
+    // Metadata must reflect the new lesson — otherwise iOS shows the
+    // stale title on the lock screen after auto-advance.
+    expect(navigator.mediaSession.metadata.title).toBe('Lesson 2')
+  })
+
+  it('media session action handlers survive a continuous-mode transition', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.enableContinuousMode(async () => ({
+      lesson: lesson2, learning: 'de', workshop: 'pt'
+    }))
+
+    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
+    audio.isPlaying.value = true
+    audio.skipToNext(settings)
+
+    await new Promise(r => setTimeout(r, 20))
+
+    // After the transition, a locked-screen pause/play must still work
+    const h = navigator.mediaSession.__handlers
+    expect(typeof h.play).toBe('function')
+    expect(typeof h.pause).toBe('function')
+    expect(typeof h.previoustrack).toBe('function')
+    expect(typeof h.nexttrack).toBe('function')
+  })
+})
+
 describe('integration: full playback chain vs. deep watchers', () => {
   // These tests recreate the exact wiring from LessonDetail.vue — the
   // `watch(progress, ...)` and `watch([settings.hideLearnedExamples, ...])`
@@ -395,6 +561,8 @@ describe('integration: full playback chain vs. deep watchers', () => {
 
   beforeEach(() => {
     audio = useAudio()
+    audio.isTransitioning.value = false
+    audio.disableContinuousMode()
     audio.cleanup()
   })
 
@@ -485,6 +653,8 @@ describe('Gun sync pause during playback', () => {
 
   beforeEach(() => {
     audio = useAudio()
+    audio.isTransitioning.value = false
+    audio.disableContinuousMode()
     audio.cleanup()
     gunSyncSpy.paused = false
     gunSyncSpy.pauseCount = 0
