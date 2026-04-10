@@ -1,12 +1,18 @@
 import { ref, computed } from 'vue'
 import { useLessons } from './useLessons'
 import { useProgress } from './useProgress'
+import { useGun } from './useGun'
 
 // Get lesson composable for language codes
 const { getLanguageCode, getWorkshopCode, resolveWorkshopKey, getWorkshopMeta } = useLessons()
 
 // Get progress composable for learned items
 const { areAllItemsLearned } = useProgress()
+
+// Gun sync pause controls — we freeze remote data pulls during active
+// playback so a remote sync tick doesn't mutate progress/settings and
+// trigger the LessonDetail watchers that rebuild the audio queue.
+const { pauseSyncPulls, resumeSyncPulls } = useGun()
 
 // Shared audio state (singleton pattern)
 const isLoadingAudio = ref(false)
@@ -508,6 +514,10 @@ function play(settings) {
   isPlaying.value = true
   isPaused.value = false
 
+  // Freeze remote Gun pulls so an incoming sync tick doesn't mutate state
+  // and trigger watchers that rebuild the queue mid-playback.
+  try { pauseSyncPulls() } catch {}
+
   if (wasResuming) {
     playCurrentItem(settings)
   } else {
@@ -523,6 +533,9 @@ function pause() {
   if (currentAudio.value) {
     currentAudio.value.pause()
   }
+
+  // Allow deferred remote sync pulls to flush now that playback is paused.
+  try { resumeSyncPulls() } catch {}
 }
 
 // Resume playback (alias for play)
@@ -544,6 +557,10 @@ function stop() {
   }
 
   currentAudio.value = null
+
+  // Playback is fully stopped — let deferred remote syncs run.
+  try { resumeSyncPulls() } catch {}
+
   console.log('🛑 Stopped')
 }
 

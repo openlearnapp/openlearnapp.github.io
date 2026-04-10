@@ -5,13 +5,24 @@ vi.mock('../src/composables/useLessons', () => ({
   useLessons: () => ({
     getLanguageCode: () => null,
     getWorkshopCode: () => null,
-    resolveWorkshopKey: (key) => key
+    resolveWorkshopKey: (key) => key,
+    getWorkshopMeta: () => ({})
   })
 }))
 
 vi.mock('../src/composables/useProgress', () => ({
   useProgress: () => ({
     areAllItemsLearned: () => false
+  })
+}))
+
+// Mock useGun so we can observe pauseSyncPulls / resumeSyncPulls calls
+// without spinning up the real Gun client.
+const gunSyncSpy = { paused: false, pauseCount: 0, resumeCount: 0 }
+vi.mock('../src/composables/useGun', () => ({
+  useGun: () => ({
+    pauseSyncPulls: () => { gunSyncSpy.paused = true; gunSyncSpy.pauseCount++ },
+    resumeSyncPulls: () => { gunSyncSpy.paused = false; gunSyncSpy.resumeCount++ },
   })
 }))
 
@@ -371,6 +382,147 @@ describe('initializeAudio and queue building', () => {
 
     expect(audio.hasAudio.value).toBe(true)
     expect(audio.isLoadingAudio.value).toBe(false)
+  })
+})
+
+describe('integration: full playback chain vs. deep watchers', () => {
+  // These tests recreate the exact wiring from LessonDetail.vue — the
+  // `watch(progress, ...)` and `watch([settings.hideLearnedExamples, ...])`
+  // pattern that used to call initializeAudio({ force: true }) mid-playback.
+  // They verify the whole chain (composable + deep watcher + force-rebuild
+  // guard) end-to-end, not just the composable in isolation.
+  let audio
+
+  beforeEach(() => {
+    audio = useAudio()
+    audio.cleanup()
+  })
+
+  const settings = { readAnswers: true, hideLearnedExamples: true, audioSpeed: 1.0 }
+  const lesson = {
+    title: 'Integration Lesson',
+    number: 3,
+    _filename: '03-integration',
+    sections: [{
+      title: 'S1',
+      examples: [
+        { q: 'Q1', a: 'A1' },
+        { q: 'Q2', a: 'A2' },
+      ]
+    }]
+  }
+
+  it('a deep progress mutation during playback does NOT break the chain', async () => {
+    const { ref, watch } = await import('vue')
+
+    // Mimic the LessonDetail reactive state
+    const progress = ref({})
+    const audioSettings = ref({ ...settings })
+
+    await audio.initializeAudio(lesson, 'de', 'pt', audioSettings.value)
+
+    // Simulate playback in progress (user clicked play, chain is running)
+    audio.isPlaying.value = true
+    audio.currentItemIndex.value = 1
+    const queueRef = audio.readingQueue.value
+
+    // Wire up the same deep watcher LessonDetail uses for `progress`
+    watch(
+      progress,
+      async () => {
+        if (audioSettings.value.hideLearnedExamples) {
+          await audio.initializeAudio(lesson, 'de', 'pt', audioSettings.value, { force: true })
+        }
+      },
+      { deep: true }
+    )
+
+    // Simulate a Gun sync tick that mutates progress deeply
+    // (exactly what useProgress.mergeProgress does when gun-sync fires)
+    progress.value['de:pt'] = { item1: Date.now() }
+
+    // Let Vue flush the watcher
+    await new Promise(r => setTimeout(r, 0))
+
+    // Playback state must survive the rebuild attempt
+    expect(audio.isPlaying.value).toBe(true)
+    expect(audio.currentItemIndex.value).toBe(1)
+    expect(audio.readingQueue.value).toBe(queueRef)
+    expect(audio.hasAudio.value).toBe(true)
+  })
+
+  it('a settings mutation during playback does NOT break the chain', async () => {
+    const { ref, watch } = await import('vue')
+
+    const audioSettings = ref({ ...settings })
+
+    await audio.initializeAudio(lesson, 'de', 'pt', audioSettings.value)
+    audio.isPlaying.value = true
+    audio.currentItemIndex.value = 0
+    const queueRef = audio.readingQueue.value
+
+    // Same pattern as LessonDetail's "settings changed" watcher
+    watch(
+      () => [audioSettings.value.hideLearnedExamples, audioSettings.value.readAnswers],
+      async () => {
+        await audio.initializeAudio(lesson, 'de', 'pt', audioSettings.value, { force: true })
+      },
+      { deep: true }
+    )
+
+    // Simulate a remote settings sync flipping readAnswers
+    audioSettings.value = { ...audioSettings.value, readAnswers: false }
+    await new Promise(r => setTimeout(r, 0))
+
+    expect(audio.isPlaying.value).toBe(true)
+    expect(audio.currentItemIndex.value).toBe(0)
+    expect(audio.readingQueue.value).toBe(queueRef)
+  })
+})
+
+describe('Gun sync pause during playback', () => {
+  let audio
+
+  beforeEach(() => {
+    audio = useAudio()
+    audio.cleanup()
+    gunSyncSpy.paused = false
+    gunSyncSpy.pauseCount = 0
+    gunSyncSpy.resumeCount = 0
+  })
+
+  const settings = { readAnswers: true, hideLearnedExamples: false, audioSpeed: 1.0 }
+  const lesson = {
+    title: 'Sync Test',
+    number: 1,
+    _filename: '01-sync',
+    sections: [{ title: 'S1', examples: [{ q: 'Q1', a: 'A1' }] }]
+  }
+
+  it('freezes remote Gun pulls when play() is called', async () => {
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+    audio.play(settings)
+    expect(gunSyncSpy.paused).toBe(true)
+    expect(gunSyncSpy.pauseCount).toBe(1)
+  })
+
+  it('releases the sync pause when playback is paused', async () => {
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+    audio.play(settings)
+    expect(gunSyncSpy.paused).toBe(true)
+
+    audio.pause()
+    expect(gunSyncSpy.paused).toBe(false)
+    expect(gunSyncSpy.resumeCount).toBe(1)
+  })
+
+  it('releases the sync pause when playback is stopped', async () => {
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+    audio.play(settings)
+
+    audio.stop()
+    expect(gunSyncSpy.paused).toBe(false)
+    expect(gunSyncSpy.resumeCount).toBeGreaterThanOrEqual(1)
   })
 })
 
