@@ -247,7 +247,13 @@ async function syncToGun(key, data) {
     syncStats.lastPushAt = Date.now()
     gun.user().get('openlearn').get(key).put(payload)
     writeSyncMarker()
-    window.dispatchEvent(new CustomEvent('gun-sync', { detail: { key, data, method: 'put' } }))
+    // NOTE: Intentionally no `gun-sync` event dispatch for local pushes.
+    // The source composable already mutated its own reactive state before
+    // calling syncToGun, so re-dispatching would just cause other composables
+    // to re-apply the same data via Object.assign — which re-triggers Vue's
+    // deep watchers (including the LessonDetail progress/settings watchers
+    // that used to break the audio chain mid-playback). The `gun-sync` event
+    // bus is reserved for REMOTE data arriving via pullFromRemote / setupSyncListener.
   } catch (e) {
     console.error('Gun sync error:', e)
   }

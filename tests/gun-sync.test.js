@@ -366,19 +366,25 @@ describe('Gun Sync', () => {
   })
 
   describe('gun-sync events', () => {
-    it('dispatches put event on syncToGun', async () => {
+    it('does NOT dispatch gun-sync on local syncToGun pushes', async () => {
+      // Regression: local pushes used to dispatch a gun-sync event, which
+      // re-notified useSettings/useProgress/useAssessments listeners with
+      // the same data they had just written. That Object.assign re-triggered
+      // Vue deep watchers (e.g. the LessonDetail progress watcher) and
+      // caused the audio chain to be rebuilt mid-playback. The event bus
+      // is now reserved for REMOTE data only.
       const gun = await loginAndGetGun()
       const events = []
       const handler = (e) => events.push(e.detail)
       window.addEventListener('gun-sync', handler)
 
       await gun.syncToGun('settings', { darkMode: true })
+      await new Promise(r => setTimeout(r, 10))
 
       window.removeEventListener('gun-sync', handler)
 
-      const putEvents = events.filter(e => e.method === 'put' && e.key === 'settings')
-      expect(putEvents).toHaveLength(1)
-      expect(putEvents[0].data).toEqual({ darkMode: true })
+      const settingsEvents = events.filter(e => e.key === 'settings')
+      expect(settingsEvents).toHaveLength(0)
     })
 
     it('dispatches once events on pull', async () => {

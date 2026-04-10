@@ -157,7 +157,7 @@
               </div>
             </template>
 
-            <template v-else-if="example.type === 'input'">
+            <template v-else-if="example.type === 'input' && !isInFocusMode">
               <div class="mt-2" @click.stop>
                 <Input
                   type="text"
@@ -173,7 +173,7 @@
               </div>
             </template>
 
-            <template v-else-if="example.type === 'multiple-choice'">
+            <template v-else-if="example.type === 'multiple-choice' && !isInFocusMode">
               <div class="mt-2 space-y-2" @click.stop>
                 <label
                   v-for="(option, optIdx) in example.options"
@@ -194,7 +194,7 @@
               </div>
             </template>
 
-            <template v-else-if="example.type === 'select'">
+            <template v-else-if="example.type === 'select' && !isInFocusMode">
               <div class="mt-2 space-y-2" @click.stop>
                 <RadioGroup
                   :model-value="getDraftSelect(example) !== null ? String(getDraftSelect(example)) : undefined"
@@ -225,7 +225,8 @@
                 variant="outline"
                 @click.stop="handleItemClick(item[0])"
                 :class="[
-                  'cursor-pointer transition-all duration-200 text-xs',
+                  'transition-all duration-200 text-xs',
+                  isInFocusMode ? 'cursor-default pointer-events-none opacity-60' : 'cursor-pointer',
                   isItemLearned(learning, workshop, item[0])
                     ? 'bg-green-100 dark:bg-green-800/40 border-green-400 dark:border-green-500/40 opacity-70'
                     : 'bg-sky-50 dark:bg-sky-900/20 border-sky-200 dark:border-sky-500/30 hover:bg-sky-100 dark:hover:bg-sky-800/30 hover:shadow-sm'
@@ -246,7 +247,8 @@
                 :key="label"
                 @click.stop="toggleLabel(label)"
                 :class="[
-                  'cursor-pointer transition-all text-[10px] font-semibold px-2.5 py-0.5 rounded-full',
+                  'transition-all text-[10px] font-semibold px-2.5 py-0.5 rounded-full',
+                  isInFocusMode ? 'cursor-default pointer-events-none opacity-60' : 'cursor-pointer',
                   activeLabel === label
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/20 dark:hover:bg-primary/30'
@@ -343,7 +345,8 @@ const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress, setLastV
 // through useLessonAudioSync so the logic is testable without mounting.
 const { jumpToExample } = useAudio()
 const {
-  isLoadingAudio, isPlaying, isPaused, playbackFinished, hasAudio, currentItem,
+  isLoadingAudio, isPlaying, isPaused, isInFocusMode,
+  playbackFinished, hasAudio, currentItem,
   lessonMetadata: audioLessonMetadata,
   isTransitioning, continuousMode, lessonTransitionTick,
   play, pause,
@@ -533,6 +536,8 @@ function getSubmission(example) {
 }
 
 function submitAnswer(example) {
+  // Focus mode: no assessment submissions while playing.
+  if (isInFocusMode.value) return
   const type = example.type || 'qa'
   let userAnswer
 
@@ -628,15 +633,22 @@ function scrollToSection(idx) {
 }
 
 function toggleLabel(label) {
+  // Focus mode: no label changes while playing (would rebuild the audio queue).
+  if (isInFocusMode.value) return
   activeLabel.value = activeLabel.value === label ? null : label
 }
 
 function handleItemClick(itemId) {
+  // Focus mode: no progress mutations while playing.
+  if (isInFocusMode.value) return
   toggleItemLearned(learning.value, workshop.value, itemId)
 }
 
 function handleQuestionClick(example) {
   if (isAssessmentType(example)) return
+  // Focus mode: no answer reveals while playing (purely visual, but keeps
+  // the "locked-down read-only lesson" contract clean).
+  if (isInFocusMode.value) return
   if (!settings.value.showAnswers && (!example.type || example.type === 'qa')) {
     const key = draftKey(example)
     revealedAnswers[key] = !revealedAnswers[key]
@@ -645,6 +657,9 @@ function handleQuestionClick(example) {
 
 function handleExampleClick(example) {
   if (isAssessmentType(example)) return
+  // Focus mode: no jump-to-example clicks (would restart the chain from
+  // a different position and drop the currently playing clip).
+  if (isInFocusMode.value) return
   jumpToExample(example._originalSectionIdx, example._originalExampleIdx, audioSettings.value)
 }
 
