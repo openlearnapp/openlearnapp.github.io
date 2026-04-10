@@ -30,7 +30,7 @@ import { useAudio } from './useAudio'
 
 export function useLessonAudioSync() {
   const {
-    isLoadingAudio, isPlaying, isPaused, playbackFinished, hasAudio,
+    isLoadingAudio, isPlaying, isPaused, isInFocusMode, playbackFinished, hasAudio,
     currentItem, lessonMetadata, isTransitioning, continuousMode,
     lessonTransitionTick,
     initializeAudio, play, pause, cleanup,
@@ -40,23 +40,27 @@ export function useLessonAudioSync() {
   /**
    * Called from the settings-changed deep watcher. Rebuilds the audio queue
    * to reflect new `readAnswers` / `hideLearnedExamples` / active label
-   * settings, but only when playback is NOT active. The composable's own
-   * defensive guard would also skip the rebuild, but making the intent
-   * explicit here keeps the view-layer contract obvious.
+   * settings, but only when playback is NOT active. Early-returns during
+   * focus mode (active playback) so the chain cannot be interrupted.
    */
   async function onSettingsChanged({ lesson, learning, workshop, audioSettings }) {
     if (!lesson) return false
+    // Never touch the audio composable while the chain is running.
+    // The view layer disables the mutating controls anyway, but this is a
+    // belt-and-braces check in case something else fires the watcher.
+    if (isInFocusMode.value) return false
     await initializeAudio(lesson, learning, workshop, audioSettings, { force: true })
     return true
   }
 
   /**
    * Called from the progress deep watcher. Same contract as onSettingsChanged,
-   * but gated on hideLearnedExamples — there is no reason to rebuild when
-   * learned items are visible anyway.
+   * but additionally gated on hideLearnedExamples — there is no reason to
+   * rebuild when learned items are visible anyway.
    */
   async function onProgressChanged({ lesson, learning, workshop, audioSettings }) {
     if (!lesson) return false
+    if (isInFocusMode.value) return false
     if (!audioSettings || !audioSettings.hideLearnedExamples) return false
     await initializeAudio(lesson, learning, workshop, audioSettings, { force: true })
     return true
@@ -136,6 +140,7 @@ export function useLessonAudioSync() {
     isLoadingAudio,
     isPlaying,
     isPaused,
+    isInFocusMode,
     playbackFinished,
     hasAudio,
     currentItem,

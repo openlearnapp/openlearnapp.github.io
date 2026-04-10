@@ -81,6 +81,13 @@ function buildReadingQueue(lesson, learning, workshop, settings) {
   lesson.sections.forEach((section, sectionIdx) => {
     // Filter examples based on active label and hideLearnedExamples setting
     const visibleExamples = section.examples.filter((example) => {
+      // Playing mode is for listening & repeating — skip assessment items
+      // (input / multiple-choice / select) entirely. The user can come back
+      // to the lesson in read mode to answer them.
+      if (example.type && example.type !== 'qa') {
+        return false
+      }
+
       // Filter by active label
       if (settings.activeLabel) {
         if (!example.labels || !example.labels.includes(settings.activeLabel)) {
@@ -229,6 +236,12 @@ function setupMediaSession(title, learning, workshop, settingsRef) {
 // transitions and Media Session handlers always have fresh settings.
 const latestAudioSettingsRef = ref({ readAnswers: true, audioSpeed: 1.0 })
 
+// Single-flight lock for initializeAudio. Prevents concurrent calls from
+// clobbering each other's state. If a second call arrives while the first
+// is still in-flight, it waits for the first to finish and then decides
+// whether it still needs to run.
+let _initInFlight = null
+
 // Initialize audio queue for a lesson.
 // Idempotent by default: if the composable is already playing this exact lesson
 // (e.g. during a continuous-mode transition), it returns immediately. Pass
@@ -239,69 +252,89 @@ const latestAudioSettingsRef = ref({ readAnswers: true, audioSpeed: 1.0 })
 // playing `<audio>` element (via audio.pause() + audio.src=''), which silently
 // breaks the `onended` → `playNextItem` chain. So even a force-rebuild is
 // skipped while the same lesson is actively playing — the new settings take
-// effect the next time the user pauses and resumes. This fixes the bug where a
-// GunDB sync tick, a remote settings update, or an item being marked learned
-// during playback caused the audio chain to stop after the currently playing
-// clip.
+// effect the next time the user pauses and resumes.
 async function initializeAudio(lesson, learning, workshop, settings, { force = false } = {}) {
-  latestAudioSettingsRef.value = settings
-
-  const meta = lessonMetadata.value
-  const isSameLesson =
-    meta.learning === learning &&
-    meta.workshop === workshop &&
-    meta.number === lesson.number
-
-  // During a continuous-mode transition, the composable has already loaded
-  // the new lesson in-place. Skip re-initialization so we don't destroy
-  // the active audio element and iOS media session.
-  if (isSameLesson && hasAudio.value && !isLoadingAudio.value && !force) {
-    return
+  // Serialize concurrent calls. If another init is already in-flight, wait
+  // for it, then re-evaluate whether we still need to run.
+  if (_initInFlight) {
+    try { await _initInFlight } catch {}
   }
 
-  // Defensive: never tear down the queue of an actively playing lesson.
-  // The caller can re-trigger a rebuild after the user pauses.
-  if (isSameLesson && force && (isPlaying.value || isPaused.value)) {
-    console.log(`🎧 Skipping force rebuild of "${lesson.title}" — playback is active`)
-    return
-  }
+  _initInFlight = (async () => {
+    latestAudioSettingsRef.value = settings
 
-  lessonTitle.value = lesson.title
-  lessonMetadata.value = { learning, workshop, number: lesson.number }
+    const meta = lessonMetadata.value
+    const isSameLesson =
+      meta.learning === learning &&
+      meta.workshop === workshop &&
+      meta.number === lesson.number
 
-  playbackFinished.value = false
-  isLoadingAudio.value = true
-  readingQueue.value = buildReadingQueue(lesson, learning, workshop, settings)
+    // During a continuous-mode transition, the composable has already loaded
+    // the new lesson in-place. Skip re-initialization so we don't destroy
+    // the active audio element and iOS media session.
+    if (isSameLesson && hasAudio.value && !isLoadingAudio.value && !force) {
+      return
+    }
 
-  // Fetch manifest to know which audio files exist (if missing, load all)
-  const audioBase = getAudioBase(lesson, learning, workshop)
-  const manifest = await fetchAudioManifest(audioBase)
+    // Defensive: never tear down the queue of an actively playing lesson.
+    // The caller can re-trigger a rebuild after the user pauses.
+    if (isSameLesson && force && (isPlaying.value || isPaused.value)) {
+      console.log(`🎧 Skipping force rebuild of "${lesson.title}" — playback is active`)
+      return
+    }
 
-  // Release old audio elements (if any) before creating new ones
-  releaseAudioElements(audioElements.value)
+    lessonTitle.value = lesson.title
+    lessonMetadata.value = { learning, workshop, number: lesson.number }
 
-  // Pre-load audio files (filtered by manifest if available) — fire-and-forget
-  audioElements.value = preloadAudioFiles(readingQueue.value, manifest)
+    playbackFinished.value = false
+    isLoadingAudio.value = true
+    readingQueue.value = buildReadingQueue(lesson, learning, workshop, settings)
 
-  hasAudio.value = Object.keys(audioElements.value).length > 0
-  console.log(`🔊 Audio: ${Object.keys(audioElements.value).length} files ready for "${lesson.title}"`)
+    // Fetch manifest to know which audio files exist (if missing, load all)
+    const audioBase = getAudioBase(lesson, learning, workshop)
+    const manifest = await fetchAudioManifest(audioBase)
 
-  isLoadingAudio.value = false
-  currentItemIndex.value = -1
-  isPlaying.value = false
-  isPaused.value = false
-  currentAudio.value = null
+    // Post-await guard: if playback started during our await (e.g. the caller
+    // fired play() as soon as we yielded), do NOT clobber the running state.
+    // The queue will be rebuilt on the next pause/resume or explicit call.
+    if (isPlaying.value || isPaused.value) {
+      console.log(`🎧 Playback started during init — aborting rebuild of "${lesson.title}"`)
+      isLoadingAudio.value = false
+      return
+    }
 
-  // Drop any preloaded next-lesson from a previous workshop/session
-  preloadedNextLesson.value = null
+    // Release old audio elements (if any) before creating new ones
+    releaseAudioElements(audioElements.value)
 
-  // Setup Media Session API
-  setupMediaSession(lesson.title, learning, workshop, latestAudioSettingsRef)
+    // Pre-load audio files (filtered by manifest if available) — fire-and-forget
+    audioElements.value = preloadAudioFiles(readingQueue.value, manifest)
 
-  // If continuous mode is on, start preloading the next lesson's audio now
-  // so the transition at the end is instant.
-  if (continuousMode.value && nextLessonProvider.value) {
-    setTimeout(() => preloadNextLesson(), 0)
+    hasAudio.value = Object.keys(audioElements.value).length > 0
+    console.log(`🔊 Audio: ${Object.keys(audioElements.value).length} files ready for "${lesson.title}"`)
+
+    isLoadingAudio.value = false
+    currentItemIndex.value = -1
+    isPlaying.value = false
+    isPaused.value = false
+    currentAudio.value = null
+
+    // Drop any preloaded next-lesson from a previous workshop/session
+    preloadedNextLesson.value = null
+
+    // Setup Media Session API
+    setupMediaSession(lesson.title, learning, workshop, latestAudioSettingsRef)
+
+    // If continuous mode is on, start preloading the next lesson's audio now
+    // so the transition at the end is instant.
+    if (continuousMode.value && nextLessonProvider.value) {
+      setTimeout(() => preloadNextLesson(), 0)
+    }
+  })()
+
+  try {
+    await _initInFlight
+  } finally {
+    _initInFlight = null
   }
 }
 
@@ -319,9 +352,13 @@ function releaseAudioElements(map, except = null) {
 
 // Attach the standard onended / onerror handlers to an audio element.
 // Extracted so playNextItem and playCurrentItem can share the same logic.
-function attachPlaybackHandlers(audio, item, settings) {
+// Reads settings freshly from `latestAudioSettingsRef` on every callback
+// invocation so mid-playback setting changes take effect on the next clip.
+function attachPlaybackHandlers(audio, item) {
   audio.onended = () => {
     if (!isPlaying.value) return
+    const currentSettings = latestAudioSettingsRef.value || { readAnswers: true, audioSpeed: 1.0 }
+
     // Determine pause duration based on item type
     let pauseDuration = 0
 
@@ -331,7 +368,7 @@ function attachPlaybackHandlers(audio, item, settings) {
       pauseDuration = 1000
     } else {
       const isEndOfExample = item.type === 'answer' ||
-        (item.type === 'question' && !settings.readAnswers)
+        (item.type === 'question' && !currentSettings.readAnswers)
 
       if (isEndOfExample) {
         const nextItem = readingQueue.value[currentItemIndex.value + 1]
@@ -342,16 +379,16 @@ function attachPlaybackHandlers(audio, item, settings) {
 
     if (pauseDuration > 0) {
       setTimeout(() => {
-        if (isPlaying.value) playNextItem(settings)
+        if (isPlaying.value) playNextItem(latestAudioSettingsRef.value || currentSettings)
       }, pauseDuration)
     } else {
-      playNextItem(settings)
+      playNextItem(latestAudioSettingsRef.value || currentSettings)
     }
   }
 
-  audio.onerror = (e) => {
+  audio.onerror = () => {
     console.warn('⚠️ Audio error, retrying:', item.audioUrl)
-    retryPlay(item, settings)
+    retryPlay(item, latestAudioSettingsRef.value || { readAnswers: true, audioSpeed: 1.0 })
   }
 }
 
@@ -410,7 +447,7 @@ async function playNextItem(settings) {
       audio.playbackRate = settings.audioSpeed || 1.0
     }
 
-    attachPlaybackHandlers(audio, item, settings)
+    attachPlaybackHandlers(audio, item)
 
     // Play
     await audio.play()
@@ -483,7 +520,7 @@ async function playCurrentItem(settings) {
       audio.playbackRate = settings.audioSpeed || 1.0
     }
 
-    attachPlaybackHandlers(audio, item, settings)
+    attachPlaybackHandlers(audio, item)
 
     // Play from current position (resume)
     await audio.play()
@@ -502,9 +539,12 @@ function play(settings) {
 
   latestAudioSettingsRef.value = settings
 
-  // Guard: if already playing, don't restart (avoids lock-screen "play" handler
-  // from re-starting in the middle of an item).
-  if (isPlaying.value && currentAudio.value && !currentAudio.value.paused) {
+  // Guard: if the chain is already running (isPlaying=true and not paused),
+  // don't re-enter. We check isPlaying+isPaused instead of currentAudio.paused
+  // because the native `audio.paused` flag flips to true between clips (after
+  // onended fires), and that false-negative used to let re-entrant play()
+  // calls double-advance the queue.
+  if (isPlaying.value && !isPaused.value) {
     return
   }
 
@@ -788,6 +828,14 @@ const currentItem = computed(() => {
   return null
 })
 
+// Focus mode: true whenever the audio chain is actively playing (not paused,
+// not stopped). The UI uses this to disable all state-mutating interactions
+// while a lesson is being played — learn toggles, assessment inputs, settings
+// switches, label clicks, etc. This collapses the test matrix: instead of
+// guarding every individual mutation path against "is the audio chain
+// running?", the view layer hides or disables those controls entirely.
+const isInFocusMode = computed(() => isPlaying.value && !isPaused.value)
+
 // Cleanup
 function cleanup() {
   // During a continuous-mode transition, skip teardown so the new lesson can
@@ -819,6 +867,7 @@ export function useAudio() {
     isLoadingAudio,
     isPlaying,
     isPaused,
+    isInFocusMode,
     playbackFinished,
     hasAudio,
     currentItem,
