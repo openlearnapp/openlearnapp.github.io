@@ -43,6 +43,31 @@ The lock screen displays the lesson title, workshop name, and artwork.
 
 When playback reaches the end of a lesson, the system can automatically advance to the next lesson in the workshop, enabling continuous listening across multiple lessons.
 
+## Play Button Behaviour
+
+The play/pause button cycles through two modes depending on how the learner interacts with it:
+
+- **Single click** — start, pause, and resume playback of the _current lesson only_. When the lesson ends, playback stops at the end of the queue.
+- **Double click** — start **continuous play** across the entire workshop. Playback auto-advances from one lesson to the next without interruption. A second double click turns continuous play off again while keeping playback running for the current lesson.
+
+When continuous play is active, the play button shows a small repeat badge so the learner can tell the two modes apart at a glance. The keyboard spacebar always toggles play/pause without changing the continuous-play setting.
+
+## Continuous Play Across Lessons (Lock Screen Friendly)
+
+Continuous play is designed to work seamlessly on a locked mobile device:
+
+- The audio context is kept alive across lesson boundaries. When lesson N finishes, the system immediately starts lesson N+1 without tearing down and recreating the audio element, so iOS keeps the Media Session open and the lock-screen controls stay active.
+- While lesson N plays, the next lesson's audio is preloaded in the background. By the time the current lesson ends, lesson N+1 is ready to start instantly.
+- Continuous play works regardless of whether the workshop is downloaded for offline use. When the workshop is offline, the next lesson's audio is served instantly from the local cache. When online, the preloaded audio avoids a perceptible gap at the transition.
+- The lock-screen metadata (title, artwork) updates automatically when the system advances to the next lesson.
+- If the learner manually pauses during continuous play, the mode stays active — resuming continues to auto-advance. Continuous play turns off automatically when the last lesson in the workshop ends or when the learner leaves the workshop.
+
+## Instant Audio Load for Cached Workshops
+
+Audio files are not blocked on a "fully buffered" check before playback can start. The system kicks off loading for every audio file in a lesson and then considers the lesson ready. When the workshop has been downloaded for offline use, all files are served from the local cache and the first play starts immediately with no loading delay. When the workshop is only available online, the browser buffers the first item naturally on `play()`, just as for any other `<audio>` element.
+
+The loading spinner on the play button now only appears for the brief moment it takes to build the queue and fetch the audio manifest — not for the whole per-file buffering.
+
 ## Label-Based Filtering
 
 When a label filter is active (e.g. showing only "Future Tense" examples), the audio queue automatically adjusts to play only the filtered examples. This lets learners do focused listening practice on a specific grammar concept or topic.

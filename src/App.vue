@@ -88,18 +88,26 @@
         <!-- Right side buttons (fixed width container) -->
         <div class="flex items-center gap-2 min-w-fit">
           <!-- Play/Pause button (desktop only — mobile has floating button in LessonDetail) -->
+          <!-- Single click: toggle play/pause. Double click: continuous play. -->
           <Button
             v-if="isLessonPage"
             variant="ghost"
             size="icon"
-            @click="togglePlayPause"
+            @click="handleAppPlayClick"
+            @dblclick.prevent="handleAppPlayDoubleClick"
             :disabled="isLoadingAudio"
-            class="hidden md:flex bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0"
-            :title="isLoadingAudio ? $t('nav.loading') : (isPlaying ? $t('nav.pause') : $t('nav.play'))"
-            :aria-label="isLoadingAudio ? $t('nav.loadingAudio') : (isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio'))">
+            :class="[
+              'hidden md:flex bg-white/20 border-2 text-white hover:bg-white/30 hover:text-white rounded-full w-10 h-10 flex-shrink-0 relative',
+              continuousMode ? 'border-yellow-300 ring-2 ring-yellow-300/70' : 'border-white/50'
+            ]"
+            :title="appPlayButtonTitle"
+            :aria-label="appPlayButtonAriaLabel">
             <Icon v-if="isLoadingAudio" name="loading" />
             <Icon v-else-if="isPlaying" name="pause" />
             <Icon v-else name="play" />
+            <span v-if="continuousMode && !isLoadingAudio" class="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-yellow-300 text-primary flex items-center justify-center" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+            </span>
           </Button>
 
           <!-- Story mode button (visible on lesson/overview pages) -->
@@ -268,7 +276,7 @@ import Icon from '@/components/Icon.vue'
 
 const router = useRouter()
 const route = useRoute()
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 const pageTitle = ref('🎓 Open Learn')
 const showLanguageMenu = ref(false)
@@ -276,7 +284,10 @@ const showBurgerMenu = ref(false)
 const appVersion = __APP_VERSION__
 const lastPR = __APP_LAST_PR__
 
-const { isLoadingAudio, isPlaying, play, pause, resume } = useAudio()
+const {
+  isLoadingAudio, isPlaying, play, pause, resume,
+  continuousMode, enableContinuousMode, disableContinuousMode,
+} = useAudio()
 const { settings } = useSettings()
 const { availableContent, getWorkshopMeta, workshopMeta, loadAvailableContent, loadWorkshopsForLanguage } = useLessons()
 const { selectedLanguage, getFlag, setLanguage } = useLanguage()
@@ -636,6 +647,48 @@ function togglePlayPause() {
     play(settings.value)
   }
 }
+
+// Single vs. double click for the desktop play button. The actual next-lesson
+// resolver is provided by LessonDetail (which knows the lesson list) via the
+// same enableContinuousMode path; here we just toggle continuous mode on/off.
+// If there is no active provider (e.g. lessons not loaded yet), the first
+// double-click is a no-op — LessonDetail re-registers the provider on mount.
+const APP_PLAY_DOUBLE_CLICK_DELAY = 260
+let appPlayClickTimer = null
+
+function handleAppPlayClick() {
+  if (appPlayClickTimer) return
+  appPlayClickTimer = setTimeout(() => {
+    appPlayClickTimer = null
+    togglePlayPause()
+  }, APP_PLAY_DOUBLE_CLICK_DELAY)
+}
+
+function handleAppPlayDoubleClick() {
+  if (appPlayClickTimer) {
+    clearTimeout(appPlayClickTimer)
+    appPlayClickTimer = null
+  }
+  if (continuousMode.value) {
+    disableContinuousMode()
+  } else {
+    // Signal LessonDetail to turn on continuous mode (it owns the lesson list
+    // and therefore the next-lesson provider). Dispatch a custom event.
+    window.dispatchEvent(new CustomEvent('open-learn:start-continuous-play'))
+  }
+}
+
+const appPlayButtonTitle = computed(() => {
+  if (isLoadingAudio.value) return t('nav.loading')
+  if (continuousMode.value) return t('nav.continuousPlayActive')
+  return isPlaying.value ? t('nav.pause') : t('nav.play')
+})
+
+const appPlayButtonAriaLabel = computed(() => {
+  if (isLoadingAudio.value) return t('nav.loadingAudio')
+  if (continuousMode.value) return t('nav.continuousPlayActive')
+  return isPlaying.value ? t('nav.pauseAudio') : t('nav.playAudio')
+})
 
 function updatePageTitle(title) {
   pageTitle.value = title

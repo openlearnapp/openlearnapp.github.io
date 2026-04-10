@@ -8,6 +8,7 @@
     "pauseAudio": "Audio pausieren",
     "playAudio": "Audio abspielen",
     "loadingAudio": "Audio wird geladen...",
+    "continuousPlayActive": "Endlos-Wiedergabe (Doppelklick zum Stoppen)",
     "assessmentResults": "Ergebnisse",
     "coach": "Coach",
     "learningItems": "Lernelemente",

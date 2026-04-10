@@ -17,25 +17,40 @@ vi.mock('../src/composables/useProgress', () => ({
 
 // Mock Audio constructor to resolve immediately
 class MockAudio {
-  constructor() {
+  constructor(src) {
     this.preload = ''
-    this.src = ''
+    this.src = src || ''
     this.currentTime = 0
     this.playbackRate = 1
+    this.paused = true
     this._handlers = {}
+    this.onended = null
+    this.onerror = null
   }
   addEventListener(event, handler, opts) {
     this._handlers[event] = handler
-    // Auto-fire canplaythrough
+    // Auto-fire canplaythrough (legacy code path)
     if (event === 'canplaythrough') {
       setTimeout(() => handler(), 0)
     }
   }
   load() {}
-  play() { return Promise.resolve() }
-  pause() {}
+  play() {
+    this.paused = false
+    return Promise.resolve()
+  }
+  pause() { this.paused = true }
+  // Helper for tests: pretend the clip ended
+  _fireEnded() {
+    this.paused = true
+    if (this.onended) this.onended()
+  }
 }
 globalThis.Audio = MockAudio
+// Stub global fetch for manifest requests (always "not found")
+if (!globalThis.fetch) {
+  globalThis.fetch = () => Promise.resolve({ ok: false, text: () => Promise.resolve('') })
+}
 
 const { useAudio } = await import('../src/composables/useAudio')
 
@@ -262,5 +277,138 @@ describe('initializeAudio and queue building', () => {
     const queue = audio.readingQueue.value
     const answerItems = queue.filter(item => item.type === 'answer')
     expect(answerItems.length).toBe(0)
+  })
+
+  it('is idempotent for the same lesson (continuous-mode transition)', async () => {
+    const lesson = {
+      title: 'Test',
+      number: 1,
+      _filename: '01-test',
+      sections: [{ title: 'S1', examples: [{ q: 'Q1', a: 'A1' }] }]
+    }
+
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+    const firstQueue = audio.readingQueue.value
+    const firstLength = firstQueue.length
+
+    // Calling again for the same lesson must not rebuild the queue
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+    expect(audio.readingQueue.value).toBe(firstQueue)
+    expect(audio.readingQueue.value.length).toBe(firstLength)
+  })
+
+  it('loads audio elements without blocking on canplaythrough', async () => {
+    const lesson = {
+      title: 'Test',
+      number: 1,
+      _filename: '01-test',
+      sections: [{ title: 'S1', examples: [{ q: 'Q1', a: 'A1' }] }]
+    }
+
+    // This should return quickly even without firing canplaythrough
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+
+    expect(audio.hasAudio.value).toBe(true)
+    expect(audio.isLoadingAudio.value).toBe(false)
+  })
+})
+
+describe('continuous play mode', () => {
+  let audio
+
+  beforeEach(() => {
+    audio = useAudio()
+    audio.cleanup()
+    audio.disableContinuousMode()
+  })
+
+  const settings = { readAnswers: true, hideLearnedExamples: false, audioSpeed: 1.0 }
+
+  const lesson1 = {
+    title: 'Lesson 1',
+    number: 1,
+    _filename: '01-one',
+    sections: [{ title: 'S1', examples: [{ q: 'Q1', a: 'A1' }] }]
+  }
+  const lesson2 = {
+    title: 'Lesson 2',
+    number: 2,
+    _filename: '02-two',
+    sections: [{ title: 'S1', examples: [{ q: 'Q2', a: 'A2' }] }]
+  }
+
+  it('starts disabled by default', () => {
+    expect(audio.continuousMode.value).toBe(false)
+  })
+
+  it('enableContinuousMode sets the flag and registers a provider', () => {
+    const provider = async () => ({ lesson: lesson2, learning: 'de', workshop: 'pt' })
+    audio.enableContinuousMode(provider)
+    expect(audio.continuousMode.value).toBe(true)
+  })
+
+  it('disableContinuousMode clears the flag', () => {
+    audio.enableContinuousMode(async () => null)
+    expect(audio.continuousMode.value).toBe(true)
+    audio.disableContinuousMode()
+    expect(audio.continuousMode.value).toBe(false)
+  })
+
+  it('transitions to the next lesson in-place at end of current queue', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    const tickBefore = audio.lessonTransitionTick.value
+
+    audio.enableContinuousMode(async () => ({ lesson: lesson2, learning: 'de', workshop: 'pt' }))
+
+    // Jump to end of current queue so the next playNextItem triggers the transition
+    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
+    audio.isPlaying.value = true
+
+    // Simulate end-of-lesson: fire the current audio's ended handler indirectly
+    // by calling skipToNext which forwards to playNextItem at end-of-queue.
+    audio.skipToNext(settings)
+
+    // Wait for the async transition to run
+    await new Promise(r => setTimeout(r, 20))
+
+    // After transition, metadata must point to lesson 2
+    expect(audio.lessonMetadata.value.number).toBe(2)
+    // And the view layer tick must have bumped so the URL can update
+    expect(audio.lessonTransitionTick.value).toBe(tickBefore + 1)
+    // The new queue is built for lesson 2
+    expect(audio.readingQueue.value.some(i => i.text === 'Q2')).toBe(true)
+  })
+
+  it('stops cleanly when the next-lesson provider returns null', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+
+    audio.enableContinuousMode(async () => null)
+
+    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
+    audio.isPlaying.value = true
+    audio.skipToNext(settings)
+
+    await new Promise(r => setTimeout(r, 20))
+
+    // End of workshop — playback stops
+    expect(audio.isPlaying.value).toBe(false)
+    expect(audio.playbackFinished.value).toBe(true)
+  })
+
+  it('cleanup is skipped during a transition', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.enableContinuousMode(async () => ({ lesson: lesson2, learning: 'de', workshop: 'pt' }))
+
+    // Force transitioning state to true to simulate mid-transition
+    audio.isTransitioning.value = true
+    audio.cleanup()
+
+    // Queue must NOT be cleared while transitioning
+    expect(audio.readingQueue.value.length).toBeGreaterThan(0)
+
+    // Reset the transition flag and cleanup should now work
+    audio.isTransitioning.value = false
+    audio.cleanup()
+    expect(audio.readingQueue.value.length).toBe(0)
   })
 })
