@@ -194,6 +194,11 @@
   "lesson": {
     "typeAnswer": "Type your answer...",
     "nextLesson": "Next Lesson",
+    "takeTest": "Take the test",
+    "openTests": "Open tests",
+    "testAllLabel": "Test",
+    "testOpenLabel": "Open tests",
+    "clearFilter": "Clear filter",
     "allLessons": "All Lessons",
     "loadingLesson": "Loading lesson...",
     "sections": "sections",
