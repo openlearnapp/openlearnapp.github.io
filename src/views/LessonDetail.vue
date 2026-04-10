@@ -318,6 +318,7 @@ import { useLessons } from '../composables/useLessons'
 import { useSettings } from '../composables/useSettings'
 import { useProgress } from '../composables/useProgress'
 import { useAudio } from '../composables/useAudio'
+import { useLessonAudioSync } from '../composables/useLessonAudioSync'
 import { useAssessments } from '../composables/useAssessments'
 import { useFooter } from '../composables/useFooter'
 import { marked } from 'marked'
@@ -338,13 +339,18 @@ const emit = defineEmits(['update-title'])
 const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
 const { settings } = useSettings()
 const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress, setLastVisited } = useProgress()
+// jumpToExample still comes from useAudio directly; everything else flows
+// through useLessonAudioSync so the logic is testable without mounting.
+const { jumpToExample } = useAudio()
 const {
   isLoadingAudio, isPlaying, isPaused, playbackFinished, hasAudio, currentItem,
   lessonMetadata: audioLessonMetadata,
-  initializeAudio, jumpToExample, cleanup, play, pause,
-  continuousMode, enableContinuousMode, disableContinuousMode, isTransitioning,
-  lessonTransitionTick,
-} = useAudio()
+  isTransitioning, continuousMode, lessonTransitionTick,
+  play, pause,
+  enableContinuousMode, disableContinuousMode,
+  onSettingsChanged, onProgressChanged, onLessonMount, onLessonUnmount,
+  toggleContinuousPlay,
+} = useLessonAudioSync()
 const { getAnswer, saveAnswer, validateAnswer } = useAssessments()
 const { setLessonFooter, clearLessonFooter } = useFooter()
 
@@ -355,6 +361,12 @@ const mcLive = reactive({})
 const lightbox = reactive({ open: false, src: '', caption: '' })
 const revealedAnswers = reactive({})
 const activeLabel = ref(route.query.label || null)
+
+// Captured at mount time so onBeforeUnmount has stable values even after
+// Vue has already begun tearing down route-param-based computed refs.
+let mountedLearning = null
+let mountedWorkshop = null
+let mountedLessonNumber = null
 
 const audioSettings = computed(() => ({
   ...settings.value,
@@ -668,19 +680,14 @@ function handlePlayButtonDoubleClick() {
     clearTimeout(playClickTimer)
     playClickTimer = null
   }
-  if (continuousMode.value) {
-    // Already continuous — second double click turns it off but keeps playing
-    disableContinuousMode()
-    return
-  }
   startContinuousPlay()
 }
 
 function startContinuousPlay() {
-  enableContinuousMode(resolveNextLessonForAudio)
-  if (!isPlaying.value) {
-    play(audioSettings.value)
-  }
+  toggleContinuousPlay({
+    nextLessonProvider: resolveNextLessonForAudio,
+    audioSettings: audioSettings.value,
+  })
 }
 
 // Provider used by the audio composable to fetch the next lesson when the
@@ -788,25 +795,27 @@ watch(nextLessonNumber, (val) => {
   }
 })
 
+// Delegate to useLessonAudioSync so the decision ("should I rebuild?") is
+// a pure, unit-testable function instead of inline watcher logic.
 watch(
   () => [settings.value.hideLearnedExamples, settings.value.readAnswers, activeLabel.value],
-  async () => {
-    if (lesson.value) {
-      // Force rebuild because these settings change the queue contents
-      await initializeAudio(lesson.value, learning.value, workshop.value, audioSettings.value, { force: true })
-    }
-  },
+  () => onSettingsChanged({
+    lesson: lesson.value,
+    learning: learning.value,
+    workshop: workshop.value,
+    audioSettings: audioSettings.value,
+  }),
   { deep: true }
 )
 
 watch(
   progress,
-  async () => {
-    if (lesson.value && settings.value.hideLearnedExamples) {
-      // Force rebuild: hiding learned items may remove entries from the queue
-      await initializeAudio(lesson.value, learning.value, workshop.value, audioSettings.value, { force: true })
-    }
-  },
+  () => onProgressChanged({
+    lesson: lesson.value,
+    learning: learning.value,
+    workshop: workshop.value,
+    audioSettings: audioSettings.value,
+  }),
   { deep: true }
 )
 
@@ -832,6 +841,13 @@ onMounted(async () => {
   const currentWorkshop = route.params.workshop
   const currentLessonNumber = parseInt(route.params.number)
 
+  // Capture stable values for onBeforeUnmount. Route-param-based computed
+  // refs can become stale/undefined during unmount, so we remember what
+  // this instance was tracking.
+  mountedLearning = currentLearning
+  mountedWorkshop = currentWorkshop
+  mountedLessonNumber = currentLessonNumber
+
   const lessons = await loadAllLessonsForWorkshop(currentLearning, currentWorkshop)
   allLessons.value = lessons
 
@@ -846,20 +862,17 @@ onMounted(async () => {
     // Set footer navigation data
     setLessonFooter(currentLearning, currentWorkshop, nextLessonNumber.value)
 
-    // initializeAudio is idempotent: if the composable is already showing this
-    // lesson (continuous-mode transition), this is a no-op and playback continues.
-    await initializeAudio(lesson.value, currentLearning, currentWorkshop, audioSettings.value)
+    // Delegate init + autoplay + continuous-mode re-registration to the
+    // pure composable so it can be unit-tested.
+    await onLessonMount({
+      lesson: lesson.value,
+      learning: currentLearning,
+      workshop: currentWorkshop,
+      audioSettings: audioSettings.value,
+      autoplay: !!route.query.autoplay,
+      continuousNextLessonProvider: resolveNextLessonForAudio,
+    })
     restoreDraftsFromSaved()
-
-    // If continuous mode is on, (re)register the next-lesson provider so the
-    // composable can preload and transition to lesson N+1 when this one finishes.
-    if (continuousMode.value) {
-      enableContinuousMode(resolveNextLessonForAudio)
-    }
-
-    if (route.query.autoplay && !isPlaying.value) {
-      play(audioSettings.value)
-    }
 
     if (route.query.scrollTo) {
       await nextTick()
@@ -880,19 +893,18 @@ onBeforeUnmount(() => {
     playClickTimer = null
   }
 
-  // Skip cleanup during a continuous-mode transition OR when the composable
-  // has already swapped to a different lesson in-place. This keeps the active
-  // audio element alive across the component remount so iOS preserves the
-  // Media Session.
-  const meta = audioLessonMetadata.value
-  const composableMovedOn =
-    meta.learning !== learning.value ||
-    meta.workshop !== workshop.value ||
-    meta.number !== lessonNumber.value
-
-  if (!composableMovedOn && !isTransitioning.value) {
-    cleanup()
-  }
+  // Delegate the "should we tear down?" decision to the composable —
+  // it skips cleanup during continuous-mode transitions so iOS keeps the
+  // Media Session alive across component remounts.
+  //
+  // NOTE: we use the values captured at mount time. Route-param-based
+  // computed refs become undefined during unmount, which would make
+  // onLessonUnmount falsely think "composable moved on" and skip cleanup.
+  onLessonUnmount({
+    learning: mountedLearning,
+    workshop: mountedWorkshop,
+    lessonNumber: mountedLessonNumber,
+  })
 
   clearLessonFooter()
   closeLightbox()

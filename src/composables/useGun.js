@@ -37,6 +37,13 @@ let _lastOwnSync = 0
 // Guard: prevents echo-back when applying remote data
 let _applyingRemote = false
 
+// When set, pull-from-remote is deferred. Used to keep audio playback from
+// being interrupted by a remote sync tick that mutates progress/settings
+// deeply and triggers the LessonDetail watchers. Pending pulls are flushed
+// via resumeSyncPulls().
+const syncPullPaused = ref(false)
+let _pendingPull = false
+
 const SESSION_KEY = 'gun-session'
 const PEERS_KEY = 'gun-peers'
 const SYNC_KEYS = ['settings', 'progress', 'assessments', 'contentSources']
@@ -380,10 +387,34 @@ function setupSyncListener() {
       detail: { key: 'lastSync', data: { timestamp: ts, deviceId }, method: 'on' }
     }))
     _lastOwnSync = ts
+
+    // Defer the actual data pull while audio is playing — a remote pull
+    // would mutate progress/settings deeply and trigger the LessonDetail
+    // watchers that rebuild the audio queue mid-playback.
+    if (syncPullPaused.value) {
+      _pendingPull = true
+      return
+    }
     pullFromRemote()
   }
   syncRef.on(cb)
   syncListener = { ref: syncRef, cb }
+}
+
+// Called by the audio composable when playback starts. Defers any remote
+// pulls so they don't interrupt the audio chain.
+function pauseSyncPulls() {
+  syncPullPaused.value = true
+}
+
+// Called by the audio composable when playback stops/pauses. Flushes any
+// sync tick that arrived while paused.
+function resumeSyncPulls() {
+  syncPullPaused.value = false
+  if (_pendingPull && isLoggedIn.value) {
+    _pendingPull = false
+    pullFromRemote()
+  }
 }
 
 // Remove the sync listener
@@ -538,6 +569,11 @@ export function useGun() {
     autoSyncAll,
     DEFAULT_PEERS,
     getActivePeers,
-    savePeers
+    savePeers,
+    // Sync pause controls (used by the audio composable to freeze remote
+    // pulls during active playback)
+    syncPullPaused,
+    pauseSyncPulls,
+    resumeSyncPulls,
   }
 }

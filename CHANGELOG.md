@@ -2,7 +2,34 @@
 
 ## 2026-04-10
 
+### Features
+
+#### Lock-screen / Media Session test coverage
+- New describe block `lock-screen / Media Session requirements` in `tests/audio.test.js` with 8 tests pinning the iOS lock-screen contract: MediaMetadata (title, artist, album, artwork) is populated, all four action handlers (`play`, `pause`, `previoustrack`, `nexttrack`) are registered and actually control the composable, lock-screen "pause" then "play" resumes at the current position, `nexttrack` / `previoustrack` step through the queue, and MediaMetadata updates when continuous mode transitions to the next lesson.
+- The tests mock `navigator.mediaSession` with a handler registry so the assertions invoke each action exactly like the OS would.
+
+#### Extracted `useLessonAudioSync` composable + unit tests
+- Watcher and lifecycle logic that used to live inline in `LessonDetail.vue`'s `<script setup>` is now a standalone composable at `src/composables/useLessonAudioSync.js`. It exposes pure functions (`onSettingsChanged`, `onProgressChanged`, `onLessonMount`, `onLessonUnmount`, `toggleContinuousPlay`) that the view binds to Vue watchers and lifecycle hooks but that are directly unit-testable without mounting the component.
+- New `tests/lesson-audio-sync.test.js` with 17 tests covering every handler. The composable answers "should I rebuild the queue?" / "should I tear down audio on unmount?" as a deterministic function of arguments, not as inline SFC logic.
+
+#### `@vue/test-utils` component mount tests for `LessonDetail.vue`
+- Added `@vue/test-utils` as a dev dependency and created `tests/lesson-detail.test.js` with 7 tests that actually `mount()` `LessonDetail` with a mock router, i18n, and stubbed composables. Covers: render, audio initialization from route params, autoplay via `?autoplay=true` query, the full regression for "deep progress mutation during playback" (fires the real Vue watcher through `useProgress`), and both unmount paths (clean teardown vs. skipped teardown during a continuous-mode transition).
+- This is the first component-level test coverage in the project. Caught a real bug during authoring: route-param-based computed refs (`learning.value`, `workshop.value`, `lessonNumber.value`) become `undefined` during `onBeforeUnmount`, which would make the "composable moved on" check falsely trigger and skip cleanup. Fixed by capturing stable `mountedLearning` / `mountedWorkshop` / `mountedLessonNumber` values at mount time.
+
 ### Fixes
+
+#### Route-param refs become stale during unmount
+- `LessonDetail.vue` now captures `mountedLearning`, `mountedWorkshop`, `mountedLessonNumber` at mount time and uses them in `onBeforeUnmount` instead of the route-based computed refs. Without this, `onLessonUnmount` saw `undefined` route params and falsely concluded the composable had moved on, skipping the audio teardown on a normal lesson-to-lessons-overview navigation.
+
+#### GunDB sync pulls paused during playback (belt & braces)
+- `useGun` now exposes `pauseSyncPulls()` / `resumeSyncPulls()` plus a `syncPullPaused` ref. The `.on()` listener on `lastSync` defers any incoming pull while the flag is set, and flushes the pending pull the moment playback ends.
+- `useAudio.play()` freezes remote pulls, `pause()` and `stop()` release them. A sync tick from another device that arrives mid-playback no longer mutates `progress` / `settings` while audio is running.
+
+#### Audio chain stops after the first clip (follow-up to #234)
+- `initializeAudio({ force: true })` no longer tears down a lesson's audio while it is actively playing or paused. Previously, any GunDB sync tick, remote settings update, or `toggleItemLearned` click would mutate `progress` / `settings` deeply, fire the `LessonDetail.vue` watchers, and call `initializeAudio` with `force: true` — which released all audio elements (including the one currently playing) and set `isPlaying.value = false`. The `onended` → `playNextItem` chain then saw `isPlaying` false and silently stopped, so the lesson only played a single clip and never advanced (and continuous mode never reached the end-of-queue transition).
+- The composable now detects this case (`isSameLesson && force && (isPlaying || isPaused)`) and skips the rebuild. The new queue gets picked up the next time the user pauses and resumes.
+- **Belt-and-braces**: `useAudio.play()` now calls `useGun.pauseSyncPulls()`, which freezes `lastSync` → `pullFromRemote()` dispatches until the user pauses or stops. A sync tick that arrives mid-playback is queued and flushed when playback ends. This way even if a watcher in a future view layer forgets the `isPlaying` guard, the trigger never arrives during active playback.
+- Added two regression tests for the force-rebuild guard AND two full-integration tests in `tests/audio.test.js` that wire up the same deep watcher pattern as `LessonDetail.vue` (with the real Vue `watch` function) and verify that a `progress` or `settings` mutation during playback does not break the chain.
 
 #### Autoplay stops on iOS lock screen at end of each lesson
 - Continuous playback now keeps the audio context alive across lesson boundaries. When a lesson ends, the composable swaps the queue for the next lesson in-place instead of tearing down audio elements on component remount — so iOS holds the Media Session open and the lock-screen controls stay responsive.

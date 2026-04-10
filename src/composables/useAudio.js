@@ -1,12 +1,18 @@
 import { ref, computed } from 'vue'
 import { useLessons } from './useLessons'
 import { useProgress } from './useProgress'
+import { useGun } from './useGun'
 
 // Get lesson composable for language codes
 const { getLanguageCode, getWorkshopCode, resolveWorkshopKey, getWorkshopMeta } = useLessons()
 
 // Get progress composable for learned items
 const { areAllItemsLearned } = useProgress()
+
+// Gun sync pause controls — we freeze remote data pulls during active
+// playback so a remote sync tick doesn't mutate progress/settings and
+// trigger the LessonDetail watchers that rebuild the audio queue.
+const { pauseSyncPulls, resumeSyncPulls } = useGun()
 
 // Shared audio state (singleton pattern)
 const isLoadingAudio = ref(false)
@@ -228,6 +234,15 @@ const latestAudioSettingsRef = ref({ readAnswers: true, audioSpeed: 1.0 })
 // (e.g. during a continuous-mode transition), it returns immediately. Pass
 // `{ force: true }` to force a rebuild even when the lesson identity matches —
 // used by the settings watcher when readAnswers / hideLearnedExamples change.
+//
+// CRITICAL: Rebuilding the audio elements mid-playback tears down the currently
+// playing `<audio>` element (via audio.pause() + audio.src=''), which silently
+// breaks the `onended` → `playNextItem` chain. So even a force-rebuild is
+// skipped while the same lesson is actively playing — the new settings take
+// effect the next time the user pauses and resumes. This fixes the bug where a
+// GunDB sync tick, a remote settings update, or an item being marked learned
+// during playback caused the audio chain to stop after the currently playing
+// clip.
 async function initializeAudio(lesson, learning, workshop, settings, { force = false } = {}) {
   latestAudioSettingsRef.value = settings
 
@@ -241,6 +256,13 @@ async function initializeAudio(lesson, learning, workshop, settings, { force = f
   // the new lesson in-place. Skip re-initialization so we don't destroy
   // the active audio element and iOS media session.
   if (isSameLesson && hasAudio.value && !isLoadingAudio.value && !force) {
+    return
+  }
+
+  // Defensive: never tear down the queue of an actively playing lesson.
+  // The caller can re-trigger a rebuild after the user pauses.
+  if (isSameLesson && force && (isPlaying.value || isPaused.value)) {
+    console.log(`🎧 Skipping force rebuild of "${lesson.title}" — playback is active`)
     return
   }
 
@@ -492,6 +514,10 @@ function play(settings) {
   isPlaying.value = true
   isPaused.value = false
 
+  // Freeze remote Gun pulls so an incoming sync tick doesn't mutate state
+  // and trigger watchers that rebuild the queue mid-playback.
+  try { pauseSyncPulls() } catch {}
+
   if (wasResuming) {
     playCurrentItem(settings)
   } else {
@@ -507,6 +533,9 @@ function pause() {
   if (currentAudio.value) {
     currentAudio.value.pause()
   }
+
+  // Allow deferred remote sync pulls to flush now that playback is paused.
+  try { resumeSyncPulls() } catch {}
 }
 
 // Resume playback (alias for play)
@@ -528,6 +557,10 @@ function stop() {
   }
 
   currentAudio.value = null
+
+  // Playback is fully stopped — let deferred remote syncs run.
+  try { resumeSyncPulls() } catch {}
+
   console.log('🛑 Stopped')
 }
 

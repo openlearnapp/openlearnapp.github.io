@@ -5,13 +5,24 @@ vi.mock('../src/composables/useLessons', () => ({
   useLessons: () => ({
     getLanguageCode: () => null,
     getWorkshopCode: () => null,
-    resolveWorkshopKey: (key) => key
+    resolveWorkshopKey: (key) => key,
+    getWorkshopMeta: () => ({})
   })
 }))
 
 vi.mock('../src/composables/useProgress', () => ({
   useProgress: () => ({
     areAllItemsLearned: () => false
+  })
+}))
+
+// Mock useGun so we can observe pauseSyncPulls / resumeSyncPulls calls
+// without spinning up the real Gun client.
+const gunSyncSpy = { paused: false, pauseCount: 0, resumeCount: 0 }
+vi.mock('../src/composables/useGun', () => ({
+  useGun: () => ({
+    pauseSyncPulls: () => { gunSyncSpy.paused = true; gunSyncSpy.pauseCount++ },
+    resumeSyncPulls: () => { gunSyncSpy.paused = false; gunSyncSpy.resumeCount++ },
   })
 }))
 
@@ -50,6 +61,28 @@ globalThis.Audio = MockAudio
 // Stub global fetch for manifest requests (always "not found")
 if (!globalThis.fetch) {
   globalThis.fetch = () => Promise.resolve({ ok: false, text: () => Promise.resolve('') })
+}
+
+// Stub navigator.mediaSession so the lock-screen test can inspect metadata
+// and invoke the action handlers that the iOS lock screen would fire.
+// happy-dom may not implement MediaMetadata / mediaSession on all versions.
+if (typeof globalThis.MediaMetadata === 'undefined') {
+  globalThis.MediaMetadata = class MediaMetadata {
+    constructor(init) { Object.assign(this, init) }
+  }
+}
+if (!navigator.mediaSession) {
+  const handlers = {}
+  Object.defineProperty(navigator, 'mediaSession', {
+    configurable: true,
+    value: {
+      metadata: null,
+      setActionHandler(name, fn) { handlers[name] = fn },
+      // Test helper — not part of the real API
+      __handlers: handlers,
+      __invoke(name) { return handlers[name] && handlers[name]() },
+    }
+  })
 }
 
 const { useAudio } = await import('../src/composables/useAudio')
@@ -297,6 +330,67 @@ describe('initializeAudio and queue building', () => {
     expect(audio.readingQueue.value.length).toBe(firstLength)
   })
 
+  it('preserves playback state when force-rebuilt during active playback', async () => {
+    // Regression test: GunDB sync / progress / settings watchers would
+    // previously call initializeAudio({ force: true }) mid-playback, which
+    // tore down audioElements and set isPlaying=false — breaking the
+    // onended → playNextItem chain so the lesson stopped after one clip.
+    const lesson = {
+      title: 'Long Lesson',
+      number: 5,
+      _filename: '05-long',
+      sections: [{
+        title: 'S1',
+        examples: [
+          { q: 'Q1', a: 'A1' },
+          { q: 'Q2', a: 'A2' },
+          { q: 'Q3', a: 'A3' },
+        ]
+      }]
+    }
+
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+
+    // Simulate active playback
+    audio.isPlaying.value = true
+    audio.currentItemIndex.value = 2
+
+    const queueRef = audio.readingQueue.value
+
+    // A force rebuild during playback must be a no-op
+    await audio.initializeAudio(lesson, 'de', 'pt', settings, { force: true })
+
+    expect(audio.isPlaying.value).toBe(true)
+    expect(audio.currentItemIndex.value).toBe(2)
+    expect(audio.readingQueue.value).toBe(queueRef)
+    expect(audio.hasAudio.value).toBe(true)
+  })
+
+  it('preserves playback state when force-rebuilt during pause', async () => {
+    // Same guard: if the user paused mid-lesson and then a remote sync
+    // mutates progress, we should NOT throw away the queue. The user would
+    // otherwise lose their position on resume.
+    const lesson = {
+      title: 'Paused Lesson',
+      number: 6,
+      _filename: '06-pause',
+      sections: [{ title: 'S1', examples: [{ q: 'Q1', a: 'A1' }] }]
+    }
+
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+
+    audio.isPlaying.value = false
+    audio.isPaused.value = true
+    audio.currentItemIndex.value = 1
+
+    const queueRef = audio.readingQueue.value
+    await audio.initializeAudio(lesson, 'de', 'pt', settings, { force: true })
+
+    expect(audio.isPaused.value).toBe(true)
+    expect(audio.currentItemIndex.value).toBe(1)
+    expect(audio.readingQueue.value).toBe(queueRef)
+  })
+
   it('loads audio elements without blocking on canplaythrough', async () => {
     const lesson = {
       title: 'Test',
@@ -310,6 +404,295 @@ describe('initializeAudio and queue building', () => {
 
     expect(audio.hasAudio.value).toBe(true)
     expect(audio.isLoadingAudio.value).toBe(false)
+  })
+})
+
+describe('lock-screen / Media Session requirements', () => {
+  // These tests pin the guarantees that the iOS lock screen and Android
+  // media notification depend on. They are what makes autoplay continue
+  // working when the device is locked / the tab is backgrounded.
+  let audio
+
+  beforeEach(() => {
+    audio = useAudio()
+    // Continuous-mode transitions leave isTransitioning=true for 200ms.
+    // Clear it explicitly so cleanup() isn't skipped.
+    audio.isTransitioning.value = false
+    audio.disableContinuousMode()
+    audio.cleanup()
+    // Reset mediaSession state
+    navigator.mediaSession.metadata = null
+    for (const k of Object.keys(navigator.mediaSession.__handlers)) {
+      delete navigator.mediaSession.__handlers[k]
+    }
+  })
+
+  const settings = { readAnswers: true, hideLearnedExamples: false, audioSpeed: 1.0 }
+  const lesson1 = {
+    title: 'Lesson 1',
+    number: 1,
+    _filename: '01-one',
+    sections: [{ title: 'S1', examples: [{ q: 'Q1', a: 'A1' }] }]
+  }
+  const lesson2 = {
+    title: 'Lesson 2',
+    number: 2,
+    _filename: '02-two',
+    sections: [{ title: 'S1', examples: [{ q: 'Q2', a: 'A2' }] }]
+  }
+
+  it('populates MediaMetadata with title/artist/album/artwork when a lesson loads', async () => {
+    await audio.initializeAudio(lesson1, 'deutsch', 'portugiesisch', settings)
+
+    const meta = navigator.mediaSession.metadata
+    expect(meta).not.toBeNull()
+    expect(meta.title).toBe('Lesson 1')
+    expect(meta.artist).toContain('portugiesisch')
+    expect(meta.album).toContain('deutsch')
+    expect(Array.isArray(meta.artwork)).toBe(true)
+    expect(meta.artwork.length).toBeGreaterThan(0)
+  })
+
+  it('registers play/pause/previoustrack/nexttrack action handlers', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+
+    const h = navigator.mediaSession.__handlers
+    expect(typeof h.play).toBe('function')
+    expect(typeof h.pause).toBe('function')
+    expect(typeof h.previoustrack).toBe('function')
+    expect(typeof h.nexttrack).toBe('function')
+  })
+
+  it('lock-screen "pause" action actually pauses the composable', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.play(settings)
+    expect(audio.isPlaying.value).toBe(true)
+
+    // Simulate the iOS lock screen firing the pause action
+    navigator.mediaSession.__invoke('pause')
+
+    expect(audio.isPlaying.value).toBe(false)
+    expect(audio.isPaused.value).toBe(true)
+  })
+
+  it('lock-screen "play" action resumes from the paused position', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.play(settings)
+    audio.currentItemIndex.value = 2 // pretend we're mid-queue
+    audio.pause()
+    expect(audio.isPaused.value).toBe(true)
+
+    navigator.mediaSession.__invoke('play')
+
+    expect(audio.isPlaying.value).toBe(true)
+    expect(audio.isPaused.value).toBe(false)
+    // Position must not be reset — resume continues where it left off
+    expect(audio.currentItemIndex.value).toBe(2)
+  })
+
+  it('lock-screen "nexttrack" advances by one item', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.play(settings)
+    audio.currentItemIndex.value = 0
+
+    navigator.mediaSession.__invoke('nexttrack')
+
+    expect(audio.currentItemIndex.value).toBeGreaterThan(0)
+  })
+
+  it('lock-screen "previoustrack" steps back by one item', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.play(settings)
+    audio.currentItemIndex.value = 2
+
+    navigator.mediaSession.__invoke('previoustrack')
+
+    expect(audio.currentItemIndex.value).toBe(1)
+  })
+
+  it('updates MediaMetadata when continuous mode transitions to the next lesson', async () => {
+    await audio.initializeAudio(lesson1, 'deutsch', 'portugiesisch', settings)
+    expect(navigator.mediaSession.metadata.title).toBe('Lesson 1')
+
+    audio.enableContinuousMode(async () => ({
+      lesson: lesson2, learning: 'deutsch', workshop: 'portugiesisch'
+    }))
+
+    // Jump to end and fire end-of-queue to trigger transition
+    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
+    audio.isPlaying.value = true
+    audio.skipToNext(settings)
+
+    await new Promise(r => setTimeout(r, 20))
+
+    // Metadata must reflect the new lesson — otherwise iOS shows the
+    // stale title on the lock screen after auto-advance.
+    expect(navigator.mediaSession.metadata.title).toBe('Lesson 2')
+  })
+
+  it('media session action handlers survive a continuous-mode transition', async () => {
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.enableContinuousMode(async () => ({
+      lesson: lesson2, learning: 'de', workshop: 'pt'
+    }))
+
+    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
+    audio.isPlaying.value = true
+    audio.skipToNext(settings)
+
+    await new Promise(r => setTimeout(r, 20))
+
+    // After the transition, a locked-screen pause/play must still work
+    const h = navigator.mediaSession.__handlers
+    expect(typeof h.play).toBe('function')
+    expect(typeof h.pause).toBe('function')
+    expect(typeof h.previoustrack).toBe('function')
+    expect(typeof h.nexttrack).toBe('function')
+  })
+})
+
+describe('integration: full playback chain vs. deep watchers', () => {
+  // These tests recreate the exact wiring from LessonDetail.vue — the
+  // `watch(progress, ...)` and `watch([settings.hideLearnedExamples, ...])`
+  // pattern that used to call initializeAudio({ force: true }) mid-playback.
+  // They verify the whole chain (composable + deep watcher + force-rebuild
+  // guard) end-to-end, not just the composable in isolation.
+  let audio
+
+  beforeEach(() => {
+    audio = useAudio()
+    audio.isTransitioning.value = false
+    audio.disableContinuousMode()
+    audio.cleanup()
+  })
+
+  const settings = { readAnswers: true, hideLearnedExamples: true, audioSpeed: 1.0 }
+  const lesson = {
+    title: 'Integration Lesson',
+    number: 3,
+    _filename: '03-integration',
+    sections: [{
+      title: 'S1',
+      examples: [
+        { q: 'Q1', a: 'A1' },
+        { q: 'Q2', a: 'A2' },
+      ]
+    }]
+  }
+
+  it('a deep progress mutation during playback does NOT break the chain', async () => {
+    const { ref, watch } = await import('vue')
+
+    // Mimic the LessonDetail reactive state
+    const progress = ref({})
+    const audioSettings = ref({ ...settings })
+
+    await audio.initializeAudio(lesson, 'de', 'pt', audioSettings.value)
+
+    // Simulate playback in progress (user clicked play, chain is running)
+    audio.isPlaying.value = true
+    audio.currentItemIndex.value = 1
+    const queueRef = audio.readingQueue.value
+
+    // Wire up the same deep watcher LessonDetail uses for `progress`
+    watch(
+      progress,
+      async () => {
+        if (audioSettings.value.hideLearnedExamples) {
+          await audio.initializeAudio(lesson, 'de', 'pt', audioSettings.value, { force: true })
+        }
+      },
+      { deep: true }
+    )
+
+    // Simulate a Gun sync tick that mutates progress deeply
+    // (exactly what useProgress.mergeProgress does when gun-sync fires)
+    progress.value['de:pt'] = { item1: Date.now() }
+
+    // Let Vue flush the watcher
+    await new Promise(r => setTimeout(r, 0))
+
+    // Playback state must survive the rebuild attempt
+    expect(audio.isPlaying.value).toBe(true)
+    expect(audio.currentItemIndex.value).toBe(1)
+    expect(audio.readingQueue.value).toBe(queueRef)
+    expect(audio.hasAudio.value).toBe(true)
+  })
+
+  it('a settings mutation during playback does NOT break the chain', async () => {
+    const { ref, watch } = await import('vue')
+
+    const audioSettings = ref({ ...settings })
+
+    await audio.initializeAudio(lesson, 'de', 'pt', audioSettings.value)
+    audio.isPlaying.value = true
+    audio.currentItemIndex.value = 0
+    const queueRef = audio.readingQueue.value
+
+    // Same pattern as LessonDetail's "settings changed" watcher
+    watch(
+      () => [audioSettings.value.hideLearnedExamples, audioSettings.value.readAnswers],
+      async () => {
+        await audio.initializeAudio(lesson, 'de', 'pt', audioSettings.value, { force: true })
+      },
+      { deep: true }
+    )
+
+    // Simulate a remote settings sync flipping readAnswers
+    audioSettings.value = { ...audioSettings.value, readAnswers: false }
+    await new Promise(r => setTimeout(r, 0))
+
+    expect(audio.isPlaying.value).toBe(true)
+    expect(audio.currentItemIndex.value).toBe(0)
+    expect(audio.readingQueue.value).toBe(queueRef)
+  })
+})
+
+describe('Gun sync pause during playback', () => {
+  let audio
+
+  beforeEach(() => {
+    audio = useAudio()
+    audio.isTransitioning.value = false
+    audio.disableContinuousMode()
+    audio.cleanup()
+    gunSyncSpy.paused = false
+    gunSyncSpy.pauseCount = 0
+    gunSyncSpy.resumeCount = 0
+  })
+
+  const settings = { readAnswers: true, hideLearnedExamples: false, audioSpeed: 1.0 }
+  const lesson = {
+    title: 'Sync Test',
+    number: 1,
+    _filename: '01-sync',
+    sections: [{ title: 'S1', examples: [{ q: 'Q1', a: 'A1' }] }]
+  }
+
+  it('freezes remote Gun pulls when play() is called', async () => {
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+    audio.play(settings)
+    expect(gunSyncSpy.paused).toBe(true)
+    expect(gunSyncSpy.pauseCount).toBe(1)
+  })
+
+  it('releases the sync pause when playback is paused', async () => {
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+    audio.play(settings)
+    expect(gunSyncSpy.paused).toBe(true)
+
+    audio.pause()
+    expect(gunSyncSpy.paused).toBe(false)
+    expect(gunSyncSpy.resumeCount).toBe(1)
+  })
+
+  it('releases the sync pause when playback is stopped', async () => {
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+    audio.play(settings)
+
+    audio.stop()
+    expect(gunSyncSpy.paused).toBe(false)
+    expect(gunSyncSpy.resumeCount).toBeGreaterThanOrEqual(1)
   })
 })
 
