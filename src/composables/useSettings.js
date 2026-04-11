@@ -49,6 +49,13 @@ function loadSettings() {
     // Apply default dark mode on first load
     applyDarkMode(settings.value.darkMode)
   }
+  // Sync the audio debug flag to whatever we just loaded. Must happen
+  // AFTER the settings ref is populated — never via an `immediate: true`
+  // watcher on showDebugOverlay, because that fires at watcher-register
+  // time with the default value and would cause saveSettings() to clobber
+  // the user's saved settings before we ever read them (regressed via #241,
+  // fixed right after).
+  setAudioDebugEnabled(settings.value.showDebugOverlay)
 }
 
 // Initialize watchers only once
@@ -90,8 +97,13 @@ function initializeWatchers() {
   watch(() => settings.value.showDebugOverlay, (enabled) => {
     saveSettings()
     // Keep the audio-debug event log in sync so the overlay gets populated.
+    // NOTE: no `immediate: true` here — that would fire at watcher-register
+    // time, call saveSettings() with the DEFAULT settings, and overwrite
+    // the user's saved settings before loadSettings() ever gets to read
+    // them. Initial sync with showDebugOverlay is done inside loadSettings()
+    // instead. See regression test in tests/merge-settings.test.js.
     setAudioDebugEnabled(enabled)
-  }, { immediate: true })
+  })
 
   // Listen for real-time Gun sync events from other devices/tabs
   window.addEventListener('gun-sync', (e) => {
