@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-04-11
+
+### Fixes
+
+#### Autoplay continuity across lessons — #240
+
+Large architectural fix for "play lesson 1 via double click, lesson finishes, opens lesson 2, but after playing lesson 2 title the audio stops" (and the related "hard reload + click play = audio stops after lesson/section title"). Seven coordinated changes, each in its own commit under a single PR:
+
+- **Fix A — memoize `loadAllLessonsForWorkshop` (`useLessons.js`)**: added a per-(lang, workshop) Map<Promise> cache so re-entering the same workshop no longer re-fetches all lesson content. Invalidated by `addContentSource` / `removeContentSource` and the gun-sync content-sources listener. Exported `clearLessonCache()`.
+
+- **Fix B — stop remounting `LessonDetail.vue` on in-workshop lesson navigation (`App.vue`, `LessonDetail.vue`)**: the `<RouterView :key>` now returns `lesson-detail:<lang>/<workshop>` instead of `currentRoute.path`, so lesson-to-lesson navigation keeps the same component instance. `LessonDetail.vue` watches `(route.params.learning, workshop, number)` and calls a new `loadCurrentLesson()` function on changes. This is the structural root fix — the old remount was what forced the audio handoff to happen across a mount/unmount pair, which widened all the race windows.
+
+- **Fix C — move the next-lesson resolver into `useAudio.js`**: new `setWorkshopLessons(learning, workshop, lessons)` API on the composable. The composable now resolves "next lesson" itself from its own `workshopContext`, instead of each `LessonDetail` remount passing a fresh closure through `enableContinuousMode`. Eliminates provider-closure churn. Legacy provider callback still accepted for backwards compatibility.
+
+- **Fix D — debug overlay + event log (`useAudioDebug.js`, `AudioDebugOverlay.vue`)**: new ring-buffer event log (200 events, zero overhead when disabled) with `recordAudioEvent` instrumentation at every interesting point in `useAudio.js` (init / play / pause / stop / transition / preload / cleanup / late-bind / retry). A new `AudioDebugOverlay.vue` component renders the queue, state snapshot, and event log when `settings.showDebugOverlay` is on or `?audioDebug=1` is in the URL. Copy-to-clipboard exports the log as JSON for bug reports. Addresses comment 1 of #240.
+
+- **Fix E — preload the whole remaining workshop (`useAudio.js`)**: continuous mode now uses a queue (`preloadedLessons`) instead of a single `preloadedNextLesson` slot. When the user enables continuous mode inside their double-click gesture, `preloadAllUpcomingLessons()` fills the queue with every remaining lesson up to a **1-hour playtime budget**. Each transition shifts the head and schedules a background top-up. This is what makes iOS lock-screen continuous play robust: every `<audio>` element exists before the chain advances, so there's no opportunity for iOS to reject a late-created element. The playtime budget uses `audio.duration` once `loadedmetadata` has fired; before that it falls back to a rough 5-seconds-per-clip estimate.
+
+- **Fix F — state-preserving post-await rebuild in `initializeAudio`**: the old post-await guard aborted silently when it saw `isPlaying`, leaving `audioElements` in a half-built state. Now it rebuilds the queue + audio map, but releases old elements with the currently playing one as an exception and re-stitches that element into the new map. `isPlaying` / `isPaused` / `currentItemIndex` / `currentAudio` are preserved. This closes the "hard reload + click play too early" race that leaked into late-binding.
+
+- **Fix G — kill late-binding, make `play()` async**: `playNextItem` / `playCurrentItem` / `playSingleItem` no longer fall back to `new Audio()` if a queue item is missing from the preload map. If we ever hit that path, we record a `late-bind-stop` event and call `stop()` loudly. `play()` is now `async` and awaits any in-flight `initializeAudio`, so by the time it starts advancing the chain the preload map is guaranteed to be fully populated.
+
+### Tests
+
+- `tests/audio.test.js`: **3 new regression tests** pinning the #240 symptoms (T1: continuous play crosses a transition and finishes the next lesson; T2: click play during in-flight init; T3: two concurrent inits race). Plus 4 more new tests for `setWorkshopLessons`, the new preload queue, and the kill-late-bind hard stop. 59 audio tests total.
+- `tests/audio-debug.test.js`: 6 new tests for the event log infrastructure (recording, no-op when disabled, ring buffer cap, clear, serialize, reactive toggle).
+- `tests/lessons.test.js`: 2 new tests for the memoized `loadAllLessonsForWorkshop`.
+- `tests/lesson-detail.test.js`: 1 new test for in-workshop navigation without remount.
+
+Full suite: **17 files, 234 tests, all passing.** Build clean.
+
 ## 2026-04-10
 
 ### Features
