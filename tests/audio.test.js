@@ -794,6 +794,42 @@ describe('continuous play mode', () => {
     audio.cleanup()
     expect(audio.readingQueue.value.length).toBe(0)
   })
+
+  it('setWorkshopLessons enables the built-in resolver — no provider closure needed', async () => {
+    // Fix C for #240: the composable now resolves "next lesson" itself
+    // from workshopContext, so continuous mode works without the view
+    // layer passing a provider callback.
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.setWorkshopLessons('de', 'pt', [lesson1, lesson2])
+
+    // No provider closure — just flip the flag
+    audio.enableContinuousMode()
+    expect(audio.continuousMode.value).toBe(true)
+
+    // Jump to end and fire end-of-queue
+    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
+    audio.isPlaying.value = true
+    audio.skipToNext(settings)
+    await new Promise(r => setTimeout(r, 20))
+
+    // The built-in resolver should have picked up lesson 2 from the context
+    expect(audio.lessonMetadata.value.number).toBe(2)
+  })
+
+  it('setWorkshopLessons returns null at the end of the workshop', async () => {
+    await audio.initializeAudio(lesson2, 'de', 'pt', settings)
+    audio.setWorkshopLessons('de', 'pt', [lesson1, lesson2])
+    audio.enableContinuousMode()
+
+    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
+    audio.isPlaying.value = true
+    audio.skipToNext(settings)
+    await new Promise(r => setTimeout(r, 20))
+
+    // End of workshop — playback should have stopped cleanly
+    expect(audio.isPlaying.value).toBe(false)
+    expect(audio.playbackFinished.value).toBe(true)
+  })
 })
 
 // -----------------------------------------------------------------------------

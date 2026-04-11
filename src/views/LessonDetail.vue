@@ -368,6 +368,7 @@ const {
   isTransitioning, continuousMode, lessonTransitionTick,
   play, pause,
   enableContinuousMode, disableContinuousMode,
+  setWorkshopLessons,
   onSettingsChanged, onProgressChanged, onLessonMount, onLessonUnmount,
   toggleContinuousPlay,
 } = useLessonAudioSync()
@@ -761,23 +762,10 @@ function handlePlayButtonDoubleClick() {
 }
 
 function startContinuousPlay() {
-  toggleContinuousPlay({
-    nextLessonProvider: resolveNextLessonForAudio,
-    audioSettings: audioSettings.value,
-  })
-}
-
-// Provider used by the audio composable to fetch the next lesson when the
-// current one finishes in continuous mode. Returns null at end of workshop.
-async function resolveNextLessonForAudio() {
-  if (!nextLessonNumber.value) return null
-  const nextLesson = allLessons.value.find(l => l.number === nextLessonNumber.value)
-  if (!nextLesson) return null
-  return {
-    lesson: nextLesson,
-    learning: learning.value,
-    workshop: workshop.value,
-  }
+  // After fix C for #240, the audio composable resolves the next lesson
+  // itself via setWorkshopLessons (already called in loadCurrentLesson).
+  // No closure to pass.
+  toggleContinuousPlay({ audioSettings: audioSettings.value })
 }
 
 const playButtonTitle = computed(() => {
@@ -938,6 +926,11 @@ async function loadCurrentLesson() {
   const lessons = await loadAllLessonsForWorkshop(currentLearning, currentWorkshop)
   allLessons.value = lessons
 
+  // Share the lesson list with the audio composable so its built-in
+  // resolver can find "the next lesson" in continuous mode without us
+  // having to pass a fresh closure on every remount (fix C for #240).
+  setWorkshopLessons(currentLearning, currentWorkshop, lessons)
+
   lesson.value = lessons.find(l => l.number === currentLessonNumber)
 
   if (lesson.value) {
@@ -949,15 +942,15 @@ async function loadCurrentLesson() {
     // Set footer navigation data
     setLessonFooter(currentLearning, currentWorkshop, nextLessonNumber.value)
 
-    // Delegate init + autoplay + continuous-mode re-registration to the
-    // pure composable so it can be unit-tested.
+    // Delegate init + autoplay to the pure composable so it can be
+    // unit-tested. setWorkshopLessons was already called above, so the
+    // composable can resolve the next lesson itself in continuous mode.
     await onLessonMount({
       lesson: lesson.value,
       learning: currentLearning,
       workshop: currentWorkshop,
       audioSettings: audioSettings.value,
       autoplay: !!route.query.autoplay,
-      continuousNextLessonProvider: resolveNextLessonForAudio,
     })
     restoreDraftsFromSaved()
 

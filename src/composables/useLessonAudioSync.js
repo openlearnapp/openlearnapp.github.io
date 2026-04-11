@@ -35,6 +35,7 @@ export function useLessonAudioSync() {
     lessonTransitionTick,
     initializeAudio, play, pause, cleanup,
     enableContinuousMode, disableContinuousMode,
+    setWorkshopLessons,
   } = useAudio()
 
   /**
@@ -73,6 +74,11 @@ export function useLessonAudioSync() {
    * Returns `{ started: true }` if autoplay was triggered, `{ started: false }`
    * otherwise. Tests use this return value to assert behaviour without
    * inspecting composable internals.
+   *
+   * After fix C for #240 the composable resolves the next lesson from its
+   * own workshopContext (set via setWorkshopLessons), so we no longer pass
+   * a provider closure through here. The legacy `continuousNextLessonProvider`
+   * argument is still accepted for backwards compatibility.
    */
   async function onLessonMount({
     lesson, learning, workshop, audioSettings,
@@ -83,9 +89,9 @@ export function useLessonAudioSync() {
 
     await initializeAudio(lesson, learning, workshop, audioSettings)
 
-    // If continuous mode is already active (user turned it on before
-    // navigating or we just came from an in-place transition), re-register
-    // the next-lesson provider so the composable knows how to advance.
+    // Legacy path: if a provider closure was passed AND continuous mode is
+    // already active, re-register it. New callers should use setWorkshopLessons
+    // instead and leave continuousNextLessonProvider undefined.
     if (continuousMode.value && continuousNextLessonProvider) {
       enableContinuousMode(continuousNextLessonProvider)
     }
@@ -120,10 +126,14 @@ export function useLessonAudioSync() {
   }
 
   /**
-   * Toggles continuous play mode. Wrapping here so the view doesn't have to
-   * know about the resolver contract — it just passes a next-lesson callback.
+   * Toggles continuous play mode. After fix C for #240, the composable has
+   * its own built-in resolver based on `setWorkshopLessons`, so the caller
+   * no longer needs to pass a closure — we just flip the flag.
+   *
+   * `nextLessonProvider` is still accepted for backwards compatibility
+   * but callers that use setWorkshopLessons should pass nothing.
    */
-  function toggleContinuousPlay({ nextLessonProvider, audioSettings }) {
+  function toggleContinuousPlay({ nextLessonProvider, audioSettings } = {}) {
     if (continuousMode.value) {
       disableContinuousMode()
       return false
@@ -154,6 +164,7 @@ export function useLessonAudioSync() {
     pause,
     enableContinuousMode,
     disableContinuousMode,
+    setWorkshopLessons,
     // Pure, testable handlers extracted from LessonDetail.vue
     onSettingsChanged,
     onProgressChanged,

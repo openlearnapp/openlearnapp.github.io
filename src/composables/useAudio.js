@@ -32,6 +32,14 @@ const lessonMetadata = ref({ learning: '', workshop: '', number: null })
 // When enabled, the composable transitions to the next lesson in-place without
 // tearing down the audio context, so the iOS media session stays alive.
 const continuousMode = ref(false)
+// Workshop context for continuous-mode resolution. The view layer calls
+// setWorkshopLessons(lang, workshop, sortedLessons) once per workshop and
+// never again — the composable then resolves "next lesson" from this
+// shared state, eliminating the provider-closure churn that used to race
+// with each LessonDetail remount (fix C for #240).
+const workshopContext = ref({ learning: null, workshop: null, lessons: [] })
+// Legacy provider-callback path — kept for backwards compatibility for tests
+// and callers that don't yet use setWorkshopLessons. Prefer the context model.
 const nextLessonProvider = ref(null) // () => Promise<{ lesson, learning, workshop } | null>
 const isTransitioning = ref(false)   // true while we swap queues between lessons
 const preloadedNextLesson = ref(null) // { lesson, learning, workshop, queue, audioMap }
@@ -789,14 +797,69 @@ function jumpToExample(sectionIdx, exampleIdx, settings) {
 // -----------------------------------------------------------------------------
 
 /**
+ * Tell the composable which workshop + lessons we're playing. Called once
+ * per workshop by the view layer. The composable then resolves the "next
+ * lesson" itself via its own built-in resolver, without a provider closure
+ * that has to be re-registered on every LessonDetail remount.
+ *
+ * This is fix C for #240 — the provider-closure churn used to race with
+ * the preload scheduled by transitionToNextLesson.
+ *
+ * @param {string} learning
+ * @param {string} workshop
+ * @param {Array<object>} lessons - full list of lessons in the workshop,
+ *   typically the result of loadAllLessonsForWorkshop (already sorted).
+ */
+function setWorkshopLessons(learning, workshop, lessons) {
+  const sorted = Array.isArray(lessons)
+    ? [...lessons].sort((a, b) => a.number - b.number)
+    : []
+  workshopContext.value = { learning, workshop, lessons: sorted }
+  recordAudioEvent({
+    kind: 'workshop-context-set',
+    learning, workshop, lessonCount: sorted.length,
+  })
+}
+
+// Built-in resolver: "give me the lesson after the one currently loaded".
+// Used when the view layer has called setWorkshopLessons instead of passing
+// a provider closure. Pure function of workshopContext + lessonMetadata.
+function resolveNextLessonFromContext() {
+  const ctx = workshopContext.value
+  if (!ctx || !ctx.lessons || ctx.lessons.length === 0) return null
+  if (ctx.learning !== lessonMetadata.value.learning ||
+      ctx.workshop !== lessonMetadata.value.workshop) {
+    // Context is for a different workshop than what's currently playing —
+    // don't guess.
+    return null
+  }
+  const currentNumber = lessonMetadata.value.number
+  const idx = ctx.lessons.findIndex(l => l.number === currentNumber)
+  if (idx < 0) return null
+  const next = ctx.lessons[idx + 1]
+  if (!next) return null
+  return { lesson: next, learning: ctx.learning, workshop: ctx.workshop }
+}
+
+/**
  * Enable continuous playback across lessons.
  *
- * @param {Function} provider - async function returning the next lesson, or null
- *   at the end of the workshop. Shape: `() => Promise<{ lesson, learning, workshop } | null>`
+ * Two calling conventions, in order of preference:
+ *
+ *   1. `enableContinuousMode()` — use the composable's built-in resolver,
+ *      which draws from workshopContext set via setWorkshopLessons().
+ *
+ *   2. `enableContinuousMode(provider)` — legacy path, `provider` is an
+ *      async callback returning `{ lesson, learning, workshop }` or null.
+ *      Only use this if the caller can't populate workshopContext.
  */
 function enableContinuousMode(provider) {
   continuousMode.value = true
-  nextLessonProvider.value = provider
+  nextLessonProvider.value = provider || null
+  recordAudioEvent({
+    kind: 'continuous-mode-enabled',
+    mode: provider ? 'legacy-provider' : 'context',
+  })
   // Kick off a background preload of the next lesson so the transition is seamless
   preloadNextLesson().catch(() => { /* best effort */ })
 }
@@ -809,13 +872,31 @@ function disableContinuousMode() {
     releaseAudioElements(preloadedNextLesson.value.audioMap)
     preloadedNextLesson.value = null
   }
+  recordAudioEvent({ kind: 'continuous-mode-disabled' })
+}
+
+// Resolve the next lesson, preferring the built-in context-based resolver
+// and falling back to the legacy provider callback.
+async function resolveNextLesson() {
+  // 1. Context-based (new path — no closure churn)
+  const fromContext = resolveNextLessonFromContext()
+  if (fromContext) return fromContext
+  // 2. Legacy provider callback
+  if (nextLessonProvider.value) {
+    try {
+      return await nextLessonProvider.value()
+    } catch {
+      return null
+    }
+  }
+  return null
 }
 
 // Preload the next lesson's audio in the background while the current one plays.
 // Called after initializeAudio and after each transition.
 async function preloadNextLesson() {
-  if (!continuousMode.value || !nextLessonProvider.value) {
-    recordAudioEvent({ kind: 'preload-skip', reason: 'not-continuous-or-no-provider' })
+  if (!continuousMode.value) {
+    recordAudioEvent({ kind: 'preload-skip', reason: 'not-continuous' })
     return
   }
   if (preloadedNextLesson.value) {
@@ -824,9 +905,9 @@ async function preloadNextLesson() {
   }
 
   try {
-    const next = await nextLessonProvider.value()
+    const next = await resolveNextLesson()
     if (!next || !next.lesson) {
-      recordAudioEvent({ kind: 'preload-skip', reason: 'provider-returned-null' })
+      recordAudioEvent({ kind: 'preload-skip', reason: 'resolver-returned-null' })
       return
     }
 
@@ -859,8 +940,8 @@ async function preloadNextLesson() {
  * false if there is no next lesson (end of workshop).
  */
 async function transitionToNextLesson(settings) {
-  if (!continuousMode.value || !nextLessonProvider.value) {
-    recordAudioEvent({ kind: 'transition-skip', reason: 'not-continuous-or-no-provider' })
+  if (!continuousMode.value) {
+    recordAudioEvent({ kind: 'transition-skip', reason: 'not-continuous' })
     return false
   }
 
@@ -869,7 +950,7 @@ async function transitionToNextLesson(settings) {
   if (!next) {
     recordAudioEvent({ kind: 'transition-build-inline', reason: 'no-preload' })
     try {
-      const resolved = await nextLessonProvider.value()
+      const resolved = await resolveNextLesson()
       if (!resolved || !resolved.lesson) {
         recordAudioEvent({ kind: 'transition-end-of-workshop' })
         return false
@@ -988,6 +1069,9 @@ function cleanup() {
     preloadedNextLesson.value = null
   }
 
+  // Clear workshopContext too so the next init starts from a clean slate.
+  workshopContext.value = { learning: null, workshop: null, lessons: [] }
+
   recordAudioEvent({ kind: 'cleanup-done' })
 }
 
@@ -1018,6 +1102,7 @@ export function useAudio() {
     continuousMode,
     enableContinuousMode,
     disableContinuousMode,
+    setWorkshopLessons,
     isTransitioning,
     lessonTransitionTick,
   }
