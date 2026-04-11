@@ -6,7 +6,11 @@
     <header v-if="!isHomePage && !isStoryMode" class="bg-primary text-white pt-1 pb-2 md:py-4 px-4 relative sticky z-50" style="top: env(safe-area-inset-top, 0px)">
       <div class="flex items-center justify-between gap-2">
         <!-- Left side: language dropdown + nav buttons -->
-        <div class="flex items-center gap-2 min-w-fit">
+        <!-- Dimmed and disabled during focus mode (audio playback) so the
+             user can only interact with play/pause until they pause. -->
+        <div
+          class="flex items-center gap-2 min-w-fit transition-opacity"
+          :class="isInFocusMode ? 'opacity-40 pointer-events-none' : ''">
           <!-- Language dropdown (only on workshop overview) -->
           <div v-if="isWorkshopOverview && learningLanguages.length > 0" class="relative">
             <button
@@ -110,6 +114,12 @@
             </span>
           </Button>
 
+          <!-- All non-play right-side buttons. Dimmed and disabled in
+               focus mode (audio playback) so the play/pause button stays
+               the only interactive control. -->
+          <div
+            class="flex items-center gap-2 transition-opacity"
+            :class="isInFocusMode ? 'opacity-40 pointer-events-none' : ''">
           <!-- Story mode button (visible on lesson/overview pages) -->
           <Button
             v-if="canEnterStoryMode"
@@ -209,6 +219,7 @@
               </div>
             </div>
           </div>
+          </div><!-- end dimmed right-side group -->
         </div>
       </div>
     </header>
@@ -222,8 +233,9 @@
       </RouterView>
     </div>
 
-    <!-- Footer -->
-    <footer v-if="!isStoryMode" class="border-t border-border px-8 py-4 md:rounded-b-xl" :class="contentBgClass">
+    <!-- Footer — dimmed and disabled during focus mode (audio playback) -->
+    <footer v-if="!isStoryMode" class="border-t border-border px-8 py-4 md:rounded-b-xl transition-opacity"
+      :class="[contentBgClass, isInFocusMode ? 'opacity-40 pointer-events-none' : '']">
       <div class="flex items-center gap-4 text-sm">
         <a href="#/" class="text-primary hover:underline whitespace-nowrap">Home</a>
         <a
@@ -285,7 +297,7 @@ const appVersion = __APP_VERSION__
 const lastPR = __APP_LAST_PR__
 
 const {
-  isLoadingAudio, isPlaying, play, pause, resume,
+  isLoadingAudio, isPlaying, isInFocusMode, play, pause, resume,
   continuousMode, enableContinuousMode, disableContinuousMode,
 } = useAudio()
 const { settings } = useSettings()
