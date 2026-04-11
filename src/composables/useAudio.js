@@ -340,21 +340,50 @@ async function initializeAudio(lesson, learning, workshop, settings, { force = f
     const audioBase = getAudioBase(lesson, learning, workshop)
     const manifest = await fetchAudioManifest(audioBase)
 
-    // Post-await guard: if playback started during our await (e.g. the caller
-    // fired play() as soon as we yielded), do NOT clobber the running state.
-    // The queue will be rebuilt on the next pause/resume or explicit call.
-    if (isPlaying.value || isPaused.value) {
-      recordAudioEvent({ kind: 'init-abort-playback-started', lesson: lesson.title })
-      console.log(`🎧 Playback started during init — aborting rebuild of "${lesson.title}"`)
-      isLoadingAudio.value = false
-      return
+    // Capture playback state to decide whether we're rebuilding on top of
+    // a running chain (fix F for #240). Previously we'd abort the rebuild
+    // here and leave audioElements half-built — forcing every subsequent
+    // clip to late-bind, which iOS doesn't like.
+    //
+    // New behaviour: rebuild the queue + map as normal, BUT:
+    //   1. Release old audio elements EXCEPT the currently playing one,
+    //   2. After building the new map, re-register the playing element
+    //      under its URL key so the chain can keep reading it,
+    //   3. Preserve isPlaying / isPaused / currentItemIndex / currentAudio
+    //      so the chain is not interrupted.
+    const wasPlaying = isPlaying.value
+    const wasPaused = isPaused.value
+    const savedCurrentAudio = currentAudio.value
+    const savedIndex = currentItemIndex.value
+
+    if (wasPlaying || wasPaused) {
+      recordAudioEvent({
+        kind: 'init-rebuild-preserving-playback',
+        lesson: lesson.title,
+        wasPlaying, wasPaused, savedIndex,
+      })
     }
 
-    // Release old audio elements (if any) before creating new ones
-    releaseAudioElements(audioElements.value)
+    // Release old audio elements, protecting the currently playing one
+    // so the chain can keep reading it across the rebuild.
+    releaseAudioElements(audioElements.value, savedCurrentAudio)
 
     // Pre-load audio files (filtered by manifest if available) — fire-and-forget
     audioElements.value = preloadAudioFiles(readingQueue.value, manifest)
+
+    // If we were playing mid-chain, re-stitch the currently playing audio
+    // into the new map under its URL key. Without this the onended handler's
+    // subsequent `playNextItem` call would see a new map that doesn't
+    // include the element it's currently using.
+    if (savedCurrentAudio && savedCurrentAudio.src) {
+      // Find the item's URL in the new queue; fall back to savedCurrentAudio.src
+      const matchedItem = readingQueue.value.find(i => i.audioUrl === savedCurrentAudio.src)
+      if (matchedItem) {
+        audioElements.value[matchedItem.audioUrl] = savedCurrentAudio
+      } else {
+        audioElements.value[savedCurrentAudio.src] = savedCurrentAudio
+      }
+    }
 
     hasAudio.value = Object.keys(audioElements.value).length > 0
     const loadedCount = Object.keys(audioElements.value).length
@@ -367,10 +396,22 @@ async function initializeAudio(lesson, learning, workshop, settings, { force = f
     })
 
     isLoadingAudio.value = false
-    currentItemIndex.value = -1
-    isPlaying.value = false
-    isPaused.value = false
-    currentAudio.value = null
+
+    // Preserve playback state if we were mid-chain. Otherwise this is a
+    // fresh init and we reset everything to the initial state.
+    if (!wasPlaying && !wasPaused) {
+      currentItemIndex.value = -1
+      isPlaying.value = false
+      isPaused.value = false
+      currentAudio.value = null
+    } else {
+      // Rebuild preserved — keep isPlaying / isPaused / currentItemIndex /
+      // currentAudio as they were before the rebuild. The new readingQueue
+      // may have a different length, so clamp currentItemIndex defensively.
+      if (currentItemIndex.value >= readingQueue.value.length) {
+        currentItemIndex.value = readingQueue.value.length - 1
+      }
+    }
 
     // Drop any preload queue from a previous workshop/session. We don't
     // release the audio elements here because the continuous-mode flow is
