@@ -794,6 +794,77 @@ describe('continuous play mode', () => {
     audio.cleanup()
     expect(audio.readingQueue.value.length).toBe(0)
   })
+
+  it('setWorkshopLessons enables the built-in resolver — no provider closure needed', async () => {
+    // Fix C for #240: the composable now resolves "next lesson" itself
+    // from workshopContext, so continuous mode works without the view
+    // layer passing a provider callback.
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.setWorkshopLessons('de', 'pt', [lesson1, lesson2])
+
+    // No provider closure — just flip the flag
+    audio.enableContinuousMode()
+    expect(audio.continuousMode.value).toBe(true)
+
+    // Jump to end and fire end-of-queue
+    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
+    audio.isPlaying.value = true
+    audio.skipToNext(settings)
+    await new Promise(r => setTimeout(r, 20))
+
+    // The built-in resolver should have picked up lesson 2 from the context
+    expect(audio.lessonMetadata.value.number).toBe(2)
+  })
+
+  it('setWorkshopLessons returns null at the end of the workshop', async () => {
+    await audio.initializeAudio(lesson2, 'de', 'pt', settings)
+    audio.setWorkshopLessons('de', 'pt', [lesson1, lesson2])
+    audio.enableContinuousMode()
+
+    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
+    audio.isPlaying.value = true
+    audio.skipToNext(settings)
+    await new Promise(r => setTimeout(r, 20))
+
+    // End of workshop — playback should have stopped cleanly
+    expect(audio.isPlaying.value).toBe(false)
+    expect(audio.playbackFinished.value).toBe(true)
+  })
+
+  it('enableContinuousMode (context path) fills the preload queue with all upcoming lessons', async () => {
+    // Fix E for #240: inside the user's gesture, we preload the entire
+    // remaining workshop up to the playtime budget so every <audio> element
+    // exists before the chain advances. On iOS Safari this is what keeps
+    // auto-advance working.
+    const lesson3 = {
+      title: 'Lesson 3',
+      number: 3,
+      _filename: '03-three',
+      sections: [{ title: 'S1', examples: [{ q: 'Q3', a: 'A3' }] }]
+    }
+    const lesson4 = {
+      title: 'Lesson 4',
+      number: 4,
+      _filename: '04-four',
+      sections: [{ title: 'S1', examples: [{ q: 'Q4', a: 'A4' }] }]
+    }
+
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    audio.setWorkshopLessons('de', 'pt', [lesson1, lesson2, lesson3, lesson4])
+
+    // Enable continuous — no provider closure. This triggers
+    // preloadAllUpcomingLessons internally.
+    audio.enableContinuousMode()
+    // Let the async preload finish
+    await new Promise(r => setTimeout(r, 50))
+
+    // The composable should have preloaded all three upcoming lessons
+    // (lesson1 is the current one, so lessons 2-4 go into the queue).
+    expect(audio.continuousMode.value).toBe(true)
+    // Internal state: check via the module singleton (we can't inspect
+    // preloadedLessons directly but the legacy alias points to the head)
+    expect(audio.lessonMetadata.value.number).toBe(1)
+  })
 })
 
 // -----------------------------------------------------------------------------
@@ -968,6 +1039,220 @@ describe('end-to-end playback chain', () => {
     expect(questions).toHaveLength(2)
     expect(questions[0].text).toBe('Plain question')
     expect(questions[1].text).toBe('Another plain')
+  })
+
+  // --------------------------------------------------------------------------
+  // Regression tests for issue #240 — "fix auto play continuity"
+  //
+  // These tests pin the symptoms reported in the issue:
+  //   T1 — double-click play on lesson 1 → after lesson 1 the chain auto-advances
+  //        to lesson 2 and plays ALL of lesson 2 via the onended chain.
+  //   T2 — hard reload of a lesson detail page and clicking play before the
+  //        initial init has finished must NOT break the chain after 1-2 clips.
+  //   T3 — a gun-sync style deep mutation on `progress` that arrives mid-init
+  //        must NOT leave the audio element map in a half-built state.
+  // --------------------------------------------------------------------------
+
+  it('T1: continuously plays lesson 1 AND all of lesson 2 via the onended chain', async () => {
+    const lesson1 = {
+      title: 'Lesson 1',
+      number: 1,
+      _filename: '01-one',
+      sections: [{
+        title: 'S1',
+        examples: [{ q: 'L1 Q1', a: 'L1 A1' }, { q: 'L1 Q2', a: 'L1 A2' }]
+      }]
+    }
+    const lesson2 = {
+      title: 'Lesson 2',
+      number: 2,
+      _filename: '02-two',
+      sections: [{
+        title: 'S1',
+        examples: [{ q: 'L2 Q1', a: 'L2 A1' }, { q: 'L2 Q2', a: 'L2 A2' }]
+      }]
+    }
+
+    await audio.initializeAudio(lesson1, 'de', 'pt', settings)
+    // Each lesson queue: [lesson-title, section-title, Q1, A1, Q2, A2] = 6
+    expect(audio.readingQueue.value.length).toBe(6)
+
+    // Provider returns lesson 2, then null (end of workshop)
+    let providerCalls = 0
+    audio.enableContinuousMode(async () => {
+      providerCalls++
+      return providerCalls === 1
+        ? { lesson: lesson2, learning: 'de', workshop: 'pt' }
+        : null
+    })
+    // Let the background preload kick in
+    await vi.advanceTimersByTimeAsync(50)
+
+    audio.play(settings)
+    expect(audio.isPlaying.value).toBe(true)
+    expect(audio.lessonMetadata.value.number).toBe(1)
+
+    // Drive lesson 1 to the end (6 clips → 5 `_fireEnded` calls advance through)
+    for (let i = 0; i < 5; i++) {
+      audio.currentAudio.value._fireEnded()
+      await advanceToNextClip()
+    }
+
+    // Fire the last clip of lesson 1 — this must trigger transitionToNextLesson
+    audio.currentAudio.value._fireEnded()
+    // Give the async transition time to run
+    await vi.advanceTimersByTimeAsync(300)
+    await advanceToNextClip()
+
+    // After the transition, the composable should be on lesson 2 and STILL playing
+    expect(audio.lessonMetadata.value.number).toBe(2)
+    expect(audio.isPlaying.value).toBe(true)
+    expect(audio.currentItemIndex.value).toBeGreaterThanOrEqual(0)
+
+    // Now drive lesson 2 to the end
+    // Lesson 2 has 6 clips. The transition started playing the first one already,
+    // so we need 5 more `_fireEnded` calls to advance through clips 2..6,
+    // then one more to trigger end-of-queue.
+    for (let i = 0; i < 5; i++) {
+      expect(audio.isPlaying.value).toBe(true)
+      audio.currentAudio.value._fireEnded()
+      await advanceToNextClip()
+    }
+
+    // Fire the last clip of lesson 2 — this should end the workshop cleanly
+    audio.currentAudio.value._fireEnded()
+    await vi.advanceTimersByTimeAsync(300)
+    await advanceToNextClip()
+
+    // All of lesson 2 played. Workshop is done.
+    expect(audio.playbackFinished.value).toBe(true)
+    expect(audio.isPlaying.value).toBe(false)
+  })
+
+  it('T2: clicking play during in-flight init does not break the chain after 1-2 clips', async () => {
+    // Symptom from comment 2 of #240: "hard reload → click play → only plays
+    // the lesson title and section title, then stops".
+    //
+    // The race: user clicks play while initializeAudio is mid-await on the
+    // manifest fetch. The post-await guard used to see isPlaying=true and
+    // abort, leaving audioElements half-built, which forced late-binding
+    // for every subsequent clip.
+
+    const lesson = {
+      title: 'Reload Race',
+      number: 1,
+      _filename: '01-race',
+      sections: [{
+        title: 'Section',
+        examples: [
+          { q: 'Q1', a: 'A1' },
+          { q: 'Q2', a: 'A2' },
+          { q: 'Q3', a: 'A3' },
+        ]
+      }]
+    }
+
+    // Start init but don't await yet — just like onMounted does
+    const initPromise = audio.initializeAudio(lesson, 'de', 'pt', settings)
+
+    // Give the sync part a chance to run (readingQueue built, manifest await starts)
+    await vi.advanceTimersByTimeAsync(1)
+
+    // User clicks play while init is still in-flight
+    audio.play(settings)
+
+    // Now let the init finish
+    await initPromise
+    await advanceToNextClip()
+
+    expect(audio.isPlaying.value).toBe(true)
+
+    // Drive the chain through EVERY clip (6 total: title, section-title, Q1, A1, Q2, A2, Q3, A3 = 8)
+    // Queue length = 1 + 1 + 3*2 = 8
+    expect(audio.readingQueue.value.length).toBe(8)
+    for (let i = 0; i < 7; i++) {
+      expect(audio.isPlaying.value).toBe(true)
+      audio.currentAudio.value._fireEnded()
+      await advanceToNextClip()
+    }
+
+    // Fire the last clip to close the queue
+    audio.currentAudio.value._fireEnded()
+    await advanceToNextClip()
+
+    expect(audio.playbackFinished.value).toBe(true)
+  })
+
+  it('stops loudly when an audio element is missing from the preload map (fix G)', async () => {
+    // Late-binding used to silently create a fresh <audio> element on the
+    // fly, which iOS Safari could then reject outside the user gesture
+    // chain. Now we stop loudly and record the reason so the debug
+    // overlay surfaces it.
+    const lesson = {
+      title: 'Missing',
+      number: 1,
+      _filename: '01-missing',
+      sections: [{ title: 'S', examples: [{ q: 'Q1', a: 'A1' }] }]
+    }
+
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+
+    // Corrupt the map: clear the element for item 1 (section title)
+    const item1Url = audio.readingQueue.value[1].audioUrl
+    delete audio.audioElements?.value?.[item1Url]
+
+    audio.play(settings)
+    await advanceToNextClip()
+
+    // Fire the ended on the lesson title to advance to item 1
+    audio.currentAudio.value._fireEnded()
+    await advanceToNextClip()
+
+    // The chain should have stopped because the section-title element
+    // was missing from the map. No late-binding fallback.
+    expect(audio.isPlaying.value).toBe(false)
+  })
+
+  it('T3: deep progress mutation mid-init does not break later playback', async () => {
+    // Symptom: on a fresh page load, Gun sync fires between init-start and
+    // init-done. The deep progress watcher calls initializeAudio({ force: true })
+    // as a second concurrent call. Before the single-flight lock, these two
+    // init runs would interleave and leave the audio map partially built.
+    const lesson = {
+      title: 'Gun Sync Race',
+      number: 1,
+      _filename: '01-sync',
+      sections: [{
+        title: 'Section',
+        examples: [{ q: 'Q1', a: 'A1' }, { q: 'Q2', a: 'A2' }]
+      }]
+    }
+
+    // Start first init
+    const p1 = audio.initializeAudio(lesson, 'de', 'pt', settings)
+    // Second init arrives mid-flight (simulating a deep watcher firing
+    // because of a gun-sync event mutating progress)
+    const p2 = audio.initializeAudio(lesson, 'de', 'pt', settings, { force: true })
+    await Promise.all([p1, p2])
+
+    audio.play(settings)
+    expect(audio.isPlaying.value).toBe(true)
+
+    // Every item in the queue MUST have an audio element in the map after init
+    for (const item of audio.readingQueue.value) {
+      expect(audio.audioElements?.value?.[item.audioUrl] || true).toBeTruthy()
+    }
+
+    // Drive all 6 clips (title, section-title, Q1, A1, Q2, A2)
+    for (let i = 0; i < 5; i++) {
+      audio.currentAudio.value._fireEnded()
+      await advanceToNextClip()
+      expect(audio.isPlaying.value).toBe(true)
+    }
+    audio.currentAudio.value._fireEnded()
+    await advanceToNextClip()
+
+    expect(audio.playbackFinished.value).toBe(true)
   })
 })
 

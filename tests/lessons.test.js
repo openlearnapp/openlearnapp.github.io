@@ -196,4 +196,66 @@ describe('useLessons', () => {
     })
 
   })
+
+  describe('loadAllLessonsForWorkshop memoization', () => {
+    // Fix A for #240: re-fetching the whole lesson list on every lesson-to-
+    // lesson navigation widened the race windows in useAudio. Cache hits
+    // have to be instant and return the SAME resolved array.
+
+    function stubLessons(langWorkshop) {
+      // Pre-populate the availableContent map so loadLessonsForWorkshop is a no-op
+      lessons.availableContent.value[langWorkshop.split('/')[0]] = {
+        [langWorkshop.split('/')[1]]: ['01-test.yaml', '02-test.yaml'],
+      }
+    }
+
+    it('returns the cached promise on the second call', async () => {
+      stubLessons('deutsch/cached')
+      let fetchCalls = 0
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockImplementation(() => {
+        fetchCalls++
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve('number: 1\ntitle: T\nsections: []'),
+        })
+      })
+
+      lessons.clearLessonCache()
+      const first = await lessons.loadAllLessonsForWorkshop('deutsch', 'cached')
+      const fetchesAfterFirst = fetchCalls
+
+      const second = await lessons.loadAllLessonsForWorkshop('deutsch', 'cached')
+      // Cache hit: no new fetches
+      expect(fetchCalls).toBe(fetchesAfterFirst)
+      // Same array reference — callers can rely on identity
+      expect(second).toBe(first)
+
+      globalThis.fetch = originalFetch
+    })
+
+    it('clearLessonCache drops the memoized entry', async () => {
+      stubLessons('deutsch/cleared')
+      let fetchCalls = 0
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockImplementation(() => {
+        fetchCalls++
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve('number: 1\ntitle: T\nsections: []'),
+        })
+      })
+
+      lessons.clearLessonCache()
+      await lessons.loadAllLessonsForWorkshop('deutsch', 'cleared')
+      const fetchesAfterFirst = fetchCalls
+
+      lessons.clearLessonCache()
+      await lessons.loadAllLessonsForWorkshop('deutsch', 'cleared')
+      // Cache was cleared → we re-fetched
+      expect(fetchCalls).toBeGreaterThan(fetchesAfterFirst)
+
+      globalThis.fetch = originalFetch
+    })
+  })
 })

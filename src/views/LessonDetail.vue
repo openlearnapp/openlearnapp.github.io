@@ -368,6 +368,7 @@ const {
   isTransitioning, continuousMode, lessonTransitionTick,
   play, pause,
   enableContinuousMode, disableContinuousMode,
+  setWorkshopLessons,
   onSettingsChanged, onProgressChanged, onLessonMount, onLessonUnmount,
   toggleContinuousPlay,
 } = useLessonAudioSync()
@@ -761,23 +762,10 @@ function handlePlayButtonDoubleClick() {
 }
 
 function startContinuousPlay() {
-  toggleContinuousPlay({
-    nextLessonProvider: resolveNextLessonForAudio,
-    audioSettings: audioSettings.value,
-  })
-}
-
-// Provider used by the audio composable to fetch the next lesson when the
-// current one finishes in continuous mode. Returns null at end of workshop.
-async function resolveNextLessonForAudio() {
-  if (!nextLessonNumber.value) return null
-  const nextLesson = allLessons.value.find(l => l.number === nextLessonNumber.value)
-  if (!nextLesson) return null
-  return {
-    lesson: nextLesson,
-    learning: learning.value,
-    workshop: workshop.value,
-  }
+  // After fix C for #240, the audio composable resolves the next lesson
+  // itself via setWorkshopLessons (already called in loadCurrentLesson).
+  // No closure to pass.
+  toggleContinuousPlay({ audioSettings: audioSettings.value })
 }
 
 const playButtonTitle = computed(() => {
@@ -910,23 +898,38 @@ function handleStartContinuousRequest() {
   }
 }
 
-onMounted(async () => {
-  document.addEventListener('keydown', handleKeydown)
-  window.addEventListener('open-learn:start-continuous-play', handleStartContinuousRequest)
+// Load a lesson by route params. Extracted from onMounted so we can call
+// it again from a watcher on route.params.number — this is what makes the
+// "no remount within a workshop" architecture work (fix B for #240).
+async function loadCurrentLesson() {
   window.scrollTo(0, 0)
   const currentLearning = route.params.learning
   const currentWorkshop = route.params.workshop
   const currentLessonNumber = parseInt(route.params.number)
 
-  // Capture stable values for onBeforeUnmount. Route-param-based computed
-  // refs can become stale/undefined during unmount, so we remember what
-  // this instance was tracking.
+  // Reset per-lesson local state. We stay in the same component instance,
+  // so refs from the previous lesson would otherwise leak through.
+  lesson.value = null
+  Object.keys(drafts).forEach(k => delete drafts[k])
+  Object.keys(mcLive).forEach(k => delete mcLive[k])
+  Object.keys(revealedAnswers).forEach(k => delete revealedAnswers[k])
+  activeLabel.value = route.query.label || null
+
+  // Capture stable values for onBeforeUnmount / cleanup. Route-param-based
+  // computed refs can become stale/undefined during unmount.
   mountedLearning = currentLearning
   mountedWorkshop = currentWorkshop
   mountedLessonNumber = currentLessonNumber
 
+  // loadAllLessonsForWorkshop is now memoized (fix A), so this is instant
+  // on every navigation after the first within the same workshop.
   const lessons = await loadAllLessonsForWorkshop(currentLearning, currentWorkshop)
   allLessons.value = lessons
+
+  // Share the lesson list with the audio composable so its built-in
+  // resolver can find "the next lesson" in continuous mode without us
+  // having to pass a fresh closure on every remount (fix C for #240).
+  setWorkshopLessons(currentLearning, currentWorkshop, lessons)
 
   lesson.value = lessons.find(l => l.number === currentLessonNumber)
 
@@ -939,15 +942,15 @@ onMounted(async () => {
     // Set footer navigation data
     setLessonFooter(currentLearning, currentWorkshop, nextLessonNumber.value)
 
-    // Delegate init + autoplay + continuous-mode re-registration to the
-    // pure composable so it can be unit-tested.
+    // Delegate init + autoplay to the pure composable so it can be
+    // unit-tested. setWorkshopLessons was already called above, so the
+    // composable can resolve the next lesson itself in continuous mode.
     await onLessonMount({
       lesson: lesson.value,
       learning: currentLearning,
       workshop: currentWorkshop,
       audioSettings: audioSettings.value,
       autoplay: !!route.query.autoplay,
-      continuousNextLessonProvider: resolveNextLessonForAudio,
     })
     restoreDraftsFromSaved()
 
@@ -959,6 +962,28 @@ onMounted(async () => {
       }
     }
   }
+}
+
+// React to in-workshop lesson navigation WITHOUT a full remount.
+// `:key="lesson-detail:<lang>/<workshop>"` in App.vue keeps the same
+// component instance alive across lesson-to-lesson routing. When only the
+// lesson number changes, this watcher rebinds the state instead of going
+// through mount/unmount. Workshop changes still remount (different key).
+watch(
+  () => [route.params.learning, route.params.workshop, route.params.number],
+  (next, prev) => {
+    if (!prev) return // initial — onMounted handles it
+    const [nl, nw, nn] = next
+    const [pl, pw, pn] = prev
+    if (nl === pl && nw === pw && nn === pn) return
+    loadCurrentLesson()
+  }
+)
+
+onMounted(async () => {
+  document.addEventListener('keydown', handleKeydown)
+  window.addEventListener('open-learn:start-continuous-play', handleStartContinuousRequest)
+  await loadCurrentLesson()
 })
 
 onBeforeUnmount(() => {

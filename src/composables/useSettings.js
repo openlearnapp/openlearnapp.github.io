@@ -1,5 +1,6 @@
 import { ref, watch } from 'vue'
 import { useGun } from './useGun'
+import { setAudioDebugEnabled } from './useAudioDebug'
 
 // Shared state across all component instances (singleton pattern)
 const settings = ref({
@@ -86,9 +87,11 @@ function initializeWatchers() {
     saveSettings()
   })
 
-  watch(() => settings.value.showDebugOverlay, () => {
+  watch(() => settings.value.showDebugOverlay, (enabled) => {
     saveSettings()
-  })
+    // Keep the audio-debug event log in sync so the overlay gets populated.
+    setAudioDebugEnabled(enabled)
+  }, { immediate: true })
 
   // Listen for real-time Gun sync events from other devices/tabs
   window.addEventListener('gun-sync', (e) => {
