@@ -43,6 +43,17 @@ const isLoading = ref(false)
 const loadedSourceLangs = new Set()
 let loadingPromise = null
 
+// Memoization cache for loadAllLessonsForWorkshop. Every remount of
+// LessonDetail used to re-fetch the full lesson list, which widened the
+// race windows that caused issue #240. Keyed by `lang/workshop`. Stores
+// the resolved Promise so concurrent callers dedupe onto the same fetch.
+// Invalidated by clearLessonCache() whenever contentSources change.
+const lessonsCache = new Map()
+
+function clearLessonCache() {
+  lessonsCache.clear()
+}
+
 async function loadDefaultSources() {
   if (defaultContentSources.length > 0) return defaultContentSources
   if (defaultSourcesPromise) return defaultSourcesPromise
@@ -121,6 +132,10 @@ export function useLessons() {
     const map = getSourceMap()
     map[url] = Date.now()
     saveSourceMap(map)
+    // Adding a source may add new lessons to an already-visited workshop,
+    // so drop the memoized lesson list too.
+    clearLessonCache()
+    loadedSourceLangs.clear()
   }
 
   // Remove a content source
@@ -128,6 +143,8 @@ export function useLessons() {
     const map = getSourceMap()
     map[url] = -Date.now()
     saveSourceMap(map)
+    clearLessonCache()
+    loadedSourceLangs.clear()
   }
 
   // Check if a workshop key is from a remote content source
@@ -613,42 +630,54 @@ export function useLessons() {
   }
 
   async function loadAllLessonsForWorkshop(lang, workshop) {
-    try {
+    // Memoized — see comment on `lessonsCache` above. If the same workshop
+    // is requested again (typical: LessonDetail re-loads for a different
+    // lesson number within the same workshop), return the cached Promise
+    // instead of re-fetching everything.
+    const cacheKey = `${lang}/${workshop}`
+    if (lessonsCache.has(cacheKey)) {
+      return lessonsCache.get(cacheKey)
+    }
 
+    const promise = (async () => {
+      try {
+        // Load the lesson list first (this will ensure workshops are loaded too)
+        await loadLessonsForWorkshop(lang, workshop)
 
-      // Load the lesson list first (this will ensure workshops are loaded too)
-      await loadLessonsForWorkshop(lang, workshop)
+        const lessonFiles = availableContent.value[lang]?.[workshop]
 
-      const lessonFiles = availableContent.value[lang]?.[workshop]
+        if (!lessonFiles || lessonFiles.length === 0) {
+          console.error(`❌ No lesson files found for ${lang}/${workshop}`)
+          return []
+        }
 
-      if (!lessonFiles || lessonFiles.length === 0) {
-        console.error(`❌ No lesson files found for ${lang}/${workshop}`)
+        // Load all lessons in parallel (#119)
+        const loaded = await Promise.all(
+          lessonFiles.map(async (filename) => {
+            const lesson = await loadLesson(lang, workshop, filename)
+            if (lesson) {
+              const source = parseSource(filename)
+              lesson._filename = source ? source.path.replace(/\.yaml$/, '') : filename.replace(/\.yaml$/, '')
+            }
+            return lesson
+          })
+        )
+        const lessons = loaded.filter(Boolean)
+
+        const sortedLessons = lessons.sort((a, b) => a.number - b.number)
+        console.log(`📖 Loaded ${sortedLessons.length} lessons for ${workshop}`)
+
+        return sortedLessons
+      } catch (error) {
+        console.error(`❌ Error loading all lessons for ${lang}/${workshop}:`, error)
+        // Drop the failed promise from the cache so a retry gets a fresh chance
+        lessonsCache.delete(cacheKey)
         return []
       }
+    })()
 
-
-
-      // Load all lessons in parallel (#119)
-      const loaded = await Promise.all(
-        lessonFiles.map(async (filename) => {
-          const lesson = await loadLesson(lang, workshop, filename)
-          if (lesson) {
-            const source = parseSource(filename)
-            lesson._filename = source ? source.path.replace(/\.yaml$/, '') : filename.replace(/\.yaml$/, '')
-          }
-          return lesson
-        })
-      )
-      const lessons = loaded.filter(Boolean)
-
-      const sortedLessons = lessons.sort((a, b) => a.number - b.number)
-      console.log(`📖 Loaded ${sortedLessons.length} lessons for ${workshop}`)
-
-      return sortedLessons
-    } catch (error) {
-      console.error(`❌ Error loading all lessons for ${lang}/${workshop}:`, error)
-      return []
-    }
+    lessonsCache.set(cacheKey, promise)
+    return promise
   }
 
   // Get language code for a language folder
@@ -683,6 +712,9 @@ export function useLessons() {
           localStorage.setItem('contentSources', JSON.stringify(local))
           // Clear workshop cache so next navigation loads the new sources
           loadedSourceLangs.clear()
+          // Also drop the memoized lesson list — a new source might change
+          // which lessons exist for an already-visited workshop.
+          clearLessonCache()
           // Notify the app that sources changed (views can reload)
           window.dispatchEvent(new CustomEvent('content-sources-changed'))
         }
@@ -700,6 +732,7 @@ export function useLessons() {
     loadLessonsForWorkshop,
     loadLesson,
     loadAllLessonsForWorkshop,
+    clearLessonCache,
     getLanguageCode,
     getWorkshopCode,
     getContentSources,
