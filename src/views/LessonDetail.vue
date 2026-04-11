@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="lesson">
-      <div v-if="lesson.image" class="mb-5 rounded-lg overflow-hidden shadow-sm">
+      <div v-if="lesson.image && !isInFocusMode" class="mb-5 rounded-lg overflow-hidden shadow-sm">
         <img
           :src="resolveImagePath(lesson.image)"
           :alt="lesson.image_caption || lesson.title"
@@ -15,7 +15,7 @@
       <h2 class="text-3xl font-bold text-foreground mb-3">
         {{ lesson.title }}
       </h2>
-      <p v-if="lesson.description" class="text-muted-foreground mb-5 text-lg">
+      <p v-if="lesson.description && !isInFocusMode" class="text-muted-foreground mb-5 text-lg">
         {{ lesson.description }}
       </p>
 
@@ -72,7 +72,7 @@
           </div>
         </CardHeader>
         <CardContent class="p-0">
-          <div v-if="section.video && !activeLabel" class="mb-4">
+          <div v-if="section.video && !activeLabel && !isInFocusMode" class="mb-4">
             <iframe
               v-if="isYouTubeUrl(section.video)"
               :src="normalizeVideoUrl(section.video)"
@@ -90,7 +90,7 @@
             </video>
           </div>
 
-          <div v-if="section.image && !activeLabel" class="mb-4">
+          <div v-if="section.image && !activeLabel && !isInFocusMode" class="mb-4">
             <img
               :src="resolveImagePath(section.image)"
               :alt="section.image_caption || section.title"
@@ -124,7 +124,7 @@
           </Teleport>
 
           <div
-            v-if="section.explanation && !activeLabel"
+            v-if="section.explanation && !activeLabel && !isInFocusMode"
             class="bg-muted/60 p-4 rounded-lg mb-4 border-l-4 border-primary/30 prose prose-sm dark:prose-invert max-w-none"
             v-html="DOMPurify.sanitize(marked(section.explanation))">
           </div>
@@ -275,7 +275,7 @@
             </div>
               </div><!-- end flex-1 text column -->
 
-              <div v-if="example.image" class="flex-shrink-0 w-32 sm:w-40">
+              <div v-if="example.image && !isInFocusMode" class="flex-shrink-0 w-32 sm:w-40">
                 <img
                   :src="resolveImagePath(example.image)"
                   :alt="example.image_caption || example.q"
