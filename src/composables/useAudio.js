@@ -42,7 +42,29 @@ const workshopContext = ref({ learning: null, workshop: null, lessons: [] })
 // and callers that don't yet use setWorkshopLessons. Prefer the context model.
 const nextLessonProvider = ref(null) // () => Promise<{ lesson, learning, workshop } | null>
 const isTransitioning = ref(false)   // true while we swap queues between lessons
-const preloadedNextLesson = ref(null) // { lesson, learning, workshop, queue, audioMap }
+
+// Preload queue: lessons ahead of the currently playing one, with their
+// Audio elements already created. Filled by preloadAllUpcomingLessons when
+// the user enables continuous mode (fix E for #240). transitionToNextLesson
+// shifts from the head; background top-ups refill the tail until the
+// playtime budget is spent.
+const preloadedLessons = ref([]) // [{ lesson, learning, workshop, queue, audioMap, estimatedSeconds }]
+
+// Legacy alias for the single-next-lesson preload (kept for backwards compat
+// with tests that still check preloadedNextLesson.value directly). Mirrors
+// the head of preloadedLessons.
+const preloadedNextLesson = ref(null)
+
+// Playtime budget for the upfront preload, in seconds. Set to 1 hour per
+// #240 discussion: "no cap, or summarize playtime and cap at 1 hour".
+// Large workshops are capped; typical workshops fit entirely.
+const CONTINUOUS_PRELOAD_PLAYTIME_BUDGET_SECONDS = 60 * 60
+
+// Rough estimate of seconds per audio clip before loadedmetadata fires.
+// Used as a placeholder so we can bound the preload before the real
+// audio.duration values come in.
+const ESTIMATED_SECONDS_PER_CLIP = 5
+
 // Monotonic counter: incremented each time we swap to a new lesson in-place.
 // The view layer watches this to sync the URL without tearing down the audio.
 const lessonTransitionTick = ref(0)
@@ -350,7 +372,10 @@ async function initializeAudio(lesson, learning, workshop, settings, { force = f
     isPaused.value = false
     currentAudio.value = null
 
-    // Drop any preloaded next-lesson from a previous workshop/session
+    // Drop any preload queue from a previous workshop/session. We don't
+    // release the audio elements here because the continuous-mode flow is
+    // expected to rebuild them via preloadAllUpcomingLessons on next start.
+    preloadedLessons.value = []
     preloadedNextLesson.value = null
 
     // Setup Media Session API
@@ -860,18 +885,32 @@ function enableContinuousMode(provider) {
     kind: 'continuous-mode-enabled',
     mode: provider ? 'legacy-provider' : 'context',
   })
-  // Kick off a background preload of the next lesson so the transition is seamless
-  preloadNextLesson().catch(() => { /* best effort */ })
+  // Fix E for #240: when we have a workshop context (set via
+  // setWorkshopLessons), fill the preload queue with the whole remaining
+  // workshop up to the playtime budget. This runs inside the user's gesture
+  // so all <audio> elements exist before the chain advances, which is what
+  // iOS Safari needs for reliable auto-advance on the lock screen.
+  //
+  // Fall back to the single-lesson preload when no context is set (legacy
+  // provider path).
+  const ctx = workshopContext.value
+  if (ctx && ctx.lessons && ctx.lessons.length > 0 && !provider) {
+    preloadAllUpcomingLessons().catch(() => { /* best effort */ })
+  } else {
+    preloadNextLesson().catch(() => { /* best effort */ })
+  }
 }
 
 function disableContinuousMode() {
   continuousMode.value = false
   nextLessonProvider.value = null
-  // Release any preloaded next-lesson audio
-  if (preloadedNextLesson.value) {
-    releaseAudioElements(preloadedNextLesson.value.audioMap)
-    preloadedNextLesson.value = null
+  // Release the whole preload queue. Each entry holds an audioMap with
+  // pre-created <audio> elements that we need to pause/clear.
+  for (const entry of preloadedLessons.value) {
+    releaseAudioElements(entry.audioMap)
   }
+  preloadedLessons.value = []
+  preloadedNextLesson.value = null
   recordAudioEvent({ kind: 'continuous-mode-disabled' })
 }
 
@@ -892,8 +931,114 @@ async function resolveNextLesson() {
   return null
 }
 
-// Preload the next lesson's audio in the background while the current one plays.
-// Called after initializeAudio and after each transition.
+// Build a preloaded lesson record (queue + audioMap + estimated playtime).
+async function buildPreloadedLesson(lesson, learning, workshop) {
+  const settings = latestAudioSettingsRef.value || { readAnswers: true, audioSpeed: 1.0 }
+  const queue = buildReadingQueue(lesson, learning, workshop, settings)
+  const audioBase = getAudioBase(lesson, learning, workshop)
+  const manifest = await fetchAudioManifest(audioBase)
+  const audioMap = preloadAudioFiles(queue, manifest)
+
+  // Estimate playtime. Use audio.duration if loadedmetadata already fired,
+  // otherwise fall back to ESTIMATED_SECONDS_PER_CLIP per queue item.
+  // The estimate is rough and used only to bound the preload — accurate
+  // timing is unnecessary.
+  let estimatedSeconds = 0
+  for (const item of queue) {
+    const audio = audioMap[item.audioUrl]
+    if (audio && !Number.isNaN(audio.duration) && audio.duration > 0) {
+      estimatedSeconds += audio.duration
+    } else {
+      estimatedSeconds += ESTIMATED_SECONDS_PER_CLIP
+    }
+  }
+
+  return { lesson, learning, workshop, queue, audioMap, estimatedSeconds }
+}
+
+// Sum of estimated playtime of all lessons currently in the preload queue.
+function sumPreloadedPlaytime() {
+  return preloadedLessons.value.reduce((s, l) => s + l.estimatedSeconds, 0)
+}
+
+/**
+ * Preload every remaining lesson in the workshop, up to a 1-hour playtime
+ * budget. Called from inside the user's double-click gesture handler so all
+ * Audio elements exist before the chain advances — this is what keeps iOS
+ * happy across continuous-mode transitions (fix E for #240).
+ */
+async function preloadAllUpcomingLessons() {
+  if (!continuousMode.value) {
+    recordAudioEvent({ kind: 'preload-all-skip', reason: 'not-continuous' })
+    return
+  }
+
+  const ctx = workshopContext.value
+  if (!ctx || !ctx.lessons || ctx.lessons.length === 0) {
+    recordAudioEvent({ kind: 'preload-all-skip', reason: 'no-workshop-context' })
+    return
+  }
+
+  // Find the current lesson's index in the workshop context
+  const currentNumber = lessonMetadata.value.number
+  const currentIdx = ctx.lessons.findIndex(l => l.number === currentNumber)
+  if (currentIdx < 0) {
+    recordAudioEvent({ kind: 'preload-all-skip', reason: 'current-lesson-not-in-context' })
+    return
+  }
+
+  // Release any existing preload queue so we start fresh
+  for (const entry of preloadedLessons.value) {
+    releaseAudioElements(entry.audioMap)
+  }
+  preloadedLessons.value = []
+  preloadedNextLesson.value = null
+
+  recordAudioEvent({
+    kind: 'preload-all-start',
+    budgetSeconds: CONTINUOUS_PRELOAD_PLAYTIME_BUDGET_SECONDS,
+    upcomingCount: ctx.lessons.length - currentIdx - 1,
+  })
+
+  let lessonsAdded = 0
+  for (let i = currentIdx + 1; i < ctx.lessons.length; i++) {
+    // Budget check: stop adding lessons once we exceed the playtime cap
+    if (sumPreloadedPlaytime() >= CONTINUOUS_PRELOAD_PLAYTIME_BUDGET_SECONDS) {
+      recordAudioEvent({
+        kind: 'preload-all-budget-exceeded',
+        added: lessonsAdded,
+        remaining: ctx.lessons.length - i,
+        playtimeSeconds: sumPreloadedPlaytime(),
+      })
+      break
+    }
+
+    try {
+      const entry = await buildPreloadedLesson(ctx.lessons[i], ctx.learning, ctx.workshop)
+      preloadedLessons.value.push(entry)
+      lessonsAdded++
+    } catch (e) {
+      recordAudioEvent({
+        kind: 'preload-all-error',
+        lesson: ctx.lessons[i].title,
+        error: e && e.message ? e.message : String(e),
+      })
+    }
+  }
+
+  // Mirror the head into the legacy single-preload slot for backwards compat
+  preloadedNextLesson.value = preloadedLessons.value[0] || null
+
+  recordAudioEvent({
+    kind: 'preload-all-done',
+    added: lessonsAdded,
+    playtimeSeconds: Math.round(sumPreloadedPlaytime()),
+  })
+}
+
+// Preload the single next lesson's audio in the background. Called as a
+// best-effort fallback when continuous mode is enabled without
+// preloadAllUpcomingLessons (e.g. legacy callers).
 async function preloadNextLesson() {
   if (!continuousMode.value) {
     recordAudioEvent({ kind: 'preload-skip', reason: 'not-continuous' })
@@ -912,18 +1057,18 @@ async function preloadNextLesson() {
     }
 
     const { lesson, learning, workshop } = next
-    const settings = latestAudioSettingsRef.value || { readAnswers: true, audioSpeed: 1.0 }
-    const queue = buildReadingQueue(lesson, learning, workshop, settings)
-    const audioBase = getAudioBase(lesson, learning, workshop)
-    const manifest = await fetchAudioManifest(audioBase)
-    const audioMap = preloadAudioFiles(queue, manifest)
+    const entry = await buildPreloadedLesson(lesson, learning, workshop)
 
-    preloadedNextLesson.value = { lesson, learning, workshop, queue, audioMap }
+    // Push to the queue too, so the transition path sees it
+    preloadedLessons.value.push(entry)
+    preloadedNextLesson.value = entry
     console.log(`🔄 Preloaded next lesson: "${lesson.title}"`)
     recordAudioEvent({
       kind: 'preload-built',
       lesson: lesson.title, lessonNumber: lesson.number,
-      queueLength: queue.length, fileCount: Object.keys(audioMap).length,
+      queueLength: entry.queue.length,
+      fileCount: Object.keys(entry.audioMap).length,
+      estimatedSeconds: Math.round(entry.estimatedSeconds),
     })
   } catch (e) {
     recordAudioEvent({ kind: 'preload-error', error: e && e.message ? e.message : String(e) })
@@ -945,22 +1090,20 @@ async function transitionToNextLesson(settings) {
     return false
   }
 
-  // Use the preloaded lesson if available; otherwise resolve one now
-  let next = preloadedNextLesson.value
+  // Shift the head of the preload queue. This is the happy path after fix E
+  // for #240 — preloadAllUpcomingLessons filled the queue inside the user's
+  // gesture, so every transition pops an already-loaded record.
+  let next = preloadedLessons.value.shift()
+
   if (!next) {
-    recordAudioEvent({ kind: 'transition-build-inline', reason: 'no-preload' })
+    recordAudioEvent({ kind: 'transition-build-inline', reason: 'no-preload-queue' })
     try {
       const resolved = await resolveNextLesson()
       if (!resolved || !resolved.lesson) {
         recordAudioEvent({ kind: 'transition-end-of-workshop' })
         return false
       }
-      const { lesson, learning, workshop } = resolved
-      const queue = buildReadingQueue(lesson, learning, workshop, settings)
-      const audioBase = getAudioBase(lesson, learning, workshop)
-      const manifest = await fetchAudioManifest(audioBase)
-      const audioMap = preloadAudioFiles(queue, manifest)
-      next = { lesson, learning, workshop, queue, audioMap }
+      next = await buildPreloadedLesson(resolved.lesson, resolved.learning, resolved.workshop)
     } catch (e) {
       recordAudioEvent({
         kind: 'transition-build-error',
@@ -970,8 +1113,15 @@ async function transitionToNextLesson(settings) {
       return false
     }
   } else {
-    recordAudioEvent({ kind: 'transition-use-preload', lesson: next.lesson.title })
+    recordAudioEvent({
+      kind: 'transition-use-preload',
+      lesson: next.lesson.title,
+      remainingPreloads: preloadedLessons.value.length,
+    })
   }
+
+  // Update the legacy single-slot mirror to the new head
+  preloadedNextLesson.value = preloadedLessons.value[0] || null
 
   const { lesson, learning, workshop, queue, audioMap } = next
 
@@ -991,7 +1141,9 @@ async function transitionToNextLesson(settings) {
   audioElements.value = audioMap
   hasAudio.value = Object.keys(audioMap).length > 0
   currentItemIndex.value = -1
-  preloadedNextLesson.value = null
+  // The preload queue was shifted at the top of transitionToNextLesson;
+  // update the legacy mirror to the new head.
+  preloadedNextLesson.value = preloadedLessons.value[0] || null
 
   // Bump the transition tick so the view layer updates the URL (router.replace)
   // WITHOUT going through playbackFinished (which is reserved for "the whole
@@ -1009,8 +1161,39 @@ async function transitionToNextLesson(settings) {
     recordAudioEvent({ kind: 'transition-released-old-map', count: Object.keys(toRelease).length })
   }, 200)
 
-  // Start preloading the lesson AFTER this one
-  setTimeout(() => preloadNextLesson(), 0)
+  // Top up the preload queue — we just consumed an entry, so check whether
+  // there's budget and more lessons to add. If we're using the workshop
+  // context path, try to add one more lesson to the tail; otherwise fall
+  // back to the legacy single-lesson preload.
+  setTimeout(async () => {
+    if (!continuousMode.value) return
+    const ctx = workshopContext.value
+    if (ctx && ctx.lessons && ctx.lessons.length > 0 && !nextLessonProvider.value) {
+      // Find the lesson number AFTER the last one currently preloaded
+      const last = preloadedLessons.value[preloadedLessons.value.length - 1]
+      const pivotNumber = last ? last.lesson.number : lessonMetadata.value.number
+      const pivotIdx = ctx.lessons.findIndex(l => l.number === pivotNumber)
+      if (pivotIdx < 0 || pivotIdx >= ctx.lessons.length - 1) return
+      if (sumPreloadedPlaytime() >= CONTINUOUS_PRELOAD_PLAYTIME_BUDGET_SECONDS) return
+      try {
+        const entry = await buildPreloadedLesson(
+          ctx.lessons[pivotIdx + 1], ctx.learning, ctx.workshop
+        )
+        preloadedLessons.value.push(entry)
+        preloadedNextLesson.value = preloadedLessons.value[0] || null
+        recordAudioEvent({
+          kind: 'preload-topup-added',
+          lesson: entry.lesson.title,
+          queueSize: preloadedLessons.value.length,
+          playtimeSeconds: Math.round(sumPreloadedPlaytime()),
+        })
+      } catch (e) {
+        recordAudioEvent({ kind: 'preload-topup-error', error: e && e.message ? e.message : String(e) })
+      }
+    } else {
+      preloadNextLesson()
+    }
+  }, 0)
 
   recordAudioEvent({
     kind: 'transition-done',
@@ -1064,10 +1247,12 @@ function cleanup() {
   // it's the "same lesson" and skip initialization.
   lessonMetadata.value = { learning: '', workshop: '', number: null }
 
-  if (preloadedNextLesson.value) {
-    releaseAudioElements(preloadedNextLesson.value.audioMap)
-    preloadedNextLesson.value = null
+  // Drain the preload queue — every entry holds pre-created audio elements.
+  for (const entry of preloadedLessons.value) {
+    releaseAudioElements(entry.audioMap)
   }
+  preloadedLessons.value = []
+  preloadedNextLesson.value = null
 
   // Clear workshopContext too so the next init starts from a clean slate.
   workshopContext.value = { learning: null, workshop: null, lessons: [] }
