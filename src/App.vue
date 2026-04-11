@@ -228,7 +228,16 @@
     <div class="p-8" :class="contentBgClass">
       <RouterView v-slot="{ Component, route: currentRoute }">
         <Transition name="fade" mode="out-in">
-          <component :is="Component" :key="currentRoute.path" @update-title="updatePageTitle" />
+          <!-- Key strategy (fix B for #240):
+               - Within the same workshop on the lesson-detail route we keep the
+                 SAME component instance across lesson-to-lesson navigation.
+                 LessonDetail watches route.params.number reactively and re-binds
+                 its state instead of a full remount. This is critical for
+                 continuous-mode audio playback: the chain keeps running and
+                 iOS preserves the media engagement.
+               - Every other route keeps the previous full-path-keyed behaviour
+                 so unrelated navigations still remount cleanly. -->
+          <component :is="Component" :key="viewKey(currentRoute)" @update-title="updatePageTitle" />
         </Transition>
       </RouterView>
     </div>
@@ -706,6 +715,15 @@ const appPlayButtonAriaLabel = computed(() => {
   if (continuousMode.value) return t('nav.continuousPlayActive')
   return isPlaying.value ? t('nav.pauseAudio') : t('nav.playAudio')
 })
+
+// Router-view key strategy. See the comment on the `<component :key>`
+// binding in the template above.
+function viewKey(route) {
+  if (route.name === 'lesson-detail') {
+    return `lesson-detail:${route.params.learning}/${route.params.workshop}`
+  }
+  return route.fullPath
+}
 
 function updatePageTitle(title) {
   pageTitle.value = title

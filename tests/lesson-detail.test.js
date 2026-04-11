@@ -257,6 +257,29 @@ describe('LessonDetail.vue — component mount tests', () => {
     expect(audio.readingQueue.value).toBe(queueRef)
   })
 
+  it('in-workshop navigation swaps lesson state without remounting (fix B)', async () => {
+    // The view should bind to route.params.number reactively. When the
+    // router pushes a new lesson number within the same workshop, the
+    // SAME component instance should re-run its lesson-loading logic and
+    // the composable should be on the new lesson — no unmount/remount.
+    const { wrapper, router, audio } = await mountLessonDetail({ lessonNumber: 1 })
+
+    expect(audio.lessonMetadata.value.number).toBe(1)
+    expect(wrapper.text()).toContain('Lesson 1')
+
+    // Navigate to lesson 2 — same workshop, same instance
+    await router.push({
+      name: 'lesson-detail',
+      params: { learning: 'de', workshop: 'pt', number: '2' },
+    })
+    await flushPromises()
+    await flushPromises()
+
+    // Same wrapper, new state
+    expect(audio.lessonMetadata.value.number).toBe(2)
+    expect(wrapper.text()).toContain('Lesson 2')
+  })
+
   it('unmounting while playing the same lesson cleans up audio', async () => {
     const { wrapper, audio } = await mountLessonDetail({ lessonNumber: 1 })
     expect(audio.readingQueue.value.length).toBeGreaterThan(0)
