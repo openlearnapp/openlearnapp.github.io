@@ -530,26 +530,27 @@ async function playNextItem(settings) {
   }
 
   try {
-    // Get pre-loaded audio element
-    let audio = audioElements.value[item.audioUrl]
+    // Get pre-loaded audio element. After fix G for #240, late-binding is
+    // a hard error — every item in the queue MUST have an entry in the
+    // audioElements map by the time the chain reaches it. iOS Safari
+    // rejects `new Audio().play()` calls made outside the original user
+    // gesture chain, which silently killed the chain whenever the map
+    // had been partially built. Now we stop loudly and record the reason
+    // so the debug overlay surfaces it.
+    const audio = audioElements.value[item.audioUrl]
 
     if (!audio) {
-      // Late-bind is a bug surface — on iOS, a freshly-created <audio>
-      // element played outside a user gesture chain may be rejected by
-      // the browser, which silently stops the chain. Record it so the
-      // debug overlay can show the reason and the late-bound fallback
-      // gives us a chance to recover for the common case.
       recordAudioEvent({
-        kind: 'late-bind',
+        kind: 'late-bind-stop',
         url: item.audioUrl,
         type: item.type,
         index: currentItemIndex.value,
         queueLength: readingQueue.value.length,
         mapSize: Object.keys(audioElements.value).length,
       })
-      audio = new Audio(item.audioUrl)
-      audio.preload = 'auto'
-      audioElements.value[item.audioUrl] = audio
+      console.error(`🛑 AUDIO STOP: missing preloaded audio for ${item.audioUrl}`)
+      stop()
+      return
     }
 
     currentAudio.value = audio
@@ -641,12 +642,20 @@ async function playCurrentItem(settings) {
   }
 
   try {
-    let audio = audioElements.value[item.audioUrl]
+    const audio = audioElements.value[item.audioUrl]
 
     if (!audio) {
-      audio = new Audio(item.audioUrl)
-      audio.preload = 'auto'
-      audioElements.value[item.audioUrl] = audio
+      // See comment in playNextItem — no late-binding (fix G for #240).
+      recordAudioEvent({
+        kind: 'late-bind-stop',
+        url: item.audioUrl,
+        type: item.type,
+        index: currentItemIndex.value,
+        source: 'playCurrentItem',
+      })
+      console.error(`🛑 AUDIO STOP: resumed item missing from preload map: ${item.audioUrl}`)
+      stop()
+      return
     }
 
     currentAudio.value = audio
@@ -667,15 +676,36 @@ async function playCurrentItem(settings) {
   }
 }
 
-// Start playing from beginning or continue
-function play(settings) {
-  if (readingQueue.value.length === 0) {
+// Start playing from beginning or continue.
+//
+// play() is async so it can await an in-flight initializeAudio call (fix G
+// for #240). This is what gives us the invariant "by the time playNextItem
+// looks up an audio element in audioElements.value, the map is fully built".
+// Modern browsers (Chrome, Safari, Firefox) keep the user gesture valid
+// across an await as long as no setTimeout intervenes — awaiting the
+// manifest fetch + preloadAudioFiles synchronous work is safe.
+async function play(settings) {
+  if (readingQueue.value.length === 0 && !_initInFlight) {
     recordAudioEvent({ kind: 'play-skip-empty-queue' })
     console.warn('⚠️ No items in reading queue')
     return
   }
 
   latestAudioSettingsRef.value = settings
+
+  // If an init is mid-flight, wait for it to finish. The audioElements
+  // map will be fully populated by the time it returns.
+  if (_initInFlight) {
+    recordAudioEvent({ kind: 'play-await-init' })
+    try { await _initInFlight } catch {}
+  }
+
+  // Re-check queue after awaiting init (the init may have built it)
+  if (readingQueue.value.length === 0) {
+    recordAudioEvent({ kind: 'play-skip-empty-queue-after-init' })
+    console.warn('⚠️ No items in reading queue')
+    return
+  }
 
   // Guard: if the chain is already running (isPlaying=true and not paused),
   // don't re-enter. We check isPlaying+isPaused instead of currentAudio.paused
@@ -804,12 +834,17 @@ async function playSingleItem(index, settings, onEnded) {
   }
 
   try {
-    let audio = audioElements.value[item.audioUrl]
+    const audio = audioElements.value[item.audioUrl]
 
     if (!audio) {
-      audio = new Audio(item.audioUrl)
-      audio.preload = 'auto'
-      audioElements.value[item.audioUrl] = audio
+      recordAudioEvent({
+        kind: 'late-bind-stop',
+        url: item.audioUrl,
+        type: item.type,
+        source: 'playSingleItem',
+      })
+      console.warn(`🛑 Single-item play skipped — missing from preload map: ${item.audioUrl}`)
+      return
     }
 
     // Stop any current audio
@@ -1312,6 +1347,7 @@ export function useAudio() {
     currentItem,
     currentItemIndex,
     readingQueue,
+    audioElements,
     lessonMetadata,
     initializeAudio,
     play,

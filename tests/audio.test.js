@@ -1183,6 +1183,36 @@ describe('end-to-end playback chain', () => {
     expect(audio.playbackFinished.value).toBe(true)
   })
 
+  it('stops loudly when an audio element is missing from the preload map (fix G)', async () => {
+    // Late-binding used to silently create a fresh <audio> element on the
+    // fly, which iOS Safari could then reject outside the user gesture
+    // chain. Now we stop loudly and record the reason so the debug
+    // overlay surfaces it.
+    const lesson = {
+      title: 'Missing',
+      number: 1,
+      _filename: '01-missing',
+      sections: [{ title: 'S', examples: [{ q: 'Q1', a: 'A1' }] }]
+    }
+
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+
+    // Corrupt the map: clear the element for item 1 (section title)
+    const item1Url = audio.readingQueue.value[1].audioUrl
+    delete audio.audioElements?.value?.[item1Url]
+
+    audio.play(settings)
+    await advanceToNextClip()
+
+    // Fire the ended on the lesson title to advance to item 1
+    audio.currentAudio.value._fireEnded()
+    await advanceToNextClip()
+
+    // The chain should have stopped because the section-title element
+    // was missing from the map. No late-binding fallback.
+    expect(audio.isPlaying.value).toBe(false)
+  })
+
   it('T3: deep progress mutation mid-init does not break later playback', async () => {
     // Symptom: on a fresh page load, Gun sync fires between init-start and
     // init-done. The deep progress watcher calls initializeAudio({ force: true })
