@@ -101,7 +101,17 @@ const routes = [
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
   routes,
-  scrollBehavior() {
+  scrollBehavior(to, from) {
+    // Preserve scroll position when only the query string changes on the
+    // same route (e.g. activating/clearing the label filter on a lesson).
+    // Otherwise scroll to top on navigation.
+    if (
+      to.name === from.name &&
+      JSON.stringify(to.params) === JSON.stringify(from.params) &&
+      to.path === from.path
+    ) {
+      return false
+    }
     return { top: 0 }
   }
 })
