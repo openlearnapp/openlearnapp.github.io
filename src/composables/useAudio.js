@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { useLessons } from './useLessons'
 import { useProgress } from './useProgress'
 import { useGun } from './useGun'
+import { recordAudioEvent } from './useAudioDebug'
 
 // Get lesson composable for language codes
 const { getLanguageCode, getWorkshopCode, resolveWorkshopKey, getWorkshopMeta } = useLessons()
@@ -257,6 +258,7 @@ async function initializeAudio(lesson, learning, workshop, settings, { force = f
   // Serialize concurrent calls. If another init is already in-flight, wait
   // for it, then re-evaluate whether we still need to run.
   if (_initInFlight) {
+    recordAudioEvent({ kind: 'init-wait-in-flight', lesson: lesson.title, force })
     try { await _initInFlight } catch {}
   }
 
@@ -269,16 +271,26 @@ async function initializeAudio(lesson, learning, workshop, settings, { force = f
       meta.workshop === workshop &&
       meta.number === lesson.number
 
+    recordAudioEvent({
+      kind: 'init-start',
+      lesson: lesson.title, lessonNumber: lesson.number,
+      learning, workshop, force, isSameLesson,
+      hasAudio: hasAudio.value, isLoading: isLoadingAudio.value,
+      isPlaying: isPlaying.value, isPaused: isPaused.value,
+    })
+
     // During a continuous-mode transition, the composable has already loaded
     // the new lesson in-place. Skip re-initialization so we don't destroy
     // the active audio element and iOS media session.
     if (isSameLesson && hasAudio.value && !isLoadingAudio.value && !force) {
+      recordAudioEvent({ kind: 'init-skip-idempotent', lesson: lesson.title })
       return
     }
 
     // Defensive: never tear down the queue of an actively playing lesson.
     // The caller can re-trigger a rebuild after the user pauses.
     if (isSameLesson && force && (isPlaying.value || isPaused.value)) {
+      recordAudioEvent({ kind: 'init-skip-force-during-playback', lesson: lesson.title })
       console.log(`🎧 Skipping force rebuild of "${lesson.title}" — playback is active`)
       return
     }
@@ -289,6 +301,10 @@ async function initializeAudio(lesson, learning, workshop, settings, { force = f
     playbackFinished.value = false
     isLoadingAudio.value = true
     readingQueue.value = buildReadingQueue(lesson, learning, workshop, settings)
+    recordAudioEvent({
+      kind: 'init-queue-built',
+      lesson: lesson.title, queueLength: readingQueue.value.length,
+    })
 
     // Fetch manifest to know which audio files exist (if missing, load all)
     const audioBase = getAudioBase(lesson, learning, workshop)
@@ -298,6 +314,7 @@ async function initializeAudio(lesson, learning, workshop, settings, { force = f
     // fired play() as soon as we yielded), do NOT clobber the running state.
     // The queue will be rebuilt on the next pause/resume or explicit call.
     if (isPlaying.value || isPaused.value) {
+      recordAudioEvent({ kind: 'init-abort-playback-started', lesson: lesson.title })
       console.log(`🎧 Playback started during init — aborting rebuild of "${lesson.title}"`)
       isLoadingAudio.value = false
       return
@@ -310,7 +327,14 @@ async function initializeAudio(lesson, learning, workshop, settings, { force = f
     audioElements.value = preloadAudioFiles(readingQueue.value, manifest)
 
     hasAudio.value = Object.keys(audioElements.value).length > 0
-    console.log(`🔊 Audio: ${Object.keys(audioElements.value).length} files ready for "${lesson.title}"`)
+    const loadedCount = Object.keys(audioElements.value).length
+    console.log(`🔊 Audio: ${loadedCount} files ready for "${lesson.title}"`)
+    recordAudioEvent({
+      kind: 'init-preloaded',
+      lesson: lesson.title, fileCount: loadedCount,
+      queueLength: readingQueue.value.length,
+      manifestHit: !!manifest,
+    })
 
     isLoadingAudio.value = false
     currentItemIndex.value = -1
@@ -329,6 +353,8 @@ async function initializeAudio(lesson, learning, workshop, settings, { force = f
     if (continuousMode.value && nextLessonProvider.value) {
       setTimeout(() => preloadNextLesson(), 0)
     }
+
+    recordAudioEvent({ kind: 'init-done', lesson: lesson.title })
   })()
 
   try {
@@ -398,6 +424,11 @@ async function playNextItem(settings) {
 
   if (currentItemIndex.value >= readingQueue.value.length - 1) {
     // End of current lesson
+    recordAudioEvent({
+      kind: 'queue-end-reached',
+      lesson: lessonTitle.value,
+      continuousMode: continuousMode.value,
+    })
     if (continuousMode.value) {
       // Try to transition to the next lesson in-place
       const transitioned = await transitionToNextLesson(settings)
@@ -409,6 +440,7 @@ async function playNextItem(settings) {
       // No more lessons — fall through to stop
     }
     playbackFinished.value = true
+    recordAudioEvent({ kind: 'playback-finished', lesson: lessonTitle.value })
     stop()
     return
   }
@@ -418,6 +450,7 @@ async function playNextItem(settings) {
 
   // Skip if no audio URL
   if (!item.audioUrl) {
+    recordAudioEvent({ kind: 'skip-no-url', type: item.type, index: currentItemIndex.value })
     playNextItem(settings)
     return
   }
@@ -427,8 +460,19 @@ async function playNextItem(settings) {
     let audio = audioElements.value[item.audioUrl]
 
     if (!audio) {
-      // Late-bind: create a fresh element on the fly (e.g. when the map was
-      // built without a manifest and an item slipped through).
+      // Late-bind is a bug surface — on iOS, a freshly-created <audio>
+      // element played outside a user gesture chain may be rejected by
+      // the browser, which silently stops the chain. Record it so the
+      // debug overlay can show the reason and the late-bound fallback
+      // gives us a chance to recover for the common case.
+      recordAudioEvent({
+        kind: 'late-bind',
+        url: item.audioUrl,
+        type: item.type,
+        index: currentItemIndex.value,
+        queueLength: readingQueue.value.length,
+        mapSize: Object.keys(audioElements.value).length,
+      })
       audio = new Audio(item.audioUrl)
       audio.preload = 'auto'
       audioElements.value[item.audioUrl] = audio
@@ -449,9 +493,21 @@ async function playNextItem(settings) {
 
     attachPlaybackHandlers(audio, item)
 
+    recordAudioEvent({
+      kind: 'play-item',
+      index: currentItemIndex.value,
+      type: item.type,
+      text: item.text ? item.text.slice(0, 40) : '',
+    })
     // Play
     await audio.play()
   } catch (error) {
+    recordAudioEvent({
+      kind: 'play-failed',
+      url: item.audioUrl,
+      type: item.type,
+      error: error && error.message ? error.message : String(error),
+    })
     console.warn('⚠️ play() failed, retrying:', item.audioUrl, error.message)
     retryPlay(item, settings)
   }
@@ -460,6 +516,7 @@ async function playNextItem(settings) {
 // Retry playing by creating a fresh audio element
 async function retryPlay(item, settings) {
   if (!isPlaying.value) return
+  recordAudioEvent({ kind: 'retry-attempt', url: item.audioUrl, type: item.type })
   try {
     const fresh = new Audio(item.audioUrl)
     fresh.playbackRate = item.type === 'section-title'
@@ -473,6 +530,7 @@ async function retryPlay(item, settings) {
       }
     }
     fresh.onerror = () => {
+      recordAudioEvent({ kind: 'retry-failed-onerror', url: item.audioUrl, type: item.type })
       console.error('🛑 AUDIO STOP: retry also failed for', item.audioUrl)
       stop()
     }
@@ -480,6 +538,11 @@ async function retryPlay(item, settings) {
     audioElements.value[item.audioUrl] = fresh
     await fresh.play()
   } catch (e) {
+    recordAudioEvent({
+      kind: 'retry-failed-exception',
+      url: item.audioUrl, type: item.type,
+      error: e && e.message ? e.message : String(e),
+    })
     console.error('🛑 AUDIO STOP: retry failed', item.audioUrl, e.message)
     stop()
   }
@@ -533,6 +596,7 @@ async function playCurrentItem(settings) {
 // Start playing from beginning or continue
 function play(settings) {
   if (readingQueue.value.length === 0) {
+    recordAudioEvent({ kind: 'play-skip-empty-queue' })
     console.warn('⚠️ No items in reading queue')
     return
   }
@@ -545,6 +609,7 @@ function play(settings) {
   // onended fires), and that false-negative used to let re-entrant play()
   // calls double-advance the queue.
   if (isPlaying.value && !isPaused.value) {
+    recordAudioEvent({ kind: 'play-skip-already-running' })
     return
   }
 
@@ -553,6 +618,14 @@ function play(settings) {
   playbackFinished.value = false
   isPlaying.value = true
   isPaused.value = false
+
+  recordAudioEvent({
+    kind: 'play-called',
+    wasResuming,
+    lesson: lessonTitle.value,
+    queueLength: readingQueue.value.length,
+    currentItemIndex: currentItemIndex.value,
+  })
 
   // Freeze remote Gun pulls so an incoming sync tick doesn't mutate state
   // and trigger watchers that rebuild the queue mid-playback.
@@ -574,6 +647,12 @@ function pause() {
     currentAudio.value.pause()
   }
 
+  recordAudioEvent({
+    kind: 'pause-called',
+    currentItemIndex: currentItemIndex.value,
+    lesson: lessonTitle.value,
+  })
+
   // Allow deferred remote sync pulls to flush now that playback is paused.
   try { resumeSyncPulls() } catch {}
 }
@@ -585,6 +664,12 @@ function resume(settings) {
 
 // Stop playback completely
 function stop() {
+  recordAudioEvent({
+    kind: 'stop-called',
+    wasPlaying: isPlaying.value,
+    currentItemIndex: currentItemIndex.value,
+    lesson: lessonTitle.value,
+  })
   isPlaying.value = false
   isPaused.value = false
   currentItemIndex.value = -1
@@ -729,12 +814,21 @@ function disableContinuousMode() {
 // Preload the next lesson's audio in the background while the current one plays.
 // Called after initializeAudio and after each transition.
 async function preloadNextLesson() {
-  if (!continuousMode.value || !nextLessonProvider.value) return
-  if (preloadedNextLesson.value) return // already preloaded
+  if (!continuousMode.value || !nextLessonProvider.value) {
+    recordAudioEvent({ kind: 'preload-skip', reason: 'not-continuous-or-no-provider' })
+    return
+  }
+  if (preloadedNextLesson.value) {
+    recordAudioEvent({ kind: 'preload-skip', reason: 'already-preloaded' })
+    return
+  }
 
   try {
     const next = await nextLessonProvider.value()
-    if (!next || !next.lesson) return
+    if (!next || !next.lesson) {
+      recordAudioEvent({ kind: 'preload-skip', reason: 'provider-returned-null' })
+      return
+    }
 
     const { lesson, learning, workshop } = next
     const settings = latestAudioSettingsRef.value || { readAnswers: true, audioSpeed: 1.0 }
@@ -745,7 +839,13 @@ async function preloadNextLesson() {
 
     preloadedNextLesson.value = { lesson, learning, workshop, queue, audioMap }
     console.log(`🔄 Preloaded next lesson: "${lesson.title}"`)
+    recordAudioEvent({
+      kind: 'preload-built',
+      lesson: lesson.title, lessonNumber: lesson.number,
+      queueLength: queue.length, fileCount: Object.keys(audioMap).length,
+    })
   } catch (e) {
+    recordAudioEvent({ kind: 'preload-error', error: e && e.message ? e.message : String(e) })
     console.warn('⚠️ Could not preload next lesson:', e)
   }
 }
@@ -759,14 +859,21 @@ async function preloadNextLesson() {
  * false if there is no next lesson (end of workshop).
  */
 async function transitionToNextLesson(settings) {
-  if (!continuousMode.value || !nextLessonProvider.value) return false
+  if (!continuousMode.value || !nextLessonProvider.value) {
+    recordAudioEvent({ kind: 'transition-skip', reason: 'not-continuous-or-no-provider' })
+    return false
+  }
 
   // Use the preloaded lesson if available; otherwise resolve one now
   let next = preloadedNextLesson.value
   if (!next) {
+    recordAudioEvent({ kind: 'transition-build-inline', reason: 'no-preload' })
     try {
       const resolved = await nextLessonProvider.value()
-      if (!resolved || !resolved.lesson) return false
+      if (!resolved || !resolved.lesson) {
+        recordAudioEvent({ kind: 'transition-end-of-workshop' })
+        return false
+      }
       const { lesson, learning, workshop } = resolved
       const queue = buildReadingQueue(lesson, learning, workshop, settings)
       const audioBase = getAudioBase(lesson, learning, workshop)
@@ -774,9 +881,15 @@ async function transitionToNextLesson(settings) {
       const audioMap = preloadAudioFiles(queue, manifest)
       next = { lesson, learning, workshop, queue, audioMap }
     } catch (e) {
+      recordAudioEvent({
+        kind: 'transition-build-error',
+        error: e && e.message ? e.message : String(e),
+      })
       console.warn('⚠️ Could not load next lesson for transition:', e)
       return false
     }
+  } else {
+    recordAudioEvent({ kind: 'transition-use-preload', lesson: next.lesson.title })
   }
 
   const { lesson, learning, workshop, queue, audioMap } = next
@@ -812,11 +925,17 @@ async function transitionToNextLesson(settings) {
   setTimeout(() => {
     releaseAudioElements(toRelease, prevAudio)
     isTransitioning.value = false
+    recordAudioEvent({ kind: 'transition-released-old-map', count: Object.keys(toRelease).length })
   }, 200)
 
   // Start preloading the lesson AFTER this one
   setTimeout(() => preloadNextLesson(), 0)
 
+  recordAudioEvent({
+    kind: 'transition-done',
+    lesson: lesson.title, lessonNumber: lesson.number,
+    queueLength: queue.length, fileCount: Object.keys(audioMap).length,
+  })
   return true
 }
 
@@ -841,8 +960,16 @@ function cleanup() {
   // During a continuous-mode transition, skip teardown so the new lesson can
   // take over without losing the iOS media session.
   if (isTransitioning.value) {
+    recordAudioEvent({ kind: 'cleanup-skipped', reason: 'transitioning' })
     return
   }
+
+  recordAudioEvent({
+    kind: 'cleanup-start',
+    wasPlaying: isPlaying.value,
+    lesson: lessonTitle.value,
+    mapSize: Object.keys(audioElements.value).length,
+  })
 
   stop()
 
@@ -860,6 +987,8 @@ function cleanup() {
     releaseAudioElements(preloadedNextLesson.value.audioMap)
     preloadedNextLesson.value = null
   }
+
+  recordAudioEvent({ kind: 'cleanup-done' })
 }
 
 export function useAudio() {

@@ -267,6 +267,10 @@
         </router-link>
       </div>
     </footer>
+
+    <!-- Audio debug overlay. Renders itself only when settings.showDebugOverlay
+         is enabled or ?audioDebug=1 is in the URL. See useAudioDebug.js. -->
+    <AudioDebugOverlay />
   </div>
 </template>
 
@@ -285,6 +289,7 @@ import { isRtlLocale } from './i18n'
 import { formatLangName } from './utils/formatters'
 import { Button } from '@/components/ui/button'
 import Icon from '@/components/Icon.vue'
+import AudioDebugOverlay from '@/components/AudioDebugOverlay.vue'
 
 const router = useRouter()
 const route = useRoute()
