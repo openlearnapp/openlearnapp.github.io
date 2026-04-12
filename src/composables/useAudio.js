@@ -21,12 +21,158 @@ const isPlaying = ref(false)
 const isPaused = ref(false)
 const currentItemIndex = ref(-1)
 const readingQueue = ref([])
-const audioElements = ref({}) // Pre-loaded audio elements
+const audioElements = ref({}) // Pre-loaded audio elements (cache-warmers only)
 const currentAudio = ref(null) // Currently playing audio element
 const playbackFinished = ref(false)
 const hasAudio = ref(false) // True when at least one audio file loaded successfully
 const lessonTitle = ref('')
 const lessonMetadata = ref({ learning: '', workshop: '', number: null })
+
+// ---------------------------------------------------------------------------
+// Blessed player — fix for iOS #243
+//
+// iOS Safari requires audio.play() to be called on an element that was first
+// played inside a user gesture. Subsequent play() calls on THE SAME ELEMENT
+// work indefinitely (even after changing src), but play() on a DIFFERENT
+// element fails with NotAllowedError once the ~5-second gesture activation
+// window expires.
+//
+// The old architecture used one Audio element per queue item, calling play()
+// on each — which broke after 2-3 clips because the gesture window expired.
+//
+// New architecture:
+//   - ONE "blessed" Audio element is created and play()-ed inside the user's
+//     click gesture. It stays blessed for the whole session.
+//   - For each clip, we swap its .src and call .play() again.
+//   - The pre-loaded Audio elements (audioElements map) are just cache-warmers:
+//     they fetch the MP3 into the browser cache via .load(), but never .play().
+//   - Pauses between clips use silent WAV blobs played on the same element,
+//     keeping the onended chain unbroken (no setTimeout in the playback path).
+// ---------------------------------------------------------------------------
+const blessedPlayer = ref(null)
+
+// Generate an in-memory silent WAV blob URL for a given duration.
+// Used to replace setTimeout pauses in the playback chain — playing silence
+// keeps the onended chain alive and iOS doesn't revoke the gesture blessing.
+function generateSilentWavUrl(durationMs) {
+  const sampleRate = 8000
+  const numSamples = Math.ceil(sampleRate * durationMs / 1000)
+  const dataSize = numSamples
+  const fileSize = 44 + dataSize
+
+  const buffer = new ArrayBuffer(fileSize)
+  const view = new DataView(buffer)
+
+  // RIFF header
+  const writeStr = (offset, str) => {
+    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i))
+  }
+  writeStr(0, 'RIFF')
+  view.setUint32(4, fileSize - 8, true)
+  writeStr(8, 'WAVE')
+  writeStr(12, 'fmt ')
+  view.setUint32(16, 16, true)          // PCM format chunk size
+  view.setUint16(20, 1, true)           // PCM format
+  view.setUint16(22, 1, true)           // mono
+  view.setUint32(24, sampleRate, true)  // sample rate
+  view.setUint32(28, sampleRate, true)  // byte rate
+  view.setUint16(32, 1, true)           // block align
+  view.setUint16(34, 8, true)           // bits per sample
+  writeStr(36, 'data')
+  view.setUint32(40, dataSize, true)
+  // Data bytes: all zero = silence (ArrayBuffer is zero-initialized)
+
+  const blob = new Blob([buffer], { type: 'audio/wav' })
+  return URL.createObjectURL(blob)
+}
+
+// Pre-generate the silence URLs we need for inter-clip pauses.
+// These are tiny in-memory blobs (~7 KB each), created once at module init.
+const SILENCE_URLS = {
+  800: generateSilentWavUrl(800),     // between examples
+  1000: generateSilentWavUrl(1000),   // after lesson title
+  1200: generateSilentWavUrl(1200),   // after section title
+  1800: generateSilentWavUrl(1800),   // between sections
+}
+
+// Pick the silence URL closest to the requested duration.
+function getSilenceUrl(durationMs) {
+  if (durationMs >= 1800) return SILENCE_URLS[1800]
+  if (durationMs >= 1200) return SILENCE_URLS[1200]
+  if (durationMs >= 1000) return SILENCE_URLS[1000]
+  return SILENCE_URLS[800]
+}
+
+// The full playback plan for the current lesson. Built once by play() or
+// initializeAudio, it interleaves real audio items with silence entries so
+// that the blessed player can advance linearly without any setTimeout.
+//
+// This ref is NEVER modified during active playback — that's the core
+// invariant that makes iOS playback reliable. The only mutation points are:
+//   - initializeAudio (fresh build for a new lesson)
+//   - play() (first build if not yet present)
+//   - transitionToNextLesson (swap to the preloaded lesson's plan)
+//   - stop() / cleanup() (clear)
+const playbackPlan = ref([])
+let planIdx = -1
+
+/**
+ * Build the playback plan from a reading queue. The result interleaves
+ * the real audio items with silence entries that encode the pauses:
+ *
+ *   [lesson-title, silence-1000, section-title, silence-1200,
+ *    question, answer, silence-800, question, answer, silence-1800,
+ *    section-title, ...]
+ *
+ * Each entry: { type, audioUrl, isSilence, queueIndex, text, sectionIdx,
+ *               exampleIdx, pauseMs }
+ *
+ * `queueIndex` maps back to the original readingQueue index for UI
+ * highlighting (currentItemIndex).
+ */
+function buildPlaybackPlan(queue, settings) {
+  const plan = []
+  for (let i = 0; i < queue.length; i++) {
+    const item = queue[i]
+    plan.push({
+      ...item,
+      isSilence: false,
+      queueIndex: i,
+    })
+
+    // Determine the pause duration after this item
+    let pauseMs = 0
+    if (item.type === 'section-title') {
+      pauseMs = 1200
+    } else if (item.type === 'lesson-title') {
+      pauseMs = 1000
+    } else {
+      const readAnswers = settings && settings.readAnswers !== undefined
+        ? settings.readAnswers : true
+      const isEndOfExample = item.type === 'answer' ||
+        (item.type === 'question' && !readAnswers)
+      if (isEndOfExample) {
+        const nextItem = queue[i + 1]
+        const isSectionChange = nextItem && nextItem.sectionIdx !== item.sectionIdx
+        pauseMs = isSectionChange ? 1800 : 800
+      }
+    }
+
+    if (pauseMs > 0) {
+      plan.push({
+        type: 'silence',
+        audioUrl: getSilenceUrl(pauseMs),
+        isSilence: true,
+        queueIndex: i, // during silence, UI stays on the previous real item
+        text: null,
+        sectionIdx: item.sectionIdx,
+        exampleIdx: item.exampleIdx,
+        pauseMs,
+      })
+    }
+  }
+  return plan
+}
 
 // Continuous play mode: auto-advance across lessons (including iOS lock screen).
 // When enabled, the composable transitions to the next lesson in-place without
@@ -450,68 +596,38 @@ function releaseAudioElements(map, except = null) {
   })
 }
 
-// Attach the standard onended / onerror handlers to an audio element.
-// Extracted so playNextItem and playCurrentItem can share the same logic.
-// Reads settings freshly from `latestAudioSettingsRef` on every callback
-// invocation so mid-playback setting changes take effect on the next clip.
-function attachPlaybackHandlers(audio, item) {
-  audio.onended = () => {
-    if (!isPlaying.value) return
-    const currentSettings = latestAudioSettingsRef.value || { readAnswers: true, audioSpeed: 1.0 }
-
-    // Determine pause duration based on item type
-    let pauseDuration = 0
-
-    if (item.type === 'section-title') {
-      pauseDuration = 1200
-    } else if (item.type === 'lesson-title') {
-      pauseDuration = 1000
-    } else {
-      const isEndOfExample = item.type === 'answer' ||
-        (item.type === 'question' && !currentSettings.readAnswers)
-
-      if (isEndOfExample) {
-        const nextItem = readingQueue.value[currentItemIndex.value + 1]
-        const isSectionChange = nextItem && nextItem.sectionIdx !== item.sectionIdx
-        pauseDuration = isSectionChange ? 1800 : 800
-      }
-    }
-
-    if (pauseDuration > 0) {
-      setTimeout(() => {
-        if (isPlaying.value) playNextItem(latestAudioSettingsRef.value || currentSettings)
-      }, pauseDuration)
-    } else {
-      playNextItem(latestAudioSettingsRef.value || currentSettings)
-    }
-  }
-
-  audio.onerror = () => {
-    console.warn('⚠️ Audio error, retrying:', item.audioUrl)
-    retryPlay(item, latestAudioSettingsRef.value || { readAnswers: true, audioSpeed: 1.0 })
-  }
-}
+// ---------------------------------------------------------------------------
+// Playback engine — blessed player + immutable plan
+//
+// The blessed player is a single Audio element that was first play()-ed
+// inside a user gesture. Every subsequent play() call on it works on iOS
+// regardless of timing. The playback plan is a flat array of {audioUrl}
+// entries (real clips interleaved with silence) that the player reads
+// linearly via onended — no setTimeout anywhere in the chain.
+// ---------------------------------------------------------------------------
 
 // Play next item in queue
-async function playNextItem(settings) {
-  latestAudioSettingsRef.value = settings
+// Advance the blessed player to the next entry in the playback plan.
+// This is the ONLY function that drives playback forward. It reads from
+// playbackPlan.value linearly and NEVER modifies the plan — the core
+// invariant that makes iOS playback reliable.
+async function advancePlan() {
+  planIdx++
 
-  if (currentItemIndex.value >= readingQueue.value.length - 1) {
-    // End of current lesson
+  // End of plan → transition to next lesson (continuous mode) or stop.
+  if (planIdx >= playbackPlan.value.length) {
     recordAudioEvent({
-      kind: 'queue-end-reached',
+      kind: 'plan-end-reached',
       lesson: lessonTitle.value,
       continuousMode: continuousMode.value,
     })
     if (continuousMode.value) {
-      // Try to transition to the next lesson in-place
-      const transitioned = await transitionToNextLesson(settings)
+      const transitioned = await transitionToNextLesson(latestAudioSettingsRef.value)
       if (transitioned) {
-        // Continue playing from the beginning of the new queue
-        playNextItem(settings)
+        // transitionToNextLesson rebuilt the plan + reset planIdx
+        advancePlan()
         return
       }
-      // No more lessons — fall through to stop
     }
     playbackFinished.value = true
     recordAudioEvent({ kind: 'playback-finished', lesson: lessonTitle.value })
@@ -519,171 +635,102 @@ async function playNextItem(settings) {
     return
   }
 
-  currentItemIndex.value++
-  const item = readingQueue.value[currentItemIndex.value]
+  const entry = playbackPlan.value[planIdx]
+  const player = blessedPlayer.value
 
-  // Skip if no audio URL
-  if (!item.audioUrl) {
-    recordAudioEvent({ kind: 'skip-no-url', type: item.type, index: currentItemIndex.value })
-    playNextItem(settings)
+  if (!player) {
+    recordAudioEvent({ kind: 'play-error', reason: 'no-blessed-player' })
+    stop()
     return
   }
 
-  try {
-    // Get pre-loaded audio element. After fix G for #240, late-binding is
-    // a hard error — every item in the queue MUST have an entry in the
-    // audioElements map by the time the chain reaches it. iOS Safari
-    // rejects `new Audio().play()` calls made outside the original user
-    // gesture chain, which silently killed the chain whenever the map
-    // had been partially built. Now we stop loudly and record the reason
-    // so the debug overlay surfaces it.
-    const audio = audioElements.value[item.audioUrl]
+  // Update the UI's currentItemIndex only for real items (not silence).
+  // During a silence pause, the highlight stays on the previous real item.
+  if (!entry.isSilence) {
+    currentItemIndex.value = entry.queueIndex
 
-    if (!audio) {
+    // Verify the URL is in the preload cache (existence check only — we
+    // don't play the preloaded element, we play the blessed player)
+    if (!audioElements.value[entry.audioUrl]) {
       recordAudioEvent({
-        kind: 'late-bind-stop',
-        url: item.audioUrl,
-        type: item.type,
-        index: currentItemIndex.value,
-        queueLength: readingQueue.value.length,
+        kind: 'missing-preload',
+        url: entry.audioUrl,
+        type: entry.type,
+        index: entry.queueIndex,
         mapSize: Object.keys(audioElements.value).length,
       })
-      console.error(`🛑 AUDIO STOP: missing preloaded audio for ${item.audioUrl}`)
-      stop()
-      return
+      // Don't stop — the blessed player can still fetch the URL from the
+      // browser/service-worker cache (or the network). Warn, don't block.
+      console.warn(`⚠️ Audio not in preload map, blessed player will fetch: ${entry.audioUrl}`)
     }
-
-    currentAudio.value = audio
-
-    // Reset to beginning
-    audio.currentTime = 0
-
-    // Apply playback speed from settings
-    // Section titles are read slower (70% of normal speed) for clarity
-    if (item.type === 'section-title') {
-      audio.playbackRate = (settings.audioSpeed || 1.0) * 0.7
-    } else {
-      audio.playbackRate = settings.audioSpeed || 1.0
-    }
-
-    attachPlaybackHandlers(audio, item)
 
     recordAudioEvent({
       kind: 'play-item',
-      index: currentItemIndex.value,
-      type: item.type,
-      text: item.text ? item.text.slice(0, 40) : '',
+      planIdx,
+      index: entry.queueIndex,
+      type: entry.type,
+      text: entry.text ? entry.text.slice(0, 40) : '',
     })
-    // Play
-    await audio.play()
-  } catch (error) {
-    recordAudioEvent({
-      kind: 'play-failed',
-      url: item.audioUrl,
-      type: item.type,
-      error: error && error.message ? error.message : String(error),
-    })
-    console.warn('⚠️ play() failed, retrying:', item.audioUrl, error.message)
-    retryPlay(item, settings)
-  }
-}
-
-// Retry playing by creating a fresh audio element
-async function retryPlay(item, settings) {
-  if (!isPlaying.value) return
-  recordAudioEvent({ kind: 'retry-attempt', url: item.audioUrl, type: item.type })
-  try {
-    const fresh = new Audio(item.audioUrl)
-    fresh.playbackRate = item.type === 'section-title'
-      ? (settings.audioSpeed || 1.0) * 0.7
-      : (settings.audioSpeed || 1.0)
-    fresh.onended = () => {
-      if (isPlaying.value) {
-        const pauseDuration = item.type === 'section-title' ? 1200
-          : item.type === 'lesson-title' ? 1000 : 800
-        setTimeout(() => { if (isPlaying.value) playNextItem(settings) }, pauseDuration)
-      }
-    }
-    fresh.onerror = () => {
-      recordAudioEvent({ kind: 'retry-failed-onerror', url: item.audioUrl, type: item.type })
-      console.error('🛑 AUDIO STOP: retry also failed for', item.audioUrl)
-      stop()
-    }
-    currentAudio.value = fresh
-    audioElements.value[item.audioUrl] = fresh
-    await fresh.play()
-  } catch (e) {
-    recordAudioEvent({
-      kind: 'retry-failed-exception',
-      url: item.audioUrl, type: item.type,
-      error: e && e.message ? e.message : String(e),
-    })
-    console.error('🛑 AUDIO STOP: retry failed', item.audioUrl, e.message)
-    stop()
-  }
-}
-
-// Play current item (used when resuming from pause)
-async function playCurrentItem(settings) {
-  latestAudioSettingsRef.value = settings
-
-  if (currentItemIndex.value < 0 || currentItemIndex.value >= readingQueue.value.length) {
-    console.warn('⚠️ Invalid currentItemIndex, stopping')
-    stop()
-    return
   }
 
-  const item = readingQueue.value[currentItemIndex.value]
+  // Swap the blessed player's src and play
+  player.src = entry.audioUrl
+  player.currentTime = 0
 
-  // Skip if no audio URL
-  if (!item.audioUrl) {
-    playNextItem(settings)
-    return
+  if (entry.isSilence) {
+    player.playbackRate = 1.0
+  } else if (entry.type === 'section-title') {
+    player.playbackRate = (latestAudioSettingsRef.value.audioSpeed || 1.0) * 0.7
+  } else {
+    player.playbackRate = latestAudioSettingsRef.value.audioSpeed || 1.0
   }
 
-  try {
-    const audio = audioElements.value[item.audioUrl]
-
-    if (!audio) {
-      // See comment in playNextItem — no late-binding (fix G for #240).
-      recordAudioEvent({
-        kind: 'late-bind-stop',
-        url: item.audioUrl,
-        type: item.type,
-        index: currentItemIndex.value,
-        source: 'playCurrentItem',
-      })
-      console.error(`🛑 AUDIO STOP: resumed item missing from preload map: ${item.audioUrl}`)
-      stop()
+  // The chain: onended → advance to next plan entry. No setTimeout.
+  player.onended = () => {
+    if (isPlaying.value) advancePlan()
+  }
+  player.onerror = () => {
+    if (entry.isSilence) {
+      // Silence errors are harmless — skip and continue
+      if (isPlaying.value) advancePlan()
       return
     }
+    recordAudioEvent({
+      kind: 'play-error',
+      url: entry.audioUrl,
+      type: entry.type,
+      planIdx,
+    })
+    console.error(`🛑 AUDIO STOP: play error for ${entry.audioUrl}`)
+    stop()
+  }
 
-    currentAudio.value = audio
-
-    if (item.type === 'section-title') {
-      audio.playbackRate = (settings.audioSpeed || 1.0) * 0.7
-    } else {
-      audio.playbackRate = settings.audioSpeed || 1.0
-    }
-
-    attachPlaybackHandlers(audio, item)
-
-    // Play from current position (resume)
-    await audio.play()
+  try {
+    currentAudio.value = player
+    await player.play()
   } catch (error) {
-    console.error('❌ Error playing audio (resumed):', error, '- stopping')
+    if (entry.isSilence) {
+      // Silence play failure — skip
+      if (isPlaying.value) advancePlan()
+      return
+    }
+    recordAudioEvent({
+      kind: 'play-failed',
+      url: entry.audioUrl,
+      type: entry.type,
+      error: error && error.message ? error.message : String(error),
+    })
+    console.error(`🛑 AUDIO STOP: play() rejected for ${entry.audioUrl}:`, error.message)
     stop()
   }
 }
 
 // Start playing from beginning or continue.
 //
-// play() is async so it can await an in-flight initializeAudio call (fix G
-// for #240). This is what gives us the invariant "by the time playNextItem
-// looks up an audio element in audioElements.value, the map is fully built".
-// Modern browsers (Chrome, Safari, Firefox) keep the user gesture valid
-// across an await as long as no setTimeout intervenes — awaiting the
-// manifest fetch + preloadAudioFiles synchronous work is safe.
+// play() is async so it can await an in-flight initializeAudio call.
+// It creates the blessed player element inside the user's gesture and
+// builds the immutable playback plan. The chain then runs purely via
+// onended → advancePlan() — no setTimeout anywhere.
 async function play(settings) {
   if (readingQueue.value.length === 0 && !_initInFlight) {
     recordAudioEvent({ kind: 'play-skip-empty-queue' })
@@ -693,52 +740,77 @@ async function play(settings) {
 
   latestAudioSettingsRef.value = settings
 
-  // If an init is mid-flight, wait for it to finish. The audioElements
-  // map will be fully populated by the time it returns.
+  // If an init is mid-flight, wait for it to finish.
   if (_initInFlight) {
     recordAudioEvent({ kind: 'play-await-init' })
     try { await _initInFlight } catch {}
   }
 
-  // Re-check queue after awaiting init (the init may have built it)
   if (readingQueue.value.length === 0) {
     recordAudioEvent({ kind: 'play-skip-empty-queue-after-init' })
     console.warn('⚠️ No items in reading queue')
     return
   }
 
-  // Guard: if the chain is already running (isPlaying=true and not paused),
-  // don't re-enter. We check isPlaying+isPaused instead of currentAudio.paused
-  // because the native `audio.paused` flag flips to true between clips (after
-  // onended fires), and that false-negative used to let re-entrant play()
-  // calls double-advance the queue.
+  // Guard: already playing
   if (isPlaying.value && !isPaused.value) {
     recordAudioEvent({ kind: 'play-skip-already-running' })
     return
   }
 
-  const wasResuming = isPaused.value && currentItemIndex.value >= 0
+  const wasResuming = isPaused.value && planIdx >= 0
 
   playbackFinished.value = false
   isPlaying.value = true
   isPaused.value = false
+
+  // Freeze remote Gun pulls during playback
+  try { pauseSyncPulls() } catch {}
+
+  // Create the blessed player inside the user's gesture (first play only).
+  // This element stays blessed for the entire session.
+  if (!blessedPlayer.value) {
+    blessedPlayer.value = new Audio()
+    recordAudioEvent({ kind: 'blessed-player-created' })
+  }
+
+  // Build the immutable playback plan (first play or fresh start only).
+  // The plan is NEVER modified during active playback.
+  if (!wasResuming) {
+    playbackPlan.value = buildPlaybackPlan(readingQueue.value, settings)
+    planIdx = -1
+    recordAudioEvent({
+      kind: 'plan-built',
+      planLength: playbackPlan.value.length,
+      realItems: playbackPlan.value.filter(e => !e.isSilence).length,
+      silenceItems: playbackPlan.value.filter(e => e.isSilence).length,
+      lesson: lessonTitle.value,
+    })
+  }
 
   recordAudioEvent({
     kind: 'play-called',
     wasResuming,
     lesson: lessonTitle.value,
     queueLength: readingQueue.value.length,
-    currentItemIndex: currentItemIndex.value,
+    planLength: playbackPlan.value.length,
+    planIdx,
   })
 
-  // Freeze remote Gun pulls so an incoming sync tick doesn't mutate state
-  // and trigger watchers that rebuild the queue mid-playback.
-  try { pauseSyncPulls() } catch {}
-
   if (wasResuming) {
-    playCurrentItem(settings)
+    // Resume: just call play() on the blessed player (same src, same position)
+    try {
+      await blessedPlayer.value.play()
+    } catch (error) {
+      recordAudioEvent({
+        kind: 'resume-failed',
+        error: error && error.message ? error.message : String(error),
+      })
+      stop()
+    }
   } else {
-    playNextItem(settings)
+    // Fresh start: advance to the first plan entry
+    advancePlan()
   }
 }
 
@@ -747,17 +819,17 @@ function pause() {
   isPlaying.value = false
   isPaused.value = true
 
-  if (currentAudio.value) {
-    currentAudio.value.pause()
+  if (blessedPlayer.value) {
+    blessedPlayer.value.pause()
   }
 
   recordAudioEvent({
     kind: 'pause-called',
     currentItemIndex: currentItemIndex.value,
+    planIdx,
     lesson: lessonTitle.value,
   })
 
-  // Allow deferred remote sync pulls to flush now that playback is paused.
   try { resumeSyncPulls() } catch {}
 }
 
@@ -772,60 +844,72 @@ function stop() {
     kind: 'stop-called',
     wasPlaying: isPlaying.value,
     currentItemIndex: currentItemIndex.value,
+    planIdx,
     lesson: lessonTitle.value,
   })
   isPlaying.value = false
   isPaused.value = false
   currentItemIndex.value = -1
+  planIdx = -1
 
-  if (currentAudio.value) {
+  if (blessedPlayer.value) {
     try {
-      currentAudio.value.pause()
-      currentAudio.value.currentTime = 0
+      blessedPlayer.value.pause()
+      blessedPlayer.value.currentTime = 0
     } catch {}
   }
 
   currentAudio.value = null
 
-  // Playback is fully stopped — let deferred remote syncs run.
   try { resumeSyncPulls() } catch {}
-
   console.log('🛑 Stopped')
 }
 
-// Skip to next item
+// Skip to next item (skips silence entries)
 function skipToNext(settings) {
-  if (currentItemIndex.value >= readingQueue.value.length - 1) {
-    // Let playNextItem handle end-of-queue (which may transition in continuous mode)
-    if (continuousMode.value) {
-      playNextItem(settings)
-    }
+  if (!blessedPlayer.value || !isPlaying.value) return
+
+  // Find the next non-silence entry after the current planIdx
+  let nextReal = planIdx + 1
+  while (nextReal < playbackPlan.value.length && playbackPlan.value[nextReal].isSilence) {
+    nextReal++
+  }
+
+  if (nextReal >= playbackPlan.value.length) {
+    // At end — let advancePlan handle end-of-queue / continuous mode
+    planIdx = playbackPlan.value.length - 1
+    advancePlan()
     return
   }
 
-  if (currentAudio.value) {
-    currentAudio.value.pause()
-  }
-
-  playNextItem(settings)
+  planIdx = nextReal - 1 // advancePlan will ++ to nextReal
+  blessedPlayer.value.pause()
+  advancePlan()
 }
 
-// Skip to previous item
+// Skip to previous item (skips silence entries)
 function skipToPrevious(settings) {
-  if (currentItemIndex.value <= 0) {
-    return
+  if (!blessedPlayer.value || planIdx <= 0) return
+
+  // Find the previous non-silence entry
+  let prevReal = planIdx - 1
+  while (prevReal >= 0 && playbackPlan.value[prevReal].isSilence) {
+    prevReal--
+  }
+  // Go one more back so we replay the one before current
+  prevReal--
+  while (prevReal >= 0 && playbackPlan.value[prevReal].isSilence) {
+    prevReal--
   }
 
-  if (currentAudio.value) {
-    currentAudio.value.pause()
-  }
-
-  currentItemIndex.value--
-  playCurrentItem(settings)
+  if (prevReal < -1) prevReal = -1
+  planIdx = prevReal
+  blessedPlayer.value.pause()
+  advancePlan()
 }
 
-// Play a single item (for clicking on examples)
-// Optional onEnded callback for when audio finishes
+// Play a single item by clicking on it (not part of the chain).
+// Creates its own blessed player if needed (user gesture context).
 async function playSingleItem(index, settings, onEnded) {
   const item = readingQueue.value[index]
   if (!item || !item.audioUrl) {
@@ -833,38 +917,33 @@ async function playSingleItem(index, settings, onEnded) {
     return
   }
 
+  // Use the blessed player if it exists, or create one (we're in a gesture)
+  if (!blessedPlayer.value) {
+    blessedPlayer.value = new Audio()
+    recordAudioEvent({ kind: 'blessed-player-created', source: 'playSingleItem' })
+  }
+
+  const player = blessedPlayer.value
+
+  // Stop any currently running chain
+  if (isPlaying.value) {
+    isPlaying.value = false
+    isPaused.value = false
+    planIdx = -1
+  }
+
+  player.src = item.audioUrl
+  player.currentTime = 0
+  player.playbackRate = settings.audioSpeed || 1.0
+
+  player.onended = () => { if (onEnded) onEnded() }
+  player.onerror = (e) => { console.error('❌ Single item audio error:', e) }
+
+  currentAudio.value = player
+  currentItemIndex.value = index
+
   try {
-    const audio = audioElements.value[item.audioUrl]
-
-    if (!audio) {
-      recordAudioEvent({
-        kind: 'late-bind-stop',
-        url: item.audioUrl,
-        type: item.type,
-        source: 'playSingleItem',
-      })
-      console.warn(`🛑 Single-item play skipped — missing from preload map: ${item.audioUrl}`)
-      return
-    }
-
-    // Stop any current audio
-    if (currentAudio.value && currentAudio.value !== audio) {
-      currentAudio.value.pause()
-    }
-
-    currentAudio.value = audio
-    audio.currentTime = 0
-    audio.playbackRate = settings.audioSpeed || 1.0
-
-    audio.onended = () => {
-      if (onEnded) onEnded()
-    }
-
-    audio.onerror = (e) => {
-      console.error('❌ Single item audio error:', e)
-    }
-
-    await audio.play()
+    await player.play()
   } catch (error) {
     console.error('❌ Error playing single item:', error)
     throw error
@@ -880,12 +959,16 @@ function jumpToExample(sectionIdx, exampleIdx, settings) {
   )
 
   if (index !== -1) {
-    if (isPlaying.value) {
-      if (currentAudio.value) {
-        currentAudio.value.pause()
+    if (isPlaying.value && playbackPlan.value.length > 0) {
+      // Find this item in the plan and jump there
+      const planTarget = playbackPlan.value.findIndex(
+        e => !e.isSilence && e.queueIndex === index
+      )
+      if (planTarget >= 0) {
+        planIdx = planTarget - 1
+        blessedPlayer.value?.pause()
+        advancePlan()
       }
-      currentItemIndex.value = index - 1
-      playNextItem(settings)
     } else {
       currentItemIndex.value = index
       playSingleItem(index, settings)
@@ -1217,6 +1300,10 @@ async function transitionToNextLesson(settings) {
   audioElements.value = audioMap
   hasAudio.value = Object.keys(audioMap).length > 0
   currentItemIndex.value = -1
+  // Build the new lesson's playback plan and reset the plan index so
+  // advancePlan() starts from the beginning.
+  playbackPlan.value = buildPlaybackPlan(queue, settings)
+  planIdx = -1
   // The preload queue was shifted at the top of transitionToNextLesson;
   // update the legacy mirror to the new head.
   preloadedNextLesson.value = preloadedLessons.value[0] || null
@@ -1313,6 +1400,18 @@ function cleanup() {
 
   stop()
 
+  // Destroy the blessed player — it will be re-created from the next
+  // user gesture in play().
+  if (blessedPlayer.value) {
+    try {
+      blessedPlayer.value.pause()
+      blessedPlayer.value.src = ''
+    } catch {}
+    blessedPlayer.value = null
+  }
+  playbackPlan.value = []
+  planIdx = -1
+
   releaseAudioElements(audioElements.value)
 
   audioElements.value = {}
@@ -1348,6 +1447,8 @@ export function useAudio() {
     currentItemIndex,
     readingQueue,
     audioElements,
+    playbackPlan,
+    blessedPlayer,
     lessonMetadata,
     initializeAudio,
     play,

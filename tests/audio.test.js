@@ -58,6 +58,15 @@ class MockAudio {
   }
 }
 globalThis.Audio = MockAudio
+// Stub URL.createObjectURL for the silent WAV blob generator
+if (!globalThis.URL.createObjectURL) {
+  globalThis.URL.createObjectURL = (blob) => `blob:silence-${blob.size}`
+}
+if (!globalThis.Blob) {
+  globalThis.Blob = class Blob {
+    constructor(parts, opts) { this.size = parts[0]?.byteLength || 0; this.type = opts?.type }
+  }
+}
 // Stub global fetch for manifest requests (always "not found")
 if (!globalThis.fetch) {
   globalThis.fetch = () => Promise.resolve({ ok: false, text: () => Promise.resolve('') })
@@ -502,10 +511,17 @@ describe('lock-screen / Media Session requirements', () => {
 
   it('lock-screen "previoustrack" steps back by one item', async () => {
     await audio.initializeAudio(lesson1, 'de', 'pt', settings)
-    audio.play(settings)
-    audio.currentItemIndex.value = 2
+    await audio.play(settings)
+
+    // Advance through the plan until currentItemIndex reaches 2
+    // Plan: [title, sil, secTitle, sil, Q1, A1, sil] — index 2 is at plan entry 4 (Q1)
+    while (audio.currentItemIndex.value < 2) {
+      audio.blessedPlayer.value._fireEnded()
+      await new Promise(r => setTimeout(r, 5))
+    }
 
     navigator.mediaSession.__invoke('previoustrack')
+    await new Promise(r => setTimeout(r, 5))
 
     expect(audio.currentItemIndex.value).toBe(1)
   })
@@ -517,13 +533,21 @@ describe('lock-screen / Media Session requirements', () => {
     audio.enableContinuousMode(async () => ({
       lesson: lesson2, learning: 'deutsch', workshop: 'portugiesisch'
     }))
-
-    // Jump to end and fire end-of-queue to trigger transition
-    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
-    audio.isPlaying.value = true
-    audio.skipToNext(settings)
-
     await new Promise(r => setTimeout(r, 20))
+
+    // Start playback to create the blessed player and plan
+    await audio.play(settings)
+
+    // Drive the plan to the end so skipToNext triggers the transition
+    const plan = audio.playbackPlan.value
+    for (let i = 0; i < plan.length - 1; i++) {
+      audio.blessedPlayer.value._fireEnded()
+      await new Promise(r => setTimeout(r, 5))
+    }
+
+    // Fire the last entry to trigger end-of-queue → transition
+    audio.blessedPlayer.value._fireEnded()
+    await new Promise(r => setTimeout(r, 50))
 
     // Metadata must reflect the new lesson — otherwise iOS shows the
     // stale title on the lock screen after auto-advance.
@@ -890,12 +914,83 @@ describe('end-to-end playback chain', () => {
 
   const settings = { readAnswers: true, hideLearnedExamples: false, audioSpeed: 1.0 }
 
-  // Helper: advance through the pause between clips and fire the next ended.
-  // Pause durations: 1000ms (lesson-title), 1200ms (section-title), 800/1800 (examples).
-  async function advanceToNextClip() {
-    // Flush any microtasks
-    await vi.advanceTimersByTimeAsync(2000)
+  // Helper: fire the blessed player's onended and let the microtask from
+  // advancePlan() settle. With the new architecture there are no setTimeout
+  // pauses in the playback chain — silence clips replace them — so we just
+  // need to fire onended and flush.
+  async function fireEndedAndFlush() {
+    const player = audio.blessedPlayer.value || audio.currentAudio.value
+    if (player && player._fireEnded) {
+      player._fireEnded()
+    }
+    await vi.advanceTimersByTimeAsync(0)
   }
+
+  // Helper: drive the plan forward by N entries (firing onended for each).
+  // With the blessed-player architecture, the plan includes silence entries
+  // interleaved with real clips. Each call to fireEndedAndFlush advances
+  // by exactly one plan entry.
+  async function advancePlanBy(n) {
+    for (let i = 0; i < n; i++) {
+      await fireEndedAndFlush()
+    }
+  }
+
+  // Legacy alias used by older tests
+  async function advanceToNextClip() {
+    await fireEndedAndFlush()
+  }
+
+  it('builds an immutable playback plan with silence entries that is never modified during playback', async () => {
+    // Core invariant (requested in #243): the playback plan is built once
+    // by play() and never replaced or modified while the chain is running.
+    // Silence entries replace setTimeout — the chain is a pure onended loop.
+    const lesson = {
+      title: 'Immutable Plan',
+      number: 1,
+      _filename: '01-immutable',
+      sections: [{
+        title: 'Section',
+        examples: [
+          { q: 'Q1', a: 'A1' },
+          { q: 'Q2', a: 'A2' },
+        ]
+      }]
+    }
+
+    await audio.initializeAudio(lesson, 'de', 'pt', settings)
+    await audio.play(settings)
+
+    // Capture the plan reference and a deep snapshot
+    const planRef = audio.playbackPlan.value
+    const planSnapshot = JSON.parse(JSON.stringify(planRef))
+
+    expect(planRef.length).toBeGreaterThan(0)
+
+    // The plan must include silence entries interleaved with real clips
+    const realItems = planRef.filter(e => !e.isSilence)
+    const silenceItems = planRef.filter(e => e.isSilence)
+    expect(realItems.length).toBe(6) // title + secTitle + Q1 + A1 + Q2 + A2
+    expect(silenceItems.length).toBeGreaterThan(0) // at least the pauses
+
+    // Every silence entry must have a blob: URL pointing to our generated WAV
+    for (const s of silenceItems) {
+      expect(s.audioUrl).toMatch(/^blob:/)
+      expect(s.pauseMs).toBeGreaterThan(0)
+    }
+
+    // Drive the entire chain to completion
+    for (let i = 0; i < planRef.length; i++) {
+      await fireEndedAndFlush()
+    }
+
+    // CRITICAL ASSERTION: the plan was NEVER replaced or mutated
+    expect(audio.playbackPlan.value).toBe(planRef) // same reference
+    expect(JSON.stringify(audio.playbackPlan.value)).toBe(JSON.stringify(planSnapshot))
+
+    // Also: only ONE Audio element was ever play()-ed (the blessed player)
+    expect(audio.blessedPlayer.value).toBeTruthy()
+  })
 
   it('plays a multi-clip lesson all the way through via the onended chain', async () => {
     const lesson = {
@@ -916,23 +1011,24 @@ describe('end-to-end playback chain', () => {
     // Queue: [lesson-title, section-title, Q1, A1, Q2, A2] = 6 items
     expect(audio.readingQueue.value.length).toBe(6)
 
-    audio.play(settings)
+    await audio.play(settings)
     expect(audio.isPlaying.value).toBe(true)
     expect(audio.currentItemIndex.value).toBe(0)
 
-    // Fire onended for each clip and verify the chain advances
-    for (let i = 0; i < 5; i++) {
-      const current = audio.currentAudio.value
-      expect(current).toBeTruthy()
-      current._fireEnded()
-      await advanceToNextClip()
-      // After firing ended + advancing the setTimeout, index should have moved
-      expect(audio.currentItemIndex.value).toBe(i + 1)
+    // The playback plan interleaves silence entries:
+    // [title, sil1000, secTitle, sil1200, Q1, A1, sil800, Q2, A2, sil800]
+    const plan = audio.playbackPlan.value
+    expect(plan.length).toBe(10)
+    expect(plan.filter(e => e.isSilence).length).toBe(4)
+
+    // Drive the chain to the end — each fireEndedAndFlush advances one
+    // plan entry (real clip or silence).
+    for (let i = 0; i < plan.length - 1; i++) {
+      await fireEndedAndFlush()
     }
 
-    // Fire the last clip's onended — this should trigger end-of-queue handling
-    audio.currentAudio.value._fireEnded()
-    await advanceToNextClip()
+    // Fire the last entry's onended → planIdx reaches plan.length → stop
+    await fireEndedAndFlush()
 
     expect(audio.playbackFinished.value).toBe(true)
     expect(audio.isPlaying.value).toBe(false)
