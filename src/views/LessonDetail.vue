@@ -789,14 +789,30 @@ watch(currentItem, async (newItem) => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
     return
   } else if (newItem.type === 'section-title') {
-    // Scroll to the section header (not the full card — card is too large)
-    const sectionHeaders = document.querySelectorAll('[id^="section-header-"]')
-    for (const el of sectionHeaders) {
-      const idx = parseInt(el.id.split('-')[2])
-      const section = filteredSections.value[idx]
-      if (section && section._originalSectionIdx === newItem.sectionIdx) {
-        element = el
-        break
+    // When playing a section title, scroll to the first example of that
+    // section so the section header is visible at the top and we don't
+    // scroll again when the first example starts playing next. During
+    // focus mode the descriptions/explanations are hidden, so the first
+    // example sits right below the section header.
+    const section = filteredSections.value.find(
+      s => s._originalSectionIdx === newItem.sectionIdx
+    )
+    if (section && section.examples.length > 0) {
+      const firstExample = section.examples[0]
+      element = document.getElementById(
+        `example-${firstExample._originalSectionIdx}-${firstExample._originalExampleIdx}`
+      )
+    }
+    // Fallback: scroll to the section header itself
+    if (!element) {
+      const sectionHeaders = document.querySelectorAll('[id^="section-header-"]')
+      for (const el of sectionHeaders) {
+        const idx = parseInt(el.id.split('-')[2])
+        const sec = filteredSections.value[idx]
+        if (sec && sec._originalSectionIdx === newItem.sectionIdx) {
+          element = el
+          break
+        }
       }
     }
   } else {
@@ -804,10 +820,15 @@ watch(currentItem, async (newItem) => {
   }
 
   if (element) {
-    // Section titles: scroll to top so header image below is visible
-    // Examples: center in viewport
-    const block = newItem.type === 'section-title' ? 'start' : 'center'
-    element.scrollIntoView({ behavior: 'smooth', block })
+    // Skip the scroll if the element is already fully visible — avoids
+    // the redundant jitter when the first example plays right after its
+    // section title (we already scrolled to it during the title).
+    const rect = element.getBoundingClientRect()
+    const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight
+    if (!isVisible) {
+      const block = newItem.type === 'section-title' ? 'start' : 'center'
+      element.scrollIntoView({ behavior: 'smooth', block })
+    }
   }
 })
 
