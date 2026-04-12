@@ -58,15 +58,6 @@ class MockAudio {
   }
 }
 globalThis.Audio = MockAudio
-// Stub URL.createObjectURL for the silent WAV blob generator
-if (!globalThis.URL.createObjectURL) {
-  globalThis.URL.createObjectURL = (blob) => `blob:silence-${blob.size}`
-}
-if (!globalThis.Blob) {
-  globalThis.Blob = class Blob {
-    constructor(parts, opts) { this.size = parts[0]?.byteLength || 0; this.type = opts?.type }
-  }
-}
 // Stub global fetch for manifest requests (always "not found")
 if (!globalThis.fetch) {
   globalThis.fetch = () => Promise.resolve({ ok: false, text: () => Promise.resolve('') })
@@ -1013,9 +1004,9 @@ describe('end-to-end playback chain', () => {
     expect(realItems.length).toBe(6) // title + secTitle + Q1 + A1 + Q2 + A2
     expect(silenceItems.length).toBeGreaterThan(0) // at least the pauses
 
-    // Every silence entry must have a blob: URL pointing to our generated WAV
+    // Every silence entry must point to a static silence WAV file
     for (const s of silenceItems) {
-      expect(s.audioUrl).toMatch(/^blob:/)
+      expect(s.audioUrl).toMatch(/silence-\d+ms\.wav/)
       expect(s.pauseMs).toBeGreaterThan(0)
     }
 
