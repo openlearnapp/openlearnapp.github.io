@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-04-12
+
+### Fixes
+
+#### Workshops springen nicht mehr beim Favorisieren oder Abhaken (#248)
+- Workshop-Liste behält die ursprüngliche Reihenfolge aus der Quelle
+- Kein automatisches Umsortieren nach aktiv/favorit/Bild mehr
+
 ## 2026-04-11
 
 ### Fixes

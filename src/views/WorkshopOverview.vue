@@ -224,20 +224,7 @@ function dismissNotice() {
 
 const workshops = computed(() => {
   if (!learning.value) return []
-  const list = Object.keys(availableContent.value[learning.value] || {})
-  return list.sort((a, b) => {
-    const aKey = `${learning.value}:${a}`
-    const bKey = `${learning.value}:${b}`
-    const aActive = activeWorkshops.value.includes(aKey) ? 0 : 1
-    const bActive = activeWorkshops.value.includes(bKey) ? 0 : 1
-    if (aActive !== bActive) return aActive - bActive
-    const aFav = favorites.value.includes(a) ? 0 : 1
-    const bFav = favorites.value.includes(b) ? 0 : 1
-    if (aFav !== bFav) return aFav - bFav
-    const aImg = getWorkshopImage(a) ? 0 : 1
-    const bImg = getWorkshopImage(b) ? 0 : 1
-    return aImg - bImg
-  })
+  return Object.keys(availableContent.value[learning.value] || {})
 })
 
 function getWorkshopLabels(workshop) {
