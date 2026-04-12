@@ -95,29 +95,17 @@ const completedRatio = computed(() => {
 
 const sortedLessons = computed(() => {
   const lessons = [...props.lessons]
-  const nextNum = props.nextLessonNumber
   const favSet = new Set(props.favorites)
 
   return lessons.sort((a, b) => {
-    const aIsNext = a.number === nextNum
-    const bIsNext = b.number === nextNum
-    if (aIsNext && !bIsNext) return -1
-    if (!aIsNext && bIsNext) return 1
-
     const aIsFav = favSet.has(a.number)
     const bIsFav = favSet.has(b.number)
-    const aCompleted = props.getStatus(a.number) === 'completed'
-    const bCompleted = props.getStatus(b.number) === 'completed'
-
-    if (aIsFav && !aCompleted && (!bIsFav || bCompleted)) return -1
-    if (bIsFav && !bCompleted && (!aIsFav || aCompleted)) return 1
-
-    if (aCompleted && !bCompleted) return 1
-    if (!aCompleted && bCompleted) return -1
 
     if (aIsFav && bIsFav) {
       return props.favorites.indexOf(a.number) - props.favorites.indexOf(b.number)
     }
+    if (aIsFav && !bIsFav) return -1
+    if (!aIsFav && bIsFav) return 1
 
     return a.number - b.number
   })
