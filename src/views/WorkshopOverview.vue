@@ -169,7 +169,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useLessons } from '../composables/useLessons'
 import { useOffline } from '../composables/useOffline'
@@ -222,9 +222,26 @@ function dismissNotice() {
   router.replace({ name: 'workshop-overview', params: { learning: learning.value } })
 }
 
+const workshopOrder = ref([])
+
+watch(
+  () => Object.keys(availableContent.value[learning.value] || {}),
+  (keys) => {
+    // Append new workshops without changing the order of existing ones
+    for (const key of keys) {
+      if (!workshopOrder.value.includes(key)) {
+        workshopOrder.value.push(key)
+      }
+    }
+    // Remove workshops that no longer exist
+    workshopOrder.value = workshopOrder.value.filter(k => keys.includes(k))
+  },
+  { immediate: true }
+)
+
 const workshops = computed(() => {
   if (!learning.value) return []
-  return Object.keys(availableContent.value[learning.value] || {})
+  return workshopOrder.value
 })
 
 function getWorkshopLabels(workshop) {
