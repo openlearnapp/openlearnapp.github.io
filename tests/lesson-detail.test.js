@@ -222,9 +222,11 @@ describe('LessonDetail.vue — component mount tests', () => {
     expect(audio.hasAudio.value).toBe(true)
   })
 
-  it('autoplays when mounted with ?autoplay=true', async () => {
+  it('never autoplays from URL (iOS requires user gesture)', async () => {
+    // Autoplay from ?autoplay=true was removed because iOS rejects play()
+    // outside a user gesture handler. The user must click play.
     const { audio } = await mountLessonDetail({ lessonNumber: 1, query: { autoplay: 'true' } })
-    expect(audio.isPlaying.value).toBe(true)
+    expect(audio.isPlaying.value).toBe(false)
   })
 
   it('does not autoplay without the query flag', async () => {
@@ -233,14 +235,13 @@ describe('LessonDetail.vue — component mount tests', () => {
   })
 
   it('progress mutation during playback does NOT break the audio chain', async () => {
-    // This is THE regression test: mount LessonDetail, start playing, then
+    // Regression test: mount LessonDetail, start playing manually, then
     // deeply mutate progress (simulating a remote Gun sync tick) and verify
     // the view's watcher does not tear down audio mid-playback.
-    const { audio } = await mountLessonDetail({
-      lessonNumber: 1,
-      query: { autoplay: 'true' },
-    })
+    const { audio } = await mountLessonDetail({ lessonNumber: 1 })
 
+    // Simulate the user clicking play (manual gesture)
+    await audio.play({ readAnswers: true, hideLearnedExamples: true, audioSpeed: 1.0 })
     expect(audio.isPlaying.value).toBe(true)
     audio.currentItemIndex.value = 2 // pretend we're mid-queue
     const queueRef = audio.readingQueue.value

@@ -679,27 +679,17 @@ function togglePlayPause() {
 // same enableContinuousMode path; here we just toggle continuous mode on/off.
 // If there is no active provider (e.g. lessons not loaded yet), the first
 // double-click is a no-op — LessonDetail re-registers the provider on mount.
-const APP_PLAY_DOUBLE_CLICK_DELAY = 260
-let appPlayClickTimer = null
-
+// Click: toggle play/pause IMMEDIATELY inside the gesture — no setTimeout.
+// iOS requires audio.play() from a direct gesture handler (#246).
 function handleAppPlayClick() {
-  if (appPlayClickTimer) return
-  appPlayClickTimer = setTimeout(() => {
-    appPlayClickTimer = null
-    togglePlayPause()
-  }, APP_PLAY_DOUBLE_CLICK_DELAY)
+  togglePlayPause()
 }
 
 function handleAppPlayDoubleClick() {
-  if (appPlayClickTimer) {
-    clearTimeout(appPlayClickTimer)
-    appPlayClickTimer = null
-  }
+  // The first click already toggled play. Now just toggle continuous mode.
   if (continuousMode.value) {
     disableContinuousMode()
   } else {
-    // Signal LessonDetail to turn on continuous mode (it owns the lesson list
-    // and therefore the next-lesson provider). Dispatch a custom event.
     window.dispatchEvent(new CustomEvent('open-learn:start-continuous-play'))
   }
 }
