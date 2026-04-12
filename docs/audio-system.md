@@ -104,7 +104,7 @@ public/audio/deutsch/portugiesisch/01-basic-verbs/
 4. **Smart Pausing**: 800ms pause between examples, 1800ms pause between sections for better comprehension
 5. **Click-to-Play**: Click any example to hear its audio immediately
 6. **Resume Support**: Pause and resume maintain position in the queue
-7. **Continuous play across lessons**: Double-click the play button to auto-advance to the next lesson at the end of each one — works in the iOS lock screen without re-entering the app
+7. **Always-continuous playback**: Press play once — audio auto-advances through every remaining lesson in the workshop. No double-click or mode toggle needed. Works on the iOS lock screen.
 8. **Next-lesson preload**: While the current lesson plays, the next lesson's audio is preloaded in the background so the transition is seamless
 
 ### Implementation: `src/composables/useAudio.js`
@@ -138,7 +138,7 @@ public/audio/deutsch/portugiesisch/01-basic-verbs/
 - In continuous mode, `skipToNext()` at end of queue transitions to the next lesson
 
 **`enableContinuousMode(nextLessonProvider)` / `disableContinuousMode()`**
-- Toggles continuous playback across lessons
+- Continuous mode is enabled automatically by `play()` when a workshop context is available — the learner never needs to opt in
 - `nextLessonProvider` is an async callback returning `{ lesson, learning, workshop }` for the next lesson, or `null` at the end of the workshop
 - When enabled, the composable:
   - Preloads the next lesson's audio in the background while the current one plays
