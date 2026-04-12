@@ -31,7 +31,11 @@ The top navigation bar adapts to the current page:
 
 ## Workshop Favorites and Sorting
 
-Learners can mark workshops and lessons as favorites. Favorites are visually highlighted but stay in their original position — the list never reorders automatically. Completed lessons also stay in place.
+Learners can mark workshops and lessons as favorites.
+
+**Workshop sort order:** active → favorite → has image → source order. Toggling favorite or active re-sorts the list.
+
+**Lesson sort order:** favorites first (by lesson number), then all others (by lesson number). Completed/done status has no effect on sort order.
 
 ## Dark Mode
 

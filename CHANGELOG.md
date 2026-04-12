@@ -21,8 +21,9 @@ Play → Pause → Klick auf ein Example → Play: spielte vorher nur das eine E
 - Entfernt veraltete Double-Click-Kommentare aus `App.vue` und `useAudio.js`
 - 2 Tests entfernt die `toggleContinuousPlay` testeten
 
-#### Workshops und Lektionen springen nicht mehr beim Favorisieren oder Abhaken (#248)
-- Workshop-Liste behält die ursprüngliche Reihenfolge aus der Quelle
+#### Workshop- und Lektions-Sortierung korrigiert (Follow-up zu #249)
+- Workshops: Sortierung nach aktiv → favorit → hat Bild wiederhergestellt (war fälschlich entfernt)
+- Lektionen: Favoriten zuerst (nach Nummer), dann Rest (nach Nummer). Erledigt-Status hat keinen Einfluss auf Sortierung
 - Lektionen bleiben an ihrer Stelle wenn sie als erledigt markiert oder favorisiert werden
 - Kein automatisches Umsortieren nach aktiv/favorit/erledigt mehr
 
