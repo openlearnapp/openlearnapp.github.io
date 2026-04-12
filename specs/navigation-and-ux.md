@@ -31,7 +31,7 @@ The top navigation bar adapts to the current page:
 
 ## Workshop Favorites and Sorting
 
-Learners can mark workshops as favorites. Favorited workshops appear at the top of the workshop list, making it fast to access frequently used content. Workshops can also be sorted to match the learner's preference.
+Learners can mark workshops and lessons as favorites. Favorites are visually highlighted but stay in their original position — the list never reorders automatically. Completed lessons also stay in place.
 
 ## Dark Mode
 
