@@ -306,25 +306,16 @@
     </div>
 
     <!-- Floating play/pause button for mobile — only shown when audio is available -->
-    <!-- Single click: play/pause current lesson. Double click: continuous play across lessons. -->
     <button
       v-if="lesson && (isLoadingAudio || hasAudio)"
-      @click="handlePlayButtonClick"
-      @dblclick.prevent="handlePlayButtonDoubleClick"
+      @click="togglePlayPause"
       :disabled="isLoadingAudio"
-      :class="[
-        'md:hidden fixed bottom-20 right-6 w-12 h-12 rounded-full shadow-lg z-50 flex items-center justify-center bg-primary text-white border-2 disabled:opacity-50',
-        continuousMode ? 'border-yellow-300 ring-2 ring-yellow-300/70' : 'border-primary-foreground/30'
-      ]"
-      :title="playButtonTitle"
-      :aria-label="playButtonAriaLabel">
+      class="md:hidden fixed bottom-20 right-6 w-12 h-12 rounded-full shadow-lg z-50 flex items-center justify-center bg-primary text-white border-2 border-primary-foreground/30 disabled:opacity-50"
+      :title="isLoadingAudio ? $t('nav.loading') : (isPlaying ? $t('nav.pause') : $t('nav.play'))"
+      :aria-label="isLoadingAudio ? $t('nav.loadingAudio') : (isPlaying ? $t('nav.pauseAudio') : $t('nav.playAudio'))">
       <svg v-if="isLoadingAudio" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
       <svg v-else-if="isPlaying" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
       <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-      <!-- Continuous mode indicator: small repeat badge -->
-      <span v-if="continuousMode && !isLoadingAudio" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-yellow-300 text-primary flex items-center justify-center" aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
-      </span>
     </button>
   </div>
 </template>
@@ -365,12 +356,10 @@ const {
   isLoadingAudio, isPlaying, isPaused, isInFocusMode,
   playbackFinished, hasAudio, currentItem,
   lessonMetadata: audioLessonMetadata,
-  isTransitioning, continuousMode, lessonTransitionTick,
+  isTransitioning, lessonTransitionTick,
   play, pause,
-  enableContinuousMode, disableContinuousMode,
   setWorkshopLessons,
   onSettingsChanged, onProgressChanged, onLessonMount, onLessonUnmount,
-  toggleContinuousPlay,
 } = useLessonAudioSync()
 const { getAnswer, saveAnswer, validateAnswer } = useAssessments()
 const { setLessonFooter, clearLessonFooter } = useFooter()
@@ -740,39 +729,9 @@ function togglePlayPause() {
   }
 }
 
-// Click: toggle play/pause IMMEDIATELY inside the gesture — no setTimeout.
-// iOS requires audio.play() to be called from a direct gesture handler;
-// the old 260ms debounce timer put play() inside a setTimeout callback
-// which iOS rejected with NotAllowedError (#246).
-//
-// Double-click: the first click already starts playback. The dblclick
-// handler just toggles continuous mode on top of the running chain.
-function handlePlayButtonClick() {
-  togglePlayPause()
-}
-
-function handlePlayButtonDoubleClick() {
-  // Double-click just toggles continuous mode. The user then clicks
-  // once to start playing. This avoids the "two clicks = play then
-  // pause" issue and keeps the gesture context clean for iOS.
-  if (continuousMode.value) {
-    disableContinuousMode()
-  } else {
-    enableContinuousMode()
-  }
-}
-
-const playButtonTitle = computed(() => {
-  if (isLoadingAudio.value) return t('nav.loading')
-  if (continuousMode.value) return t('nav.continuousPlayActive')
-  return isPlaying.value ? t('nav.pause') : t('nav.play')
-})
-
-const playButtonAriaLabel = computed(() => {
-  if (isLoadingAudio.value) return t('nav.loadingAudio')
-  if (continuousMode.value) return t('nav.continuousPlayActive')
-  return isPlaying.value ? t('nav.pauseAudio') : t('nav.playAudio')
-})
+// No double-click handler — play is always continuous. One click to
+// play/pause. play() auto-enables continuous mode when a workshop
+// context is available.
 
 watch(currentItem, async (newItem) => {
   if (!newItem) return
@@ -905,14 +864,6 @@ function handleKeydown(e) {
   }
 }
 
-// Listener for "start continuous play" requests dispatched by App.vue's
-// desktop play button (it doesn't own the lesson list, so it delegates here).
-function handleStartContinuousRequest() {
-  if (lesson.value && !continuousMode.value) {
-    enableContinuousMode()
-  }
-}
-
 // Load a lesson by route params. Extracted from onMounted so we can call
 // it again from a watcher on route.params.number — this is what makes the
 // "no remount within a workshop" architecture work (fix B for #240).
@@ -996,13 +947,11 @@ watch(
 
 onMounted(async () => {
   document.addEventListener('keydown', handleKeydown)
-  window.addEventListener('open-learn:start-continuous-play', handleStartContinuousRequest)
   await loadCurrentLesson()
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)
-  window.removeEventListener('open-learn:start-continuous-play', handleStartContinuousRequest)
 
   // Delegate the "should we tear down?" decision to the composable —
   // it skips cleanup during continuous-mode transitions so iOS keeps the

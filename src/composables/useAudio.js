@@ -735,6 +735,16 @@ async function play(settings) {
   // Freeze remote Gun pulls during playback
   try { pauseSyncPulls() } catch {}
 
+  // Always enable continuous mode so playback auto-advances through the
+  // whole workshop. There is no "single lesson only" mode — one click to
+  // play, the chain runs until the last lesson or the user pauses.
+  if (!continuousMode.value) {
+    const ctx = workshopContext.value
+    if (ctx && ctx.lessons && ctx.lessons.length > 0) {
+      enableContinuousMode()
+    }
+  }
+
   // Create the blessed player inside the user's gesture (first play only).
   // This element stays blessed for the entire session.
   if (!blessedPlayer.value) {

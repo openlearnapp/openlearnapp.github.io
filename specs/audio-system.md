@@ -39,28 +39,30 @@ On mobile devices, the audio system integrates with the operating system's media
 
 The lock screen displays the lesson title, workshop name, and artwork.
 
-## Auto-Advance
+## Always-Continuous Playback
 
-When playback reaches the end of a lesson, the system can automatically advance to the next lesson in the workshop, enabling continuous listening across multiple lessons.
+Playback is always continuous. Pressing play starts at the current lesson and auto-advances through every remaining lesson in the workshop until the end or the learner pauses. There is no "single lesson only" mode — the simpler mental model ("press play, listen to the whole workshop") proved more natural than a double-click toggle, and it eliminates the iOS gesture-context issues that plagued the earlier double-click approach.
 
-## Play Button Behaviour
+### Play Button
 
-The play/pause button cycles through two modes depending on how the learner interacts with it:
+One button, one action:
 
-- **Single click** — start, pause, and resume playback of the _current lesson only_. When the lesson ends, playback stops at the end of the queue.
-- **Double click** — start **continuous play** across the entire workshop. Playback auto-advances from one lesson to the next without interruption. A second double click turns continuous play off again while keeping playback running for the current lesson.
+- **Click** — start playing from the current lesson. If paused, resume from the current position. Audio continues through lesson boundaries automatically.
+- **Click while playing** — pause.
+- **Spacebar** — same as click (toggle play/pause).
 
-When continuous play is active, the play button shows a small repeat badge so the learner can tell the two modes apart at a glance. The keyboard spacebar always toggles play/pause without changing the continuous-play setting.
+No double-click, no mode badge, no secondary gesture.
 
-## Continuous Play Across Lessons (Lock Screen Friendly)
+### How It Works
 
-Continuous play is designed to work seamlessly on a locked mobile device:
-
-- The audio context is kept alive across lesson boundaries. When lesson N finishes, the system immediately starts lesson N+1 without tearing down and recreating the audio element, so iOS keeps the Media Session open and the lock-screen controls stay active.
-- While lesson N plays, the next lesson's audio is preloaded in the background. By the time the current lesson ends, lesson N+1 is ready to start instantly.
-- Continuous play works regardless of whether the workshop is downloaded for offline use. When the workshop is offline, the next lesson's audio is served instantly from the local cache. When online, the preloaded audio avoids a perceptible gap at the transition.
-- The lock-screen metadata (title, artwork) updates automatically when the system advances to the next lesson.
-- If the learner manually pauses during continuous play, the mode stays active — resuming continues to auto-advance. Continuous play turns off automatically when the last lesson in the workshop ends or when the learner leaves the workshop.
+- When `play()` is called, it automatically enables continuous mode if a workshop context (lesson list) is available. The learner never needs to opt in.
+- The system preloads up to 1 hour of upcoming lessons in the background so transitions are instant.
+- A single "blessed" Audio element is used for all clips — it's created and `play()`-ed inside the user's click gesture, then reused by swapping its `src` for each subsequent clip. iOS keeps it "blessed" indefinitely.
+- Pauses between clips (800 ms–1800 ms) are silent WAV files played on the same element, keeping the `onended` chain unbroken. No `setTimeout` in the playback path.
+- When lesson N finishes, the system transitions to lesson N+1 in-place (swaps the queue, rebuilds the playback plan, updates the Media Session metadata). The `LessonDetail` view rebinds to the new route params without remounting.
+- The lock-screen metadata (title, artwork) updates automatically at each transition.
+- If the learner pauses and resumes, the chain continues from where it left off — still in continuous mode.
+- Playback stops at the end of the last lesson in the workshop, or when the learner navigates away.
 
 ## Instant Audio Load for Cached Workshops
 
