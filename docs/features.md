@@ -73,6 +73,9 @@ No explicit submit buttons. Answers are validated and saved automatically:
 - **Select/MC per-option**: Green border on correct selected option, red border on wrong selected option
 - **MC live validation**: Each checkbox toggle immediately shows correctness of that option
 
+### Label Filtering for Tests
+Assessments inherit computed labels from their examples, enabling filtering of tests by grammar label (e.g. "Futur", "Passiv"). When a label filter is active, only matching assessments are shown and played.
+
 ### Answer Persistence
 Answers are stored in localStorage and restored on page load.
 
@@ -132,6 +135,16 @@ Pre-generated MP3 files for questions and answers, played in sequence.
 - Label filtering: when a label filter is active, only filtered examples are played
 - Stops on error instead of skipping
 - Click question text to toggle answer, click example card to play audio
+
+### Continuous Play Mode
+Double-click the play button to auto-advance through the entire workshop, including from the lock screen.
+
+- Single click: play/pause current lesson (unchanged)
+- Double click: toggle continuous play — lessons advance automatically when finished
+- Visual indicator: repeat badge + yellow ring on the play button
+- Next lesson audio is preloaded in the background for seamless transitions
+- Works offline and online; non-downloaded workshops load the next lesson in the background
+- A second double click turns continuous play off without stopping playback
 
 ### Lock Screen Controls
 Media Session API integration for mobile lock screen play/pause/skip controls.
@@ -232,6 +245,20 @@ Per-workshop export and import of user data (progress + assessments).
 
 ---
 
+## Sync System
+
+### Timestamp-Based Sync
+Progress and assessment data sync across devices using per-item timestamps with a highest-wins merge strategy.
+
+- Each progress toggle and assessment answer carries a timestamp
+- Conflicts resolved deterministically: the most recent write wins
+- Supports unlearn (progress) and clear (assessments) via timestamped tombstones
+- Sync pulls are paused during audio playback to prevent mid-playback mutations
+- **Composable**: `src/composables/useGun.js`
+- **Docs**: `docs/sync-system.md`
+
+---
+
 ## User Interface
 
 ### Dark Mode
@@ -247,6 +274,9 @@ Sticky top bar with:
 - Play/Pause toggle (desktop, on lesson pages)
 - Learning Items button (on lesson/overview pages)
 - Settings button
+
+### Focus Mode
+Hides distractions and dims the navigation bar during audio playback, keeping the learner's attention on the current lesson content.
 
 ### Mobile Support
 - Responsive grid layouts (1 col mobile → 2-3 cols desktop)
