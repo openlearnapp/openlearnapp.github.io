@@ -4,6 +4,23 @@
 
 ### Fixes
 
+#### Resume von Example-Klick spielt jetzt die ganze Lektion weiter
+
+Play → Pause → Klick auf ein Example → Play: spielte vorher nur das eine Example ab und stoppte. Jetzt setzt die Wiedergabe ab dem geklickten Example fort und läuft die restliche Lektion durch.
+
+**Ursache:** `jumpToExample` rief bei Pause `playSingleItem` auf, was den `onended`-Handler des Blessed Players mit einem No-Op überschrieb und `planIdx` nicht repositionierte. Beim Resume versuchte `play()` den Blessed Player fortzusetzen, dessen Audio aber bereits beendet war.
+
+**Fix:** Neuer Paused-Branch in `jumpToExample` — repositioniert `planIdx` im Playback-Plan und setzt ein `_planRepositioned`-Flag. `play()` erkennt das Flag und startet `advancePlan()` statt den stale Blessed Player zu resumen.
+
+### Cleanup
+
+#### Always-Continuous Cleanup (Follow-up zu #250)
+
+- Entfernt `toggleContinuousPlay` aus `useLessonAudioSync.js` (dead code seit Play immer continuous ist)
+- Entfernt `continuousPlayActive` i18n-Strings (DE, EN, AR, FA) — referenzierten Double-Click der nicht mehr existiert
+- Entfernt veraltete Double-Click-Kommentare aus `App.vue` und `useAudio.js`
+- 2 Tests entfernt die `toggleContinuousPlay` testeten
+
 #### Workshops und Lektionen springen nicht mehr beim Favorisieren oder Abhaken (#248)
 - Workshop-Liste behält die ursprüngliche Reihenfolge aus der Quelle
 - Lektionen bleiben an ihrer Stelle wenn sie als erledigt markiert oder favorisiert werden

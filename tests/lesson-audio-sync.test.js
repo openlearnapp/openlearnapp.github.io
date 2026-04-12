@@ -284,35 +284,4 @@ describe('useLessonAudioSync', () => {
     })
   })
 
-  // --- toggleContinuousPlay ---
-
-  describe('toggleContinuousPlay', () => {
-    it('enables continuous mode and starts playback on first call', async () => {
-      await sync.onLessonMount({
-        lesson: lesson1, learning: 'de', workshop: 'pt', audioSettings: settings,
-      })
-
-      const enabled = sync.toggleContinuousPlay({
-        nextLessonProvider: async () => null,
-        audioSettings: settings,
-      })
-      expect(enabled).toBe(true)
-      expect(audio.continuousMode.value).toBe(true)
-      expect(audio.isPlaying.value).toBe(true)
-    })
-
-    it('disables continuous mode on second call', async () => {
-      await sync.onLessonMount({
-        lesson: lesson1, learning: 'de', workshop: 'pt', audioSettings: settings,
-      })
-      sync.toggleContinuousPlay({
-        nextLessonProvider: async () => null, audioSettings: settings,
-      })
-      const stillOn = sync.toggleContinuousPlay({
-        nextLessonProvider: async () => null, audioSettings: settings,
-      })
-      expect(stillOn).toBe(false)
-      expect(audio.continuousMode.value).toBe(false)
-    })
-  })
 })

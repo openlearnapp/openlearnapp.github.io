@@ -664,13 +664,6 @@ function togglePlayPause() {
   }
 }
 
-// Single vs. double click for the desktop play button. The actual next-lesson
-// resolver is provided by LessonDetail (which knows the lesson list) via the
-// same enableContinuousMode path; here we just toggle continuous mode on/off.
-// If there is no active provider (e.g. lessons not loaded yet), the first
-// double-click is a no-op — LessonDetail re-registers the provider on mount.
-// No double-click handler — play is always continuous.
-
 // Router-view key strategy. See the comment on the `<component :key>`
 // binding in the template above.
 function viewKey(route) {
