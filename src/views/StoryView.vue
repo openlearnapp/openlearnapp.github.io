@@ -854,34 +854,18 @@ function handleTap(e) {
   const clickX = e.clientX - rect.left
   const isLeftSide = clickX < rect.width / 2
 
-  // In assessment states, only allow going back via left tap
-  if (state.value === 'choosing' || state.value === 'input') {
-    if (isLeftSide && currentExampleIndex.value > 0) {
-      currentExampleIndex.value--
-      showCurrentExample()
-    }
-    return
-  }
+  // In assessment states, tapping does nothing (use answer buttons)
+  if (state.value === 'choosing' || state.value === 'input') return
 
   if (state.value !== 'narrating') return
 
   clearAutoAdvance()
 
+  // Left/right tap always navigates sections — pages use the zurück/weiter buttons
   if (isLeftSide) {
-    // Go back: previous page, or previous example if on first page
-    if (currentPage.value > 0) {
-      prevPage()
-    } else if (currentExampleIndex.value > 0) {
-      currentExampleIndex.value--
-      showCurrentExample()
-    }
+    prevSection()
   } else {
-    // Advance: next page first, then advance to next section/assessment
-    if (currentPage.value < totalPages.value - 1) {
-      nextPage()
-    } else {
-      advanceExample()
-    }
+    advanceSection()
   }
 }
 
@@ -1170,6 +1154,20 @@ async function advanceSection() {
   } else {
     advanceLesson()
   }
+}
+
+async function prevSection() {
+  if (!currentLesson.value?.sections) return
+  const prevSectionIdx = currentSectionIndex.value - 1
+  if (prevSectionIdx >= 0) {
+    currentSectionIndex.value = prevSectionIdx
+    currentExampleIndex.value = 0
+    currentPage.value = 0
+    imageLoaded.value = false
+    await playSectionIntro()
+    showCurrentExample()
+  }
+  // already on first section — do nothing
 }
 
 function advanceLesson() {
