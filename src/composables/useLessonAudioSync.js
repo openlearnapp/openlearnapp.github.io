@@ -82,24 +82,14 @@ export function useLessonAudioSync() {
    */
   async function onLessonMount({
     lesson, learning, workshop, audioSettings,
-    autoplay = false,
-    continuousNextLessonProvider = null,
   }) {
     if (!lesson) return { started: false }
 
     await initializeAudio(lesson, learning, workshop, audioSettings)
 
-    // Legacy path: if a provider closure was passed AND continuous mode is
-    // already active, re-register it. New callers should use setWorkshopLessons
-    // instead and leave continuousNextLessonProvider undefined.
-    if (continuousMode.value && continuousNextLessonProvider) {
-      enableContinuousMode(continuousNextLessonProvider)
-    }
-
-    if (autoplay && !isPlaying.value) {
-      play(audioSettings)
-      return { started: true }
-    }
+    // No autoplay from URL — iOS rejects play() outside a user gesture,
+    // and the auto-advance feature that set ?autoplay=true was removed.
+    // The user must click the play button to start.
     return { started: false }
   }
 

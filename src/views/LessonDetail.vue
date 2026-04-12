@@ -740,32 +740,26 @@ function togglePlayPause() {
   }
 }
 
-// Debounced click handler so a double click does not also fire a single click
-// that would pause playback right after continuous mode starts.
-let playClickTimer = null
-const PLAY_DOUBLE_CLICK_DELAY = 260 // ms
-
+// Click: toggle play/pause IMMEDIATELY inside the gesture — no setTimeout.
+// iOS requires audio.play() to be called from a direct gesture handler;
+// the old 260ms debounce timer put play() inside a setTimeout callback
+// which iOS rejected with NotAllowedError (#246).
+//
+// Double-click: the first click already starts playback. The dblclick
+// handler just toggles continuous mode on top of the running chain.
 function handlePlayButtonClick() {
-  if (playClickTimer) return // double click in progress
-  playClickTimer = setTimeout(() => {
-    playClickTimer = null
-    togglePlayPause()
-  }, PLAY_DOUBLE_CLICK_DELAY)
+  togglePlayPause()
 }
 
 function handlePlayButtonDoubleClick() {
-  if (playClickTimer) {
-    clearTimeout(playClickTimer)
-    playClickTimer = null
+  // Double-click just toggles continuous mode. The user then clicks
+  // once to start playing. This avoids the "two clicks = play then
+  // pause" issue and keeps the gesture context clean for iOS.
+  if (continuousMode.value) {
+    disableContinuousMode()
+  } else {
+    enableContinuousMode()
   }
-  startContinuousPlay()
-}
-
-function startContinuousPlay() {
-  // After fix C for #240, the audio composable resolves the next lesson
-  // itself via setWorkshopLessons (already called in loadCurrentLesson).
-  // No closure to pass.
-  toggleContinuousPlay({ audioSettings: audioSettings.value })
 }
 
 const playButtonTitle = computed(() => {
@@ -914,8 +908,8 @@ function handleKeydown(e) {
 // Listener for "start continuous play" requests dispatched by App.vue's
 // desktop play button (it doesn't own the lesson list, so it delegates here).
 function handleStartContinuousRequest() {
-  if (lesson.value) {
-    startContinuousPlay()
+  if (lesson.value && !continuousMode.value) {
+    enableContinuousMode()
   }
 }
 
@@ -971,7 +965,6 @@ async function loadCurrentLesson() {
       learning: currentLearning,
       workshop: currentWorkshop,
       audioSettings: audioSettings.value,
-      autoplay: !!route.query.autoplay,
     })
     restoreDraftsFromSaved()
 
@@ -1010,11 +1003,6 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)
   window.removeEventListener('open-learn:start-continuous-play', handleStartContinuousRequest)
-
-  if (playClickTimer) {
-    clearTimeout(playClickTimer)
-    playClickTimer = null
-  }
 
   // Delegate the "should we tear down?" decision to the composable —
   // it skips cleanup during continuous-mode transitions so iOS keeps the

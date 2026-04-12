@@ -81,24 +81,15 @@ describe('useLessonAudioSync', () => {
   // --- onLessonMount ---
 
   describe('onLessonMount', () => {
-    it('initializes audio and does not autoplay by default', async () => {
+    it('initializes audio without autoplay (autoplay removed for iOS)', async () => {
       const result = await sync.onLessonMount({
         lesson: lesson1, learning: 'de', workshop: 'pt',
-        audioSettings: settings, autoplay: false,
+        audioSettings: settings,
       })
       expect(result.started).toBe(false)
       expect(audio.isPlaying.value).toBe(false)
       expect(audio.hasAudio.value).toBe(true)
       expect(audio.lessonMetadata.value.number).toBe(1)
-    })
-
-    it('autoplays when autoplay=true', async () => {
-      const result = await sync.onLessonMount({
-        lesson: lesson1, learning: 'de', workshop: 'pt',
-        audioSettings: settings, autoplay: true,
-      })
-      expect(result.started).toBe(true)
-      expect(audio.isPlaying.value).toBe(true)
     })
 
     it('no-ops when the composable already shows the same lesson', async () => {
@@ -125,7 +116,7 @@ describe('useLessonAudioSync', () => {
 
       await sync.onLessonMount({
         lesson: lesson1, learning: 'de', workshop: 'pt',
-        audioSettings: settings, autoplay: true,
+        audioSettings: settings,
       })
 
       // Position and isPlaying must be preserved (no restart, no index reset)
