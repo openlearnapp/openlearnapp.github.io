@@ -811,15 +811,16 @@ watch(currentItem, async (newItem) => {
   }
 })
 
-// Auto-advance to next lesson when audio playback finishes (non-continuous mode).
-// Navigate with ?autoplay=true so the next lesson starts a fresh playback.
+// Auto-advance to next lesson ONLY in continuous mode (double-click play).
+// Single-click play stops at the end of the current lesson — the user can
+// manually navigate to the next one via the footer button.
+// In continuous mode, the composable handles the transition in-place via
+// transitionToNextLesson → lessonTransitionTick, so this watcher only
+// fires for the non-continuous case (which is now a no-op).
 watch(playbackFinished, (finished) => {
-  if (!finished || !nextLessonNumber.value) return
-  if (continuousMode.value) return // handled by lessonTransitionTick watcher
-
-  const query = { autoplay: 'true' }
-  if (activeLabel.value) query.label = activeLabel.value
-  router.replace({ path: `/${learning.value}/${workshop.value}/lesson/${nextLessonNumber.value}`, query })
+  if (!finished) return
+  // Nothing to do — lesson ended, playback stopped.
+  // The footer "Next Lesson →" button is always visible for manual nav.
 })
 
 // Continuous-mode URL sync: whenever the audio composable swaps to a new lesson
