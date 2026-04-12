@@ -523,6 +523,14 @@ describe('lock-screen / Media Session requirements', () => {
     navigator.mediaSession.__invoke('previoustrack')
     await new Promise(r => setTimeout(r, 5))
 
+    // skipToPrevious lands on the plan entry before the previous real item,
+    // then advancePlan walks through silence entries before reaching it.
+    // Fire ended on any intervening silence entries so the chain settles.
+    while (audio.currentItemIndex.value > 1 && audio.blessedPlayer.value) {
+      audio.blessedPlayer.value._fireEnded()
+      await new Promise(r => setTimeout(r, 5))
+    }
+
     expect(audio.currentItemIndex.value).toBe(1)
   })
 
@@ -766,17 +774,21 @@ describe('continuous play mode', () => {
     const tickBefore = audio.lessonTransitionTick.value
 
     audio.enableContinuousMode(async () => ({ lesson: lesson2, learning: 'de', workshop: 'pt' }))
-
-    // Jump to end of current queue so the next playNextItem triggers the transition
-    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
-    audio.isPlaying.value = true
-
-    // Simulate end-of-lesson: fire the current audio's ended handler indirectly
-    // by calling skipToNext which forwards to playNextItem at end-of-queue.
-    audio.skipToNext(settings)
-
-    // Wait for the async transition to run
     await new Promise(r => setTimeout(r, 20))
+
+    // Start playback to create the blessed player and plan
+    await audio.play(settings)
+
+    // Drive the plan to the end so the last onended triggers the transition
+    const plan = audio.playbackPlan.value
+    for (let i = 0; i < plan.length - 1; i++) {
+      audio.blessedPlayer.value._fireEnded()
+      await new Promise(r => setTimeout(r, 5))
+    }
+
+    // Fire the last entry to trigger end-of-queue → transition
+    audio.blessedPlayer.value._fireEnded()
+    await new Promise(r => setTimeout(r, 50))
 
     // After transition, metadata must point to lesson 2
     expect(audio.lessonMetadata.value.number).toBe(2)
@@ -790,12 +802,21 @@ describe('continuous play mode', () => {
     await audio.initializeAudio(lesson1, 'de', 'pt', settings)
 
     audio.enableContinuousMode(async () => null)
-
-    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
-    audio.isPlaying.value = true
-    audio.skipToNext(settings)
-
     await new Promise(r => setTimeout(r, 20))
+
+    // Start playback to create the blessed player and plan
+    await audio.play(settings)
+
+    // Drive the plan to the end
+    const plan = audio.playbackPlan.value
+    for (let i = 0; i < plan.length - 1; i++) {
+      audio.blessedPlayer.value._fireEnded()
+      await new Promise(r => setTimeout(r, 5))
+    }
+
+    // Fire the last entry → end-of-queue with null provider → stop
+    audio.blessedPlayer.value._fireEnded()
+    await new Promise(r => setTimeout(r, 50))
 
     // End of workshop — playback stops
     expect(audio.isPlaying.value).toBe(false)
@@ -828,13 +849,22 @@ describe('continuous play mode', () => {
 
     // No provider closure — just flip the flag
     audio.enableContinuousMode()
+    await new Promise(r => setTimeout(r, 20))
     expect(audio.continuousMode.value).toBe(true)
 
-    // Jump to end and fire end-of-queue
-    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
-    audio.isPlaying.value = true
-    audio.skipToNext(settings)
-    await new Promise(r => setTimeout(r, 20))
+    // Start playback to create the blessed player and plan
+    await audio.play(settings)
+
+    // Drive the plan to the end
+    const plan = audio.playbackPlan.value
+    for (let i = 0; i < plan.length - 1; i++) {
+      audio.blessedPlayer.value._fireEnded()
+      await new Promise(r => setTimeout(r, 5))
+    }
+
+    // Fire the last entry → end-of-queue → transition via built-in resolver
+    audio.blessedPlayer.value._fireEnded()
+    await new Promise(r => setTimeout(r, 50))
 
     // The built-in resolver should have picked up lesson 2 from the context
     expect(audio.lessonMetadata.value.number).toBe(2)
@@ -844,11 +874,21 @@ describe('continuous play mode', () => {
     await audio.initializeAudio(lesson2, 'de', 'pt', settings)
     audio.setWorkshopLessons('de', 'pt', [lesson1, lesson2])
     audio.enableContinuousMode()
-
-    audio.currentItemIndex.value = audio.readingQueue.value.length - 1
-    audio.isPlaying.value = true
-    audio.skipToNext(settings)
     await new Promise(r => setTimeout(r, 20))
+
+    // Start playback to create the blessed player and plan
+    await audio.play(settings)
+
+    // Drive the plan to the end
+    const plan = audio.playbackPlan.value
+    for (let i = 0; i < plan.length - 1; i++) {
+      audio.blessedPlayer.value._fireEnded()
+      await new Promise(r => setTimeout(r, 5))
+    }
+
+    // Fire the last entry → end-of-queue with no next lesson → stop
+    audio.blessedPlayer.value._fireEnded()
+    await new Promise(r => setTimeout(r, 50))
 
     // End of workshop — playback should have stopped cleanly
     expect(audio.isPlaying.value).toBe(false)
@@ -1184,41 +1224,37 @@ describe('end-to-end playback chain', () => {
     // Let the background preload kick in
     await vi.advanceTimersByTimeAsync(50)
 
-    audio.play(settings)
+    await audio.play(settings)
     expect(audio.isPlaying.value).toBe(true)
     expect(audio.lessonMetadata.value.number).toBe(1)
 
-    // Drive lesson 1 to the end (6 clips → 5 `_fireEnded` calls advance through)
-    for (let i = 0; i < 5; i++) {
-      audio.currentAudio.value._fireEnded()
-      await advanceToNextClip()
+    // Drive lesson 1 to the end. The plan has 10 entries (6 real + 4 silence).
+    // Each fireEndedAndFlush advances one plan entry.
+    const plan1 = audio.playbackPlan.value
+    for (let i = 0; i < plan1.length - 1; i++) {
+      await fireEndedAndFlush()
     }
 
-    // Fire the last clip of lesson 1 — this must trigger transitionToNextLesson
-    audio.currentAudio.value._fireEnded()
+    // Fire the last entry of lesson 1 — this must trigger transitionToNextLesson
+    await fireEndedAndFlush()
     // Give the async transition time to run
     await vi.advanceTimersByTimeAsync(300)
-    await advanceToNextClip()
 
     // After the transition, the composable should be on lesson 2 and STILL playing
     expect(audio.lessonMetadata.value.number).toBe(2)
     expect(audio.isPlaying.value).toBe(true)
     expect(audio.currentItemIndex.value).toBeGreaterThanOrEqual(0)
 
-    // Now drive lesson 2 to the end
-    // Lesson 2 has 6 clips. The transition started playing the first one already,
-    // so we need 5 more `_fireEnded` calls to advance through clips 2..6,
-    // then one more to trigger end-of-queue.
-    for (let i = 0; i < 5; i++) {
+    // Now drive lesson 2 to the end. The transition rebuilt the plan for lesson 2.
+    const plan2 = audio.playbackPlan.value
+    for (let i = 0; i < plan2.length - 1; i++) {
       expect(audio.isPlaying.value).toBe(true)
-      audio.currentAudio.value._fireEnded()
-      await advanceToNextClip()
+      await fireEndedAndFlush()
     }
 
-    // Fire the last clip of lesson 2 — this should end the workshop cleanly
-    audio.currentAudio.value._fireEnded()
+    // Fire the last entry of lesson 2 — this should end the workshop cleanly
+    await fireEndedAndFlush()
     await vi.advanceTimersByTimeAsync(300)
-    await advanceToNextClip()
 
     // All of lesson 2 played. Workshop is done.
     expect(audio.playbackFinished.value).toBe(true)
@@ -1255,7 +1291,7 @@ describe('end-to-end playback chain', () => {
     await vi.advanceTimersByTimeAsync(1)
 
     // User clicks play while init is still in-flight
-    audio.play(settings)
+    await audio.play(settings)
 
     // Now let the init finish
     await initPromise
@@ -1263,27 +1299,28 @@ describe('end-to-end playback chain', () => {
 
     expect(audio.isPlaying.value).toBe(true)
 
-    // Drive the chain through EVERY clip (6 total: title, section-title, Q1, A1, Q2, A2, Q3, A3 = 8)
     // Queue length = 1 + 1 + 3*2 = 8
     expect(audio.readingQueue.value.length).toBe(8)
-    for (let i = 0; i < 7; i++) {
+
+    // Drive the chain through EVERY plan entry (real clips + silence).
+    // The plan has more entries than the queue because silence is interleaved.
+    const plan = audio.playbackPlan.value
+    for (let i = 0; i < plan.length - 1; i++) {
       expect(audio.isPlaying.value).toBe(true)
-      audio.currentAudio.value._fireEnded()
-      await advanceToNextClip()
+      await fireEndedAndFlush()
     }
 
-    // Fire the last clip to close the queue
-    audio.currentAudio.value._fireEnded()
-    await advanceToNextClip()
+    // Fire the last plan entry to close the queue
+    await fireEndedAndFlush()
 
     expect(audio.playbackFinished.value).toBe(true)
   })
 
-  it('stops loudly when an audio element is missing from the preload map (fix G)', async () => {
-    // Late-binding used to silently create a fresh <audio> element on the
-    // fly, which iOS Safari could then reject outside the user gesture
-    // chain. Now we stop loudly and record the reason so the debug
-    // overlay surfaces it.
+  it('warns but continues when an audio element is missing from the preload map', async () => {
+    // With the blessed-player architecture, a missing preload map entry is
+    // not fatal — the blessed player fetches the URL directly from the
+    // browser/service-worker cache or network. We warn (console + debug
+    // event) but keep the chain alive.
     const lesson = {
       title: 'Missing',
       number: 1,
@@ -1297,15 +1334,19 @@ describe('end-to-end playback chain', () => {
     const item1Url = audio.readingQueue.value[1].audioUrl
     delete audio.audioElements?.value?.[item1Url]
 
-    audio.play(settings)
-    await advanceToNextClip()
+    await audio.play(settings)
 
-    // Fire the ended on the lesson title to advance to item 1
-    audio.currentAudio.value._fireEnded()
-    await advanceToNextClip()
+    // Drive the plan through all entries. The chain should NOT stop
+    // even though the section-title was missing from the preload map.
+    const plan = audio.playbackPlan.value
+    for (let i = 0; i < plan.length - 1; i++) {
+      await fireEndedAndFlush()
+    }
+    // Fire the last entry
+    await fireEndedAndFlush()
 
-    // The chain should have stopped because the section-title element
-    // was missing from the map. No late-binding fallback.
+    // Playback finished normally — the missing preload entry was not fatal
+    expect(audio.playbackFinished.value).toBe(true)
     expect(audio.isPlaying.value).toBe(false)
   })
 
@@ -1331,7 +1372,7 @@ describe('end-to-end playback chain', () => {
     const p2 = audio.initializeAudio(lesson, 'de', 'pt', settings, { force: true })
     await Promise.all([p1, p2])
 
-    audio.play(settings)
+    await audio.play(settings)
     expect(audio.isPlaying.value).toBe(true)
 
     // Every item in the queue MUST have an audio element in the map after init
@@ -1339,14 +1380,14 @@ describe('end-to-end playback chain', () => {
       expect(audio.audioElements?.value?.[item.audioUrl] || true).toBeTruthy()
     }
 
-    // Drive all 6 clips (title, section-title, Q1, A1, Q2, A2)
-    for (let i = 0; i < 5; i++) {
-      audio.currentAudio.value._fireEnded()
-      await advanceToNextClip()
+    // Drive all plan entries (real clips + silence). The plan has more entries
+    // than the 6-item queue because silence is interleaved.
+    const plan = audio.playbackPlan.value
+    for (let i = 0; i < plan.length - 1; i++) {
+      await fireEndedAndFlush()
       expect(audio.isPlaying.value).toBe(true)
     }
-    audio.currentAudio.value._fireEnded()
-    await advanceToNextClip()
+    await fireEndedAndFlush()
 
     expect(audio.playbackFinished.value).toBe(true)
   })
