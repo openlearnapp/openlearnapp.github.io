@@ -826,8 +826,7 @@ watch(currentItem, async (newItem) => {
     const rect = element.getBoundingClientRect()
     const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight
     if (!isVisible) {
-      const block = newItem.type === 'section-title' ? 'start' : 'center'
-      element.scrollIntoView({ behavior: 'smooth', block })
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
   }
 })
