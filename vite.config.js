@@ -95,7 +95,11 @@ export default defineConfig(({ command }) => ({
       includeAssets: [
         'favicon.svg',
         'lessons/index.yaml',
-        'default-sources.yaml'
+        'default-sources.yaml',
+        'audio/silence-800ms.wav',
+        'audio/silence-1000ms.wav',
+        'audio/silence-1200ms.wav',
+        'audio/silence-1800ms.wav',
       ],
       workbox: {
         // Precache built app assets

@@ -46,53 +46,21 @@ const lessonMetadata = ref({ learning: '', workshop: '', number: null })
 //   - For each clip, we swap its .src and call .play() again.
 //   - The pre-loaded Audio elements (audioElements map) are just cache-warmers:
 //     they fetch the MP3 into the browser cache via .load(), but never .play().
-//   - Pauses between clips use silent WAV blobs played on the same element,
-//     keeping the onended chain unbroken (no setTimeout in the playback path).
+//   - Pauses between clips use static silent WAV files played on the same
+//     element, keeping the onended chain unbroken (no setTimeout in the
+//     playback path).
 // ---------------------------------------------------------------------------
 const blessedPlayer = ref(null)
 
-// Generate an in-memory silent WAV blob URL for a given duration.
-// Used to replace setTimeout pauses in the playback chain — playing silence
-// keeps the onended chain alive and iOS doesn't revoke the gesture blessing.
-function generateSilentWavUrl(durationMs) {
-  const sampleRate = 8000
-  const numSamples = Math.ceil(sampleRate * durationMs / 1000)
-  const dataSize = numSamples
-  const fileSize = 44 + dataSize
-
-  const buffer = new ArrayBuffer(fileSize)
-  const view = new DataView(buffer)
-
-  // RIFF header
-  const writeStr = (offset, str) => {
-    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i))
-  }
-  writeStr(0, 'RIFF')
-  view.setUint32(4, fileSize - 8, true)
-  writeStr(8, 'WAVE')
-  writeStr(12, 'fmt ')
-  view.setUint32(16, 16, true)          // PCM format chunk size
-  view.setUint16(20, 1, true)           // PCM format
-  view.setUint16(22, 1, true)           // mono
-  view.setUint32(24, sampleRate, true)  // sample rate
-  view.setUint32(28, sampleRate, true)  // byte rate
-  view.setUint16(32, 1, true)           // block align
-  view.setUint16(34, 8, true)           // bits per sample
-  writeStr(36, 'data')
-  view.setUint32(40, dataSize, true)
-  // Data bytes: all zero = silence (ArrayBuffer is zero-initialized)
-
-  const blob = new Blob([buffer], { type: 'audio/wav' })
-  return URL.createObjectURL(blob)
-}
-
-// Pre-generate the silence URLs we need for inter-clip pauses.
-// These are tiny in-memory blobs (~7 KB each), created once at module init.
+// Static silence files served from public/audio/. Precached by the Workbox
+// service worker alongside the app shell, so they're always instant — even
+// offline. No Blob, no URL.createObjectURL, no WAV header generation.
+const _base = import.meta.env.BASE_URL
 const SILENCE_URLS = {
-  800: generateSilentWavUrl(800),     // between examples
-  1000: generateSilentWavUrl(1000),   // after lesson title
-  1200: generateSilentWavUrl(1200),   // after section title
-  1800: generateSilentWavUrl(1800),   // between sections
+  800:  `${_base}audio/silence-800ms.wav`,
+  1000: `${_base}audio/silence-1000ms.wav`,
+  1200: `${_base}audio/silence-1200ms.wav`,
+  1800: `${_base}audio/silence-1800ms.wav`,
 }
 
 // Pick the silence URL closest to the requested duration.
