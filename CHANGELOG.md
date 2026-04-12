@@ -4,9 +4,10 @@
 
 ### Fixes
 
-#### Workshops springen nicht mehr beim Favorisieren oder Abhaken (#248)
+#### Workshops und Lektionen springen nicht mehr beim Favorisieren oder Abhaken (#248)
 - Workshop-Liste behält die ursprüngliche Reihenfolge aus der Quelle
-- Kein automatisches Umsortieren nach aktiv/favorit/Bild mehr
+- Lektionen bleiben an ihrer Stelle wenn sie als erledigt markiert oder favorisiert werden
+- Kein automatisches Umsortieren nach aktiv/favorit/erledigt mehr
 
 ## 2026-04-11
 
