@@ -83,6 +83,11 @@ function getSilenceUrl(durationMs) {
 //   - stop() / cleanup() (clear)
 const playbackPlan = ref([])
 let planIdx = -1
+// Set by jumpToExample when the user clicks an example while paused.
+// Tells play() to advance from the repositioned planIdx instead of
+// resuming the blessed player (whose src/onended are stale after
+// playSingleItem).
+let _planRepositioned = false
 
 /**
  * Build the playback plan from a reading queue. The result interleaves
@@ -775,7 +780,12 @@ async function play(settings) {
     planIdx,
   })
 
-  if (wasResuming) {
+  if (wasResuming && _planRepositioned) {
+    // The user clicked an example while paused — planIdx was repositioned.
+    // Advance from there instead of resuming the stale blessed player.
+    _planRepositioned = false
+    advancePlan()
+  } else if (wasResuming) {
     // Resume: just call play() on the blessed player (same src, same position)
     try {
       await blessedPlayer.value.play()
@@ -829,6 +839,7 @@ function stop() {
   isPaused.value = false
   currentItemIndex.value = -1
   planIdx = -1
+  _planRepositioned = false
 
   if (blessedPlayer.value) {
     try {
@@ -947,6 +958,18 @@ function jumpToExample(sectionIdx, exampleIdx, settings) {
         blessedPlayer.value?.pause()
         advancePlan()
       }
+    } else if (isPaused.value && playbackPlan.value.length > 0) {
+      // Paused: reposition the plan so the next play() continues from here.
+      // Play the clicked example immediately for feedback.
+      const planTarget = playbackPlan.value.findIndex(
+        e => !e.isSilence && e.queueIndex === index
+      )
+      if (planTarget >= 0) {
+        planIdx = planTarget
+        _planRepositioned = true
+      }
+      currentItemIndex.value = index
+      playSingleItem(index, settings)
     } else {
       currentItemIndex.value = index
       playSingleItem(index, settings)
@@ -1100,7 +1123,7 @@ function sumPreloadedPlaytime() {
 
 /**
  * Preload every remaining lesson in the workshop, up to a 1-hour playtime
- * budget. Called from inside the user's double-click gesture handler so all
+ * budget. Called when continuous mode is enabled so all
  * Audio elements exist before the chain advances — this is what keeps iOS
  * happy across continuous-mode transitions (fix E for #240).
  */

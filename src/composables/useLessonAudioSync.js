@@ -115,26 +115,6 @@ export function useLessonAudioSync() {
     return true
   }
 
-  /**
-   * Toggles continuous play mode. After fix C for #240, the composable has
-   * its own built-in resolver based on `setWorkshopLessons`, so the caller
-   * no longer needs to pass a closure — we just flip the flag.
-   *
-   * `nextLessonProvider` is still accepted for backwards compatibility
-   * but callers that use setWorkshopLessons should pass nothing.
-   */
-  function toggleContinuousPlay({ nextLessonProvider, audioSettings } = {}) {
-    if (continuousMode.value) {
-      disableContinuousMode()
-      return false
-    }
-    enableContinuousMode(nextLessonProvider)
-    if (!isPlaying.value) {
-      play(audioSettings)
-    }
-    return true
-  }
-
   return {
     // Reactive state forwarded from useAudio so the view doesn't import both
     isLoadingAudio,
@@ -160,6 +140,5 @@ export function useLessonAudioSync() {
     onProgressChanged,
     onLessonMount,
     onLessonUnmount,
-    toggleContinuousPlay,
   }
 }
