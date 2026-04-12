@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 z-[100] flex flex-col story-bg" style="height: 100lvh">
+  <div class="fixed inset-0 z-[100] flex flex-col story-bg" style="height: 100lvh" @click="handleTap($event)">
     <!-- Exit button (top-left, press-and-hold 2s) -->
     <button
       class="absolute top-4 left-4 z-[110] w-14 h-14 rounded-full bg-black/50 text-white flex items-center justify-center transition-all"
@@ -7,6 +7,7 @@
       @pointerdown="startExit"
       @pointerup="cancelExit"
       @pointerleave="cancelExit"
+      @click.stop
       title="Hold to exit"
       aria-label="Hold to exit">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -56,12 +57,12 @@
       <div class="text-white text-2xl font-bold text-center">Story complete</div>
       <div class="flex flex-col gap-3 w-full max-w-xs">
         <button
-          @click="restartFromBeginning"
+          @click.stop="restartFromBeginning"
           class="w-full px-6 py-3 rounded-xl bg-white/10 text-white text-lg font-medium hover:bg-white/20 transition">
           Restart from Lesson 1
         </button>
         <button
-          @click="goToOverview"
+          @click.stop="goToOverview"
           class="w-full px-6 py-3 rounded-xl bg-white/5 text-white/60 text-sm hover:bg-white/10 transition">
           Back to overview
         </button>
@@ -70,7 +71,7 @@
 
     <!-- Story content -->
     <template v-else>
-      <div class="flex-1 relative overflow-hidden" @click="handleTap($event)">
+      <div class="flex-1 relative overflow-hidden">
 
         <!-- Atmospheric background layer -->
         <div class="absolute inset-0 pointer-events-none z-0" :class="`scene-bg scene-${sceneType}`">
