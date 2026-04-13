@@ -284,5 +284,26 @@
     "availableContent": "Available Content",
     "add": "Add",
     "cancel": "Cancel"
+  },
+  "tour": {
+    "startTour": "Start tour",
+    "overview": {
+      "title1": "Choose a language",
+      "desc1": "Switch the language you want to learn here.",
+      "title2": "Filter workshops",
+      "desc2": "Narrow workshops by topic — e.g. beginner or advanced.",
+      "title3": "Open a workshop",
+      "desc3": "Tap a card to see the lessons inside.",
+      "title4": "Settings & Profile",
+      "desc4": "Find settings, your profile, and the coach here."
+    },
+    "lesson": {
+      "title1": "Story Mode",
+      "desc1": "Experience the lesson as an immersive full-screen story.",
+      "title2": "Play audio",
+      "desc2": "Listen to all examples in this lesson automatically.",
+      "title3": "Menu",
+      "desc3": "Settings, profile, and more — always within reach."
+    }
   }
 }

@@ -284,5 +284,26 @@
     "availableContent": "Verfügbare Inhalte",
     "add": "Hinzufügen",
     "cancel": "Abbrechen"
+  },
+  "tour": {
+    "startTour": "Tour starten",
+    "overview": {
+      "title1": "Lernsprache wählen",
+      "desc1": "Hier wechselst du die Sprache, die du lernen möchtest.",
+      "title2": "Workshops filtern",
+      "desc2": "Filtere Workshops nach Thema — z. B. Anfänger oder Fortgeschrittene.",
+      "title3": "Workshop starten",
+      "desc3": "Tippe auf eine Karte, um die Lektionen zu sehen.",
+      "title4": "Einstellungen & Profil",
+      "desc4": "Hier findest du Einstellungen, dein Profil und den Coach."
+    },
+    "lesson": {
+      "title1": "Story-Modus",
+      "desc1": "Erlebe die Lektion als immersive Vollbild-Geschichte.",
+      "title2": "Audio abspielen",
+      "desc2": "Hör alle Beispiele der Lektion automatisch ab.",
+      "title3": "Menü",
+      "desc3": "Einstellungen, Profil und mehr — immer erreichbar."
+    }
   }
 }

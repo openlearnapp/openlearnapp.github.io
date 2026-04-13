@@ -14,6 +14,7 @@
           <!-- Language dropdown (only on workshop overview) -->
           <div v-if="isWorkshopOverview && learningLanguages.length > 0" class="relative">
             <button
+              id="tour-language-btn"
               @click="toggleLanguageMenu"
               class="flex items-center gap-1.5 bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 rounded-full px-3 py-1.5 text-sm font-medium transition flex-shrink-0"
               :title="$t('nav.changeLanguage')"
@@ -95,6 +96,7 @@
           <!-- Single click: toggle play/pause. Double click: continuous play. -->
           <Button
             v-if="isLessonPage"
+            id="tour-play-btn"
             variant="ghost"
             size="icon"
             @click="togglePlayPause"
@@ -116,6 +118,7 @@
           <!-- Story mode button (visible on lesson/overview pages) -->
           <Button
             v-if="canEnterStoryMode"
+            id="tour-story-btn"
             variant="ghost"
             size="icon"
             @click="enterStoryMode"
@@ -172,6 +175,7 @@
           <!-- Burger menu (replaces Settings, Profile, Workshops buttons) -->
           <div v-if="!isHomePage" class="relative">
             <Button
+              id="tour-burger-btn"
               variant="ghost"
               size="icon"
               @click="showBurgerMenu = !showBurgerMenu"
@@ -205,6 +209,13 @@
                 :class="['flex items-center gap-3 w-full px-4 py-3 text-sm hover:bg-accent transition', isRtl ? 'text-right' : 'text-left', route.name === 'coach' ? 'bg-accent font-medium' : '']">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
                 <span>{{ $t('nav.coach') }}</span>
+              </button>
+              <!-- Start tour -->
+              <button
+                @click="onRestartTour(); showBurgerMenu = false"
+                :class="['flex items-center gap-3 w-full px-4 py-3 text-sm hover:bg-accent transition', isRtl ? 'text-right' : 'text-left']">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                <span>{{ $t('tour.startTour') }}</span>
               </button>
               <!-- Version -->
               <div class="px-4 py-2 text-xs text-muted-foreground/50 border-t">
@@ -287,6 +298,7 @@ import { useLessons } from './composables/useLessons'
 import { useLanguage } from './composables/useLanguage'
 import { useFooter } from './composables/useFooter'
 import { useGun } from './composables/useGun'
+import { useTour } from './composables/useTour'
 import { isRtlLocale } from './i18n'
 import { formatLangName } from './utils/formatters'
 import { Button } from '@/components/ui/button'
@@ -310,6 +322,7 @@ const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 const { nextLessonNumber: footerNextLesson, lessonLearning, lessonWorkshop } = useFooter()
 const { isLoggedIn: isGunLoggedIn, username: gunUsername } = useGun()
 const { isOnline: online } = useOffline()
+const { startTourForRoute, restartTour, destroyTour } = useTour()
 
 const isRtl = computed(() => isRtlLocale(locale.value))
 
@@ -515,7 +528,40 @@ onMounted(async () => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeydown)
+  destroyTour()
 })
+
+// Guided tour — trigger automatically on first visit per route segment
+function getTourTranslations() {
+  return {
+    workshopOverview: {
+      title1: t('tour.overview.title1'),
+      desc1: t('tour.overview.desc1'),
+      title2: t('tour.overview.title2'),
+      desc2: t('tour.overview.desc2'),
+      title3: t('tour.overview.title3'),
+      desc3: t('tour.overview.desc3'),
+      title4: t('tour.overview.title4'),
+      desc4: t('tour.overview.desc4'),
+    },
+    lessonDetail: {
+      title1: t('tour.lesson.title1'),
+      desc1: t('tour.lesson.desc1'),
+      title2: t('tour.lesson.title2'),
+      desc2: t('tour.lesson.desc2'),
+      title3: t('tour.lesson.title3'),
+      desc3: t('tour.lesson.desc3'),
+    },
+  }
+}
+
+watch(() => route.name, (name) => {
+  startTourForRoute(name, getTourTranslations())
+}, { immediate: true })
+
+function onRestartTour() {
+  restartTour(route.name, getTourTranslations())
+}
 
 function goHome() {
   router.push({ name: 'home' })
