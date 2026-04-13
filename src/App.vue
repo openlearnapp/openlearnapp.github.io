@@ -3,7 +3,7 @@
     <!-- Header with unified navigation - sticky on desktop -->
     <!-- Safe area spacer for iOS PWA (pushes header below status bar) -->
     <div v-if="!isHomePage && !isStoryMode" class="bg-primary sticky top-0 z-50" style="height: env(safe-area-inset-top, 0px)"></div>
-    <header v-if="!isHomePage && !isStoryMode" class="bg-primary text-white pt-1 pb-2 md:py-4 px-4 relative sticky z-50" style="top: env(safe-area-inset-top, 0px)">
+    <header id="tour-nav-header" v-if="!isHomePage && !isStoryMode" class="bg-primary text-white pt-1 pb-2 md:py-4 px-4 relative sticky z-50" style="top: env(safe-area-inset-top, 0px)">
       <div class="flex items-center justify-between gap-2">
         <!-- Left side: language dropdown + nav buttons -->
         <!-- Dimmed and disabled during focus mode (audio playback) so the

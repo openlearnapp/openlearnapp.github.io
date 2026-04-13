@@ -5,7 +5,7 @@ const TOUR_KEYS = {
   lessonDetail: 'tour_lesson_detail_done',
 }
 
-// Reactive global state
+// Reactive global state (singleton)
 const tourVisible = ref(false)
 const tourSteps = ref([])
 const tourDoneKey = ref(null)
@@ -18,35 +18,51 @@ function markTourDone(key) {
   if (key) localStorage.setItem(key, 'true')
 }
 
+// Check element visibility — works for sticky/fixed elements too
 function isElementVisible(selector) {
   const el = document.querySelector(selector)
   if (!el) return false
   const style = window.getComputedStyle(el)
-  return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null
+  if (style.display === 'none' || style.visibility === 'hidden') return false
+  const rect = el.getBoundingClientRect()
+  return rect.width > 0 && rect.height > 0
 }
 
-function buildVisibleSteps(definitions) {
-  return definitions.filter(step => {
-    if (!step.element) return true
-    return isElementVisible(step.element)
+// Wait until an element appears in the DOM (up to maxMs)
+function waitForElement(selector, maxMs = 5000) {
+  return new Promise((resolve) => {
+    if (isElementVisible(selector)) { resolve(true); return }
+    const start = Date.now()
+    const tick = () => {
+      if (isElementVisible(selector)) { resolve(true); return }
+      if (Date.now() - start >= maxMs) { resolve(false); return }
+      setTimeout(tick, 300)
+    }
+    setTimeout(tick, 300)
   })
 }
 
-function showTour(stepDefs, doneKey, force = false) {
+function buildVisibleSteps(definitions) {
+  return definitions.filter(step => !step.element || isElementVisible(step.element))
+}
+
+async function showTour(stepDefs, doneKey, force = false, anchorSelector = null) {
   if (!force && isTourDone(doneKey)) return
 
-  // Small delay so DOM is ready (route transition + data load)
-  setTimeout(() => {
-    const steps = buildVisibleSteps(stepDefs)
-    if (!steps.length) {
-      // No visible elements — mark done so we don't retry forever
-      markTourDone(doneKey)
-      return
-    }
-    tourSteps.value = steps
-    tourDoneKey.value = doneKey
-    tourVisible.value = true
-  }, 900)
+  // Wait for anchor element (guaranteed to appear when the view is ready)
+  if (anchorSelector) {
+    const found = await waitForElement(anchorSelector, 6000)
+    if (!found) return // View never loaded — skip silently, do NOT mark as done
+    // Give dynamic content (workshop cards, filter chips) time to render
+    await new Promise(r => setTimeout(r, 400))
+  }
+
+  const steps = buildVisibleSteps(stepDefs)
+  if (!steps.length) return
+
+  tourSteps.value = steps
+  tourDoneKey.value = doneKey
+  tourVisible.value = true
 }
 
 export function useTour() {
@@ -76,7 +92,8 @@ export function useTour() {
         title: tr.title4,
         desc: tr.desc4,
       },
-    ], TOUR_KEYS.workshopOverview, force)
+    ], TOUR_KEYS.workshopOverview, force, '#tour-burger-btn')
+    // ↑ Anchor = burger button (always visible). Waits for it, then extra 400ms for workshop cards.
   }
 
   function startLessonDetailTour(tr, force = false) {
@@ -99,7 +116,7 @@ export function useTour() {
         title: tr.title3,
         desc: tr.desc3,
       },
-    ], TOUR_KEYS.lessonDetail, force)
+    ], TOUR_KEYS.lessonDetail, force, '#tour-burger-btn')
   }
 
   function startTourForRoute(routeName, translations) {
@@ -119,7 +136,7 @@ export function useTour() {
       localStorage.removeItem(TOUR_KEYS.lessonDetail)
       startLessonDetailTour(translations.lessonDetail, true)
     } else {
-      // On other pages: reset both and go to workshop-overview next time
+      // On other pages: reset everything so tour runs next time they visit
       localStorage.removeItem(TOUR_KEYS.workshopOverview)
       localStorage.removeItem(TOUR_KEYS.lessonDetail)
     }
