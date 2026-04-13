@@ -2,6 +2,12 @@
 
 ## 2026-04-13
 
+### Docs & CI
+
+#### `docs/features.md`: Continuous Play Mode auf Always-Continuous aktualisiert
+- Beschrieb noch den Double-Click-Toggle, der in #250 entfernt wurde
+- Text beschreibt jetzt das tatsächliche Verhalten: Play = immer continuous
+
 ### Fixes
 
 #### Story Mode: Links/Rechts-Tippen springt zum nächsten Absatz (#254)

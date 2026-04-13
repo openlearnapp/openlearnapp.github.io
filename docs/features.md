@@ -137,14 +137,12 @@ Pre-generated MP3 files for questions and answers, played in sequence.
 - Click question text to toggle answer, click example card to play audio
 
 ### Continuous Play Mode
-Double-click the play button to auto-advance through the entire workshop, including from the lock screen.
+Pressing play auto-advances through the entire workshop — title → sections → examples → next lesson — including from the lock screen. There is no toggle; continuous is the only mode.
 
-- Single click: play/pause current lesson (unchanged)
-- Double click: toggle continuous play — lessons advance automatically when finished
-- Visual indicator: repeat badge + yellow ring on the play button
+- Single click: play/pause (always continuous, no separate single-lesson mode)
 - Next lesson audio is preloaded in the background for seamless transitions
 - Works offline and online; non-downloaded workshops load the next lesson in the background
-- A second double click turns continuous play off without stopping playback
+- History: a double-click toggle existed pre-#250 but was removed to simplify the mental model ("press play, hear the workshop")
 
 ### Lock Screen Controls
 Media Session API integration for mobile lock screen play/pause/skip controls.
