@@ -1169,20 +1169,6 @@ async function advanceSection() {
   }
 }
 
-async function prevSection() {
-  if (!currentLesson.value?.sections) return
-  const prevSectionIdx = currentSectionIndex.value - 1
-  if (prevSectionIdx >= 0) {
-    currentSectionIndex.value = prevSectionIdx
-    currentExampleIndex.value = 0
-    currentPage.value = 0
-    imageLoaded.value = false
-    await playSectionIntro()
-    showCurrentExample()
-  }
-  // already on first section — do nothing
-}
-
 function advanceLesson() {
   const nextLesson = lessons.value.find(l => l.number === lessonNumber.value + 1)
   if (nextLesson) {

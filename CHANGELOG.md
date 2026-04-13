@@ -8,6 +8,11 @@
 - Beschrieb noch den Double-Click-Toggle, der in #250 entfernt wurde
 - Text beschreibt jetzt das tatsächliche Verhalten: Play = immer continuous
 
+### Cleanup
+
+#### Remove unused `prevSection()` from Story Mode (Follow-up zu #255)
+- Tote Funktion entfernt — nicht referenziert, da Tap-Navigation nur innerhalb der Section springt
+
 ### Fixes
 
 #### Story Mode: Links/Rechts-Tippen springt zum nächsten Absatz (#254)
