@@ -862,11 +862,23 @@ function handleTap(e) {
 
   clearAutoAdvance()
 
-  // Left/right tap always navigates sections — pages use the zurück/weiter buttons
   if (isLeftSide) {
-    prevSection()
+    // Go back one example; update page to follow
+    if (currentExampleIndex.value > 0) {
+      currentExampleIndex.value--
+      currentPage.value = Math.floor(currentExampleIndex.value / paragraphsPerPage.value)
+      showCurrentExample()
+    }
   } else {
-    advanceSection()
+    // Advance one example; update page to follow
+    const nextIdx = currentExampleIndex.value + 1
+    const section = currentLesson.value?.sections?.[currentSectionIndex.value]
+    const examplesInSection = section?.examples?.length || 0
+    if (nextIdx < examplesInSection) {
+      currentExampleIndex.value = nextIdx
+      currentPage.value = Math.floor(currentExampleIndex.value / paragraphsPerPage.value)
+      showCurrentExample()
+    }
   }
 }
 
