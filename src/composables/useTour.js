@@ -1,113 +1,105 @@
-import { driver } from 'driver.js'
-import 'driver.js/dist/driver.css'
+import { ref } from 'vue'
 
 const TOUR_KEYS = {
   workshopOverview: 'tour_workshop_overview_done',
   lessonDetail: 'tour_lesson_detail_done',
 }
 
+// Reactive global state
+const tourVisible = ref(false)
+const tourSteps = ref([])
+const tourDoneKey = ref(null)
+
 function isTourDone(key) {
   return localStorage.getItem(key) === 'true'
 }
 
 function markTourDone(key) {
-  localStorage.setItem(key, 'true')
+  if (key) localStorage.setItem(key, 'true')
 }
 
-function resetAllTours() {
-  Object.values(TOUR_KEYS).forEach(k => localStorage.removeItem(k))
+function isElementVisible(selector) {
+  const el = document.querySelector(selector)
+  if (!el) return false
+  const style = window.getComputedStyle(el)
+  return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null
 }
 
-let driverInstance = null
-
-function destroyTour() {
-  if (driverInstance) {
-    driverInstance.destroy()
-    driverInstance = null
-  }
-}
-
-function buildSteps(definitions) {
-  // Only include steps where the target element exists in the DOM
+function buildVisibleSteps(definitions) {
   return definitions.filter(step => {
-    if (!step.element) return true // no target = centered popover, always include
-    return !!document.querySelector(step.element)
+    if (!step.element) return true
+    return isElementVisible(step.element)
   })
 }
 
-function runTour(steps, onDone) {
-  if (!steps.length) {
-    onDone?.()
-    return
-  }
-  destroyTour()
-  driverInstance = driver({
-    animate: true,
-    showProgress: true,
-    allowClose: true,
-    popoverClass: 'open-learn-tour',
-    nextBtnText: '→',
-    prevBtnText: '←',
-    doneBtnText: '✓',
-    onDestroyStarted: () => {
-      onDone?.()
-      driverInstance?.destroy()
-      driverInstance = null
-    },
-    steps,
-  })
-  driverInstance.drive()
+function showTour(stepDefs, doneKey, force = false) {
+  if (!force && isTourDone(doneKey)) return
+
+  // Small delay so DOM is ready (route transition + data load)
+  setTimeout(() => {
+    const steps = buildVisibleSteps(stepDefs)
+    if (!steps.length) {
+      // No visible elements — mark done so we don't retry forever
+      markTourDone(doneKey)
+      return
+    }
+    tourSteps.value = steps
+    tourDoneKey.value = doneKey
+    tourVisible.value = true
+  }, 900)
 }
 
 export function useTour() {
-  function startWorkshopOverviewTour(translations, force = false) {
-    if (!force && isTourDone(TOUR_KEYS.workshopOverview)) return
-    const { title1, desc1, title2, desc2, title3, desc3, title4, desc4 } = translations
-
-    setTimeout(() => {
-      const steps = buildSteps([
-        {
-          element: '#tour-language-btn',
-          popover: { title: title1, description: desc1, side: 'bottom', align: 'start' },
-        },
-        {
-          element: '#tour-filter-chips',
-          popover: { title: title2, description: desc2, side: 'bottom', align: 'start' },
-        },
-        {
-          element: '#tour-workshop-card',
-          popover: { title: title3, description: desc3, side: 'bottom', align: 'start' },
-        },
-        {
-          element: '#tour-burger-btn',
-          popover: { title: title4, description: desc4, side: 'bottom', align: 'end' },
-        },
-      ])
-      runTour(steps, () => markTourDone(TOUR_KEYS.workshopOverview))
-    }, 1200)
+  function startWorkshopOverviewTour(tr, force = false) {
+    showTour([
+      {
+        element: '#tour-language-btn',
+        emoji: '🌍',
+        title: tr.title1,
+        desc: tr.desc1,
+      },
+      {
+        element: '#tour-filter-chips',
+        emoji: '🔍',
+        title: tr.title2,
+        desc: tr.desc2,
+      },
+      {
+        element: '#tour-workshop-card',
+        emoji: '🚀',
+        title: tr.title3,
+        desc: tr.desc3,
+      },
+      {
+        element: '#tour-burger-btn',
+        emoji: '☰',
+        title: tr.title4,
+        desc: tr.desc4,
+      },
+    ], TOUR_KEYS.workshopOverview, force)
   }
 
-  function startLessonDetailTour(translations, force = false) {
-    if (!force && isTourDone(TOUR_KEYS.lessonDetail)) return
-    const { title1, desc1, title2, desc2, title3, desc3 } = translations
-
-    setTimeout(() => {
-      const steps = buildSteps([
-        {
-          element: '#tour-story-btn',
-          popover: { title: title1, description: desc1, side: 'bottom', align: 'end' },
-        },
-        {
-          element: '#tour-play-btn',
-          popover: { title: title2, description: desc2, side: 'bottom', align: 'end' },
-        },
-        {
-          element: '#tour-burger-btn',
-          popover: { title: title3, description: desc3, side: 'bottom', align: 'end' },
-        },
-      ])
-      runTour(steps, () => markTourDone(TOUR_KEYS.lessonDetail))
-    }, 600)
+  function startLessonDetailTour(tr, force = false) {
+    showTour([
+      {
+        element: '#tour-story-btn',
+        emoji: '📺',
+        title: tr.title1,
+        desc: tr.desc1,
+      },
+      {
+        element: '#tour-play-btn',
+        emoji: '🔊',
+        title: tr.title2,
+        desc: tr.desc2,
+      },
+      {
+        element: '#tour-burger-btn',
+        emoji: '⚙️',
+        title: tr.title3,
+        desc: tr.desc3,
+      },
+    ], TOUR_KEYS.lessonDetail, force)
   }
 
   function startTourForRoute(routeName, translations) {
@@ -119,23 +111,39 @@ export function useTour() {
   }
 
   function restartTour(routeName, translations) {
-    destroyTour()
+    closeTour()
     if (routeName === 'workshop-overview') {
+      localStorage.removeItem(TOUR_KEYS.workshopOverview)
       startWorkshopOverviewTour(translations.workshopOverview, true)
     } else if (routeName === 'lesson-detail') {
+      localStorage.removeItem(TOUR_KEYS.lessonDetail)
       startLessonDetailTour(translations.lessonDetail, true)
     } else {
-      // On other pages, reset all and hint user to go to workshop overview
-      resetAllTours()
+      // On other pages: reset both and go to workshop-overview next time
+      localStorage.removeItem(TOUR_KEYS.workshopOverview)
+      localStorage.removeItem(TOUR_KEYS.lessonDetail)
     }
   }
 
+  function onTourDone() {
+    markTourDone(tourDoneKey.value)
+    tourVisible.value = false
+    tourSteps.value = []
+    tourDoneKey.value = null
+  }
+
+  function closeTour() {
+    tourVisible.value = false
+    tourSteps.value = []
+    tourDoneKey.value = null
+  }
+
   return {
+    tourVisible,
+    tourSteps,
     startTourForRoute,
     restartTour,
-    destroyTour,
-    TOUR_KEYS,
-    isTourDone,
-    resetAllTours,
+    onTourDone,
+    closeTour,
   }
 }

@@ -304,6 +304,9 @@
       "desc2": "Listen to all examples in this lesson automatically.",
       "title3": "Menu",
       "desc3": "Settings, profile, and more — always within reach."
-    }
+    },
+    "next": "Next",
+    "done": "Let's go!",
+    "skip": "Skip"
   }
 }

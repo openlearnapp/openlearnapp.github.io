@@ -304,6 +304,9 @@
       "desc2": "Hör alle Beispiele der Lektion automatisch ab.",
       "title3": "Menü",
       "desc3": "Einstellungen, Profil und mehr — immer erreichbar."
-    }
+    },
+    "next": "Weiter",
+    "done": "Los geht's!",
+    "skip": "Überspringen"
   }
 }

@@ -284,6 +284,14 @@
     <!-- Audio debug overlay. Renders itself only when settings.showDebugOverlay
          is enabled or ?audioDebug=1 is in the URL. See useAudioDebug.js. -->
     <AudioDebugOverlay />
+
+    <!-- Guided tour overlay -->
+    <GuidedTour
+      :steps="tourSteps"
+      :visible="tourVisible"
+      @done="onTourDone"
+      @skip="onTourDone"
+    />
   </div>
 </template>
 
@@ -304,6 +312,7 @@ import { formatLangName } from './utils/formatters'
 import { Button } from '@/components/ui/button'
 import Icon from '@/components/Icon.vue'
 import AudioDebugOverlay from '@/components/AudioDebugOverlay.vue'
+import GuidedTour from '@/components/GuidedTour.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -322,7 +331,7 @@ const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 const { nextLessonNumber: footerNextLesson, lessonLearning, lessonWorkshop } = useFooter()
 const { isLoggedIn: isGunLoggedIn, username: gunUsername } = useGun()
 const { isOnline: online } = useOffline()
-const { startTourForRoute, restartTour, destroyTour } = useTour()
+const { tourVisible, tourSteps, startTourForRoute, restartTour, onTourDone, closeTour } = useTour()
 
 const isRtl = computed(() => isRtlLocale(locale.value))
 
@@ -528,7 +537,7 @@ onMounted(async () => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeydown)
-  destroyTour()
+  closeTour()
 })
 
 // Guided tour — trigger automatically on first visit per route segment
