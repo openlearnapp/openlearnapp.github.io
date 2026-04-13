@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-04-13
+
+### Fixes
+
+#### Story Mode: Links/Rechts-Tippen springt zum nächsten Absatz (#254)
+
+Tippen links oder rechts (egal wo auf dem Bildschirm) springt jetzt zum nächsten bzw. vorherigen Absatz innerhalb der aktuellen Section — ohne die Section zu wechseln. Audio spielt sofort den neuen Absatz ab. Die Section wechselt erst automatisch nach dem letzten Absatz.
+
 ## 2026-04-12
 
 ### Fixes
