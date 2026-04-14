@@ -857,6 +857,15 @@ function handleTap(e) {
   const clickX = e.clientX - rect.left
   const isLeftSide = clickX < rect.width / 2
 
+  // Tap during intro → skip intro, start first example immediately
+  if (showingIntro.value) {
+    showingIntro.value = false
+    stopSpeaking()
+    clearAutoAdvance()
+    showCurrentExample()
+    return
+  }
+
   // In assessment states, tapping does nothing (use answer buttons)
   if (state.value === 'choosing' || state.value === 'input') return
 
