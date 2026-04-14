@@ -6,11 +6,16 @@
         <!-- Backdrop blocks all clicks through the tour -->
         <div class="tour-backdrop" @click.stop @touchstart.stop @pointerdown.stop />
 
-        <!-- Cloud glow: outer soft halo -->
+        <!-- Cloud glow: outer soft halo (element-based) -->
         <div v-if="cloud" class="tour-cloud-outer" :style="cloudOuterStyle" />
 
-        <!-- Cloud glow: inner ring -->
+        <!-- Cloud glow: inner ring (element-based) -->
         <div v-if="cloud" class="tour-cloud-ring" :style="cloudRingStyle" />
+
+        <!-- Directional zone highlight (gesture steps without a DOM element) -->
+        <div v-if="zoneHighlight" class="tour-zone" :style="zoneHighlight.style">
+          <span class="tour-zone-icon">{{ zoneHighlight.icon }}</span>
+        </div>
 
         <!-- Step card — near the highlighted element -->
         <Transition name="tour-card-slide" mode="out-in">
@@ -115,12 +120,57 @@ const cloudOuterStyle = computed(() => {
 })
 
 const cardStyle = computed(() => {
-  if (!cardPos.value) return { bottom: '24px', left: '50%', transform: 'translateX(-50%)' }
-  return {
-    top:       `${cardPos.value.top}px`,
-    left:      `${cardPos.value.left}px`,
-    transform: 'none',
+  // Element-tracked position (rAF loop)
+  if (cardPos.value) {
+    return { top: `${cardPos.value.top}px`, left: `${cardPos.value.left}px`, transform: 'none' }
   }
+  // Directional position for gesture steps
+  const pos = currentStep.value?.position
+  const cardW = Math.min(CARD_W, window.innerWidth - 32)
+  const CARD_H = 300
+  const midV = Math.max(16, (window.innerHeight - CARD_H) / 2)
+  const midH = Math.max(16, window.innerWidth / 2 - cardW / 2)
+  if (pos === 'left')   return { top: `${midV}px`, left: '16px', transform: 'none' }
+  if (pos === 'right')  return { top: `${midV}px`, left: `${window.innerWidth - cardW - 16}px`, transform: 'none' }
+  if (pos === 'top')    return { top: '16px', left: `${midH}px`, transform: 'none' }
+  if (pos === 'bottom') return { bottom: '16px', left: `${midH}px`, transform: 'none' }
+  // Default: bottom center
+  return { bottom: '24px', left: '50%', transform: 'translateX(-50%)' }
+})
+
+// Zone highlight for directional gesture steps
+const zoneHighlight = computed(() => {
+  const step = currentStep.value
+  if (!step || cloud.value || !step.position) return null
+  const pos = step.position
+  const base = { position: 'fixed', zIndex: 9993, pointerEvents: 'none' }
+  const zones = {
+    left: {
+      style: { ...base, top: 0, left: 0, width: '50%', height: '100%',
+        background: 'linear-gradient(to right, hsl(var(--primary)/0.22) 0%, transparent 100%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '28px' },
+      icon: '👈',
+    },
+    right: {
+      style: { ...base, top: 0, right: 0, width: '50%', height: '100%',
+        background: 'linear-gradient(to left, hsl(var(--primary)/0.22) 0%, transparent 100%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '28px' },
+      icon: '👉',
+    },
+    top: {
+      style: { ...base, top: 0, left: 0, width: '100%', height: '45%',
+        background: 'linear-gradient(to bottom, hsl(var(--primary)/0.22) 0%, transparent 100%)',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '28px' },
+      icon: '☝️',
+    },
+    bottom: {
+      style: { ...base, bottom: 0, left: 0, width: '100%', height: '45%',
+        background: 'linear-gradient(to top, hsl(var(--primary)/0.22) 0%, transparent 100%)',
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '28px' },
+      icon: '👇',
+    },
+  }
+  return zones[pos] || null
 })
 
 // rAF loop — cloud glow + card follow the element while user scrolls
@@ -418,6 +468,28 @@ function skip() {
   transition: color 0.15s;
 }
 .tour-skip-btn:hover { color: hsl(215.4, 16.3%, 35%); }
+
+/* ─── Directional zone highlight ─────────────────────────── */
+.tour-zone {
+  animation: zone-breathe 1.8s ease-in-out infinite;
+}
+
+.tour-zone-icon {
+  font-size: 52px;
+  filter: drop-shadow(0 0 12px hsl(var(--primary) / 0.8));
+  animation: zone-icon-pulse 1.8s ease-in-out infinite;
+  line-height: 1;
+}
+
+@keyframes zone-breathe {
+  0%, 100% { opacity: 0.75; }
+  50%       { opacity: 1; }
+}
+
+@keyframes zone-icon-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%       { transform: scale(1.18); opacity: 1; }
+}
 
 /* Transitions */
 .tour-fade-enter-active, .tour-fade-leave-active {

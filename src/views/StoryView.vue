@@ -2,6 +2,7 @@
   <div class="fixed inset-0 z-[100] flex flex-col story-bg" style="height: 100lvh" @click="handleTap($event)">
     <!-- Exit button (top-left, press-and-hold 2s) -->
     <button
+      id="tour-story-exit"
       class="absolute top-4 left-4 z-[110] w-14 h-14 rounded-full bg-black/50 text-white flex items-center justify-center transition-all"
       :class="{ 'ring-4 ring-white': exitProgress > 0 }"
       @pointerdown="startExit"
@@ -23,6 +24,7 @@
     <!-- Play/Pause button (top-right) -->
     <button
       v-if="state === 'narrating'"
+      id="tour-story-pause"
       @click.stop="togglePause"
       class="absolute z-[110] w-14 h-14 rounded-full bg-black/50 text-white flex items-center justify-center transition-all hover:bg-black/70 top-4 right-4"
       :class="paused ? 'ring-2 ring-white/60' : ''"
@@ -114,7 +116,7 @@
           </div>
 
           <!-- Book page -->
-          <div v-else class="absolute inset-0 flex items-center justify-center p-4 md:p-8 z-[1]">
+          <div v-else id="tour-story-tap-area" class="absolute inset-0 flex items-center justify-center p-4 md:p-8 z-[1]">
             <div class="book-page w-full max-w-2xl h-full max-h-[85vh] flex flex-col overflow-hidden" :key="`page-${currentSectionIndex}-${currentPage}`">
               <!-- Section title with decorative line -->
               <div class="px-6 pt-5 pb-3 flex-shrink-0 flex items-center gap-3">

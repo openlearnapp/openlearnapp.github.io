@@ -4,6 +4,7 @@ const TOUR_KEYS = {
   workshopOverview:  'tour_workshop_overview_done',
   lessonsOverview:   'tour_lessons_overview_done',
   lessonDetail:      'tour_lesson_detail_done',
+  storyMode:         'tour_story_mode_done',
 }
 
 // Reactive global state (singleton)
@@ -120,36 +121,101 @@ export function useTour() {
         title: tr.title3,
         desc: tr.desc3,
       },
-      {
-        element: '#tour-burger-btn',
-        emoji: '☰',
-        title: tr.title4,
-        desc: tr.desc4,
-      },
     ], TOUR_KEYS.lessonsOverview, force, '#tour-burger-btn')
   }
 
   function startLessonDetailTour(tr, force = false) {
     showTour([
       {
-        element: '#tour-story-btn',
-        emoji: '📺',
+        element: '#tour-answer-reveal',
+        emoji: '👁️',
         title: tr.title1,
         desc: tr.desc1,
       },
       {
-        element: '#tour-play-btn',
-        emoji: '🔊',
+        element: '#tour-filter-test',
+        emoji: '📝',
         title: tr.title2,
         desc: tr.desc2,
       },
       {
-        element: '#tour-burger-btn',
-        emoji: '⚙️',
+        element: '#tour-learning-item',
+        emoji: '💡',
         title: tr.title3,
         desc: tr.desc3,
       },
+      {
+        element: '#tour-floating-play',
+        emoji: '🔊',
+        title: tr.title4,
+        desc: tr.desc4,
+      },
+      // Desktop: results button and items button (hidden on mobile → auto-filtered)
+      {
+        element: '#tour-nav-results',
+        emoji: '📋',
+        title: tr.title5,
+        desc: tr.desc5,
+      },
+      {
+        element: '#tour-nav-items',
+        emoji: '🗂️',
+        title: tr.title6,
+        desc: tr.desc6,
+      },
+      // Mobile: single toggle button (hidden on desktop → auto-filtered)
+      {
+        element: '#tour-nav-toggle',
+        emoji: '🔄',
+        title: tr.titleToggle,
+        desc: tr.descToggle,
+      },
     ], TOUR_KEYS.lessonDetail, force, '#tour-burger-btn')
+  }
+
+  function startStoryTour(tr, force = false) {
+    showTour([
+      {
+        element: null,
+        position: 'left',
+        emoji: '👈',
+        title: tr.title1,
+        desc: tr.desc1,
+      },
+      {
+        element: null,
+        position: 'right',
+        emoji: '👉',
+        title: tr.title2,
+        desc: tr.desc2,
+      },
+      {
+        element: null,
+        position: 'top',
+        emoji: '☝️',
+        title: tr.title3,
+        desc: tr.desc3,
+      },
+      {
+        element: null,
+        position: 'bottom',
+        emoji: '👇',
+        title: tr.title4,
+        desc: tr.desc4,
+      },
+      {
+        element: '#tour-story-pause',
+        emoji: '⏸️',
+        title: tr.title5,
+        desc: tr.desc5,
+      },
+      {
+        element: '#tour-story-exit',
+        emoji: '✕',
+        title: tr.title6,
+        desc: tr.desc6,
+      },
+    ], TOUR_KEYS.storyMode, force, '#tour-story-exit')
   }
 
   function startTourForRoute(routeName, translations) {
@@ -159,6 +225,8 @@ export function useTour() {
       startLessonsOverviewTour(translations.lessonsOverview)
     } else if (routeName === 'lesson-detail') {
       startLessonDetailTour(translations.lessonDetail)
+    } else if (routeName === 'story-view') {
+      startStoryTour(translations.storyMode)
     }
   }
 
@@ -173,6 +241,9 @@ export function useTour() {
     } else if (routeName === 'lesson-detail') {
       localStorage.removeItem(TOUR_KEYS.lessonDetail)
       startLessonDetailTour(translations.lessonDetail, true)
+    } else if (routeName === 'story-view') {
+      localStorage.removeItem(TOUR_KEYS.storyMode)
+      startStoryTour(translations.storyMode, true)
     } else {
       Object.values(TOUR_KEYS).forEach(k => localStorage.removeItem(k))
     }

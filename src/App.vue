@@ -131,6 +131,7 @@
           <!-- Mobile: single toggle button cycling lesson → items → results -->
           <Button
             v-if="canShowToggleButton"
+            id="tour-nav-toggle"
             variant="ghost"
             size="icon"
             @click="cycleView"
@@ -147,6 +148,7 @@
           <!-- Results / Lesson# toggle button -->
           <Button
             v-if="canShowResultsButton"
+            id="tour-nav-results"
             variant="ghost"
             size="icon"
             @click="isOnResultsPage ? goBackToLesson() : goToResults()"
@@ -161,6 +163,7 @@
           <!-- Items / Lesson# toggle button -->
           <Button
             v-if="canShowItemsButton"
+            id="tour-nav-items"
             variant="ghost"
             size="icon"
             @click="isOnItemsPage ? goBackToLesson() : goToItems()"
@@ -553,12 +556,23 @@ function getTourTranslations() {
       title1: t('tour.lessonsOverview.title1'), desc1: t('tour.lessonsOverview.desc1'),
       title2: t('tour.lessonsOverview.title2'), desc2: t('tour.lessonsOverview.desc2'),
       title3: t('tour.lessonsOverview.title3'), desc3: t('tour.lessonsOverview.desc3'),
-      title4: t('tour.lessonsOverview.title4'), desc4: t('tour.lessonsOverview.desc4'),
     },
     lessonDetail: {
       title1: t('tour.lesson.title1'), desc1: t('tour.lesson.desc1'),
       title2: t('tour.lesson.title2'), desc2: t('tour.lesson.desc2'),
       title3: t('tour.lesson.title3'), desc3: t('tour.lesson.desc3'),
+      title4: t('tour.lesson.title4'), desc4: t('tour.lesson.desc4'),
+      title5: t('tour.lesson.title5'), desc5: t('tour.lesson.desc5'),
+      title6: t('tour.lesson.title6'), desc6: t('tour.lesson.desc6'),
+      titleToggle: t('tour.lesson.titleToggle'), descToggle: t('tour.lesson.descToggle'),
+    },
+    storyMode: {
+      title1: t('tour.story.title1'), desc1: t('tour.story.desc1'),
+      title2: t('tour.story.title2'), desc2: t('tour.story.desc2'),
+      title3: t('tour.story.title3'), desc3: t('tour.story.desc3'),
+      title4: t('tour.story.title4'), desc4: t('tour.story.desc4'),
+      title5: t('tour.story.title5'), desc5: t('tour.story.desc5'),
+      title6: t('tour.story.title6'), desc6: t('tour.story.desc6'),
     },
   }
 }

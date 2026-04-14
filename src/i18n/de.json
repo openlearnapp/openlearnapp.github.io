@@ -298,12 +298,34 @@
       "desc4": "Hier findest du Einstellungen, dein Profil und den Coach."
     },
     "lesson": {
-      "title1": "Story-Modus",
-      "desc1": "Erlebe die Lektion als immersive Vollbild-Geschichte.",
-      "title2": "Audio abspielen",
-      "desc2": "Hör alle Beispiele der Lektion automatisch ab.",
-      "title3": "Menü",
-      "desc3": "Einstellungen, Profil und mehr — immer erreichbar."
+      "title1": "Antwort aufdecken",
+      "desc1": "Tippe auf das Auge, um die Antwort zu einem Beispiel zu sehen.",
+      "title2": "Test starten",
+      "desc2": "Hier startest du den interaktiven Test — übe gezielt das Gelernte.",
+      "title3": "Lernkarten",
+      "desc3": "Blaue Karten sind unbekannt, grüne hast du schon gelernt. Tippe zum Markieren.",
+      "title4": "Audio abspielen",
+      "desc4": "Hör alle Beispiele der Lektion automatisch ab — perfekt zum Üben.",
+      "title5": "Testergebnisse",
+      "desc5": "Öffnet die Auswertung deiner Testantworten — sieh was du richtig und falsch hattest.",
+      "title6": "Lernelemente",
+      "desc6": "Öffnet alle Vokabeln und Lernkarten dieser Lektion — tippe zum Markieren als gelernt.",
+      "titleToggle": "Ansicht wechseln",
+      "descToggle": "Dieser Knopf wechselt zwischen Lektion, Lernkarten und Ergebnissen — tippe mehrfach!"
+    },
+    "story": {
+      "title1": "Links tippen — zurück",
+      "desc1": "Tippe auf die linke Bildschirmhälfte, um zum vorherigen Abschnitt zu springen.",
+      "title2": "Rechts tippen — weiter",
+      "desc2": "Tippe auf die rechte Bildschirmhälfte, um zum nächsten Abschnitt zu gehen.",
+      "title3": "Nach oben wischen — Pause",
+      "desc3": "Wische nach oben oder scrolle hoch — die Geschichte pausiert sofort.",
+      "title4": "Nach unten wischen — abspielen",
+      "desc4": "Wische nach unten oder scrolle runter — die Geschichte läuft weiter.",
+      "title5": "Pause / Play",
+      "desc5": "Dieser Knopf pausiert oder setzt die Wiedergabe fort — direkt per Tippen.",
+      "title6": "Geschichte verlassen",
+      "desc6": "Halte diesen Knopf 2 Sekunden gedrückt, um die Geschichte zu verlassen."
     },
     "next": "Weiter",
     "done": "Los geht's!",
@@ -315,9 +337,7 @@
       "title2": "Erste Lektion",
       "desc2": "Tippe auf eine Lektion um sie zu öffnen und loszulegen!",
       "title3": "Story-Modus",
-      "desc3": "Erlebe alle Lektionen als immersive Geschichte — einfach antippen!",
-      "title4": "Menü",
-      "desc4": "Einstellungen, Profil und mehr findest du hier."
+      "desc3": "Erlebe alle Lektionen als immersive Geschichte — einfach antippen!"
     }
   }
 }
