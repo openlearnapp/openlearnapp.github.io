@@ -62,7 +62,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -173,14 +173,29 @@ async function updateSpotlight() {
   cardPosition.value = { top, bottom, left }
 }
 
+// Lock body scroll while tour is visible — prevents spotlight drift
+function lockScroll() {
+  document.body.style.overflow = 'hidden'
+  document.body.style.touchAction = 'none'
+}
+function unlockScroll() {
+  document.body.style.overflow = ''
+  document.body.style.touchAction = ''
+}
+
 watch([() => props.visible, stepIndex], async ([vis]) => {
   if (vis) {
+    lockScroll()
     await updateSpotlight()
   } else {
+    unlockScroll()
     spotlight.value = null
     stepIndex.value = 0
   }
 }, { immediate: true })
+
+// Also unlock on unmount (safety)
+onUnmounted(() => unlockScroll())
 
 function nextStep() {
   if (isLast.value) {
