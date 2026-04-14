@@ -12,9 +12,9 @@
         <!-- Cloud glow: inner ring -->
         <div v-if="cloud" class="tour-cloud-ring" :style="cloudRingStyle" />
 
-        <!-- Step card — always bottom-center, never moves -->
+        <!-- Step card — near the highlighted element -->
         <Transition name="tour-card-slide" mode="out-in">
-          <div :key="stepIndex" class="tour-card">
+          <div :key="stepIndex" class="tour-card" :style="cardStyle">
 
             <!-- Gradient header -->
             <div class="tour-card-header">
@@ -69,13 +69,15 @@ const props = defineProps({
 const emit = defineEmits(['done', 'skip'])
 
 const stepIndex = ref(0)
-const cloud = ref(null) // { top, left, width, height } of the target element
+const cloud = ref(null)     // { top, left, width, height } of the target element
+const cardPos = ref(null)   // { top, left } for the card
 
 const currentStep = computed(() => props.steps[stepIndex.value] || null)
 const isLast = computed(() => stepIndex.value === props.steps.length - 1)
 
-const PAD_RING  = 10  // px around element for the ring
-const PAD_OUTER = 44  // px around element for the outer halo
+const CARD_W   = 320
+const PAD_RING  = 10
+const PAD_OUTER = 44
 
 const cloudRingStyle = computed(() => {
   if (!cloud.value) return {}
@@ -107,23 +109,49 @@ const cloudOuterStyle = computed(() => {
   }
 })
 
-// rAF loop — cloud glow follows the element while user scrolls
+const cardStyle = computed(() => {
+  if (!cardPos.value) return { bottom: '24px', left: '50%', transform: 'translateX(-50%)' }
+  return {
+    top:       `${cardPos.value.top}px`,
+    left:      `${cardPos.value.left}px`,
+    transform: 'none',
+  }
+})
+
+// rAF loop — cloud glow + card follow the element while user scrolls
 let rafId = null
 let currentEl = null
 
-function updateCloud() {
+function updatePositions() {
   if (!currentEl) return
   const rect = currentEl.getBoundingClientRect()
   cloud.value = { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
+
+  // Position card: below element if space, else above
+  const CARD_H   = 300
+  const cardW    = Math.min(CARD_W, window.innerWidth - 32)
+  const spaceBelow = window.innerHeight - rect.bottom - 20
+  const spaceAbove = rect.top - 20
+
+  let top
+  if (spaceBelow >= CARD_H || spaceBelow >= spaceAbove) {
+    top = rect.bottom + PAD_RING + 14
+    if (top + CARD_H > window.innerHeight - 16) top = Math.max(16, window.innerHeight - CARD_H - 16)
+  } else {
+    top = Math.max(16, rect.top - CARD_H - PAD_RING - 14)
+  }
+
+  // Horizontal: center on element, keep within screen
+  const rawLeft = rect.left + rect.width / 2 - cardW / 2
+  const left = Math.max(16, Math.min(rawLeft, window.innerWidth - cardW - 16))
+
+  cardPos.value = { top, left }
 }
 
 function startTracking(el) {
   stopTracking()
   currentEl = el
-  const loop = () => {
-    updateCloud()
-    rafId = requestAnimationFrame(loop)
-  }
+  const loop = () => { updatePositions(); rafId = requestAnimationFrame(loop) }
   rafId = requestAnimationFrame(loop)
 }
 
@@ -131,6 +159,7 @@ function stopTracking() {
   if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null }
   currentEl = null
   cloud.value = null
+  cardPos.value = null
 }
 
 async function showCloud() {
@@ -140,7 +169,6 @@ async function showCloud() {
   const el = document.querySelector(step.element)
   if (!el) { stopTracking(); return }
 
-  // Scroll element to center, then start live tracking
   el.scrollIntoView({ behavior: 'smooth', block: 'center' })
   await new Promise(r => setTimeout(r, 380))
   startTracking(el)
@@ -231,12 +259,9 @@ function skip() {
   }
 }
 
-/* ─── Card — fixed bottom-center, never moves ────────────── */
+/* ─── Card — follows the element ─────────────────────────── */
 .tour-card {
   position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
   width: min(340px, calc(100vw - 32px));
   border-radius: 22px;
   overflow: hidden;
@@ -377,10 +402,10 @@ function skip() {
 }
 .tour-card-slide-enter-from {
   opacity: 0;
-  transform: translateX(-50%) translateY(14px) scale(0.97);
+  transform: translateY(14px) scale(0.97);
 }
 .tour-card-slide-leave-to {
   opacity: 0;
-  transform: translateX(-50%) translateY(-8px) scale(0.98);
+  transform: translateY(-8px) scale(0.98);
 }
 </style>
