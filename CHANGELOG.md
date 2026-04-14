@@ -132,6 +132,12 @@ Full suite: **17 files, 234 tests, all passing.** Build clean.
 
 ## 2026-04-03
 
+### Fixes
+
+#### Lektion-Bilder auf Lernpfadseite nicht sichtbar (lokal)
+- `resolveLessonImage` berücksichtigt jetzt auch Pfade mit `/`-Präfix (lokale Workshops via `/__local/...`)
+- Verhindert doppelten Slash (`//`) bei URL-Konstruktion für lokale Workshop-Bilder
+
 ### Features
 
 #### Burger Menu für Navigation (#130)

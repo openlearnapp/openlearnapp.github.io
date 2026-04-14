@@ -473,11 +473,14 @@ export function useLessons() {
             matching.map(url => loadContentSource(url, availableContent.value, languageCodes.value, lang))
           )
         } else {
-          // Workshop not found in sources — might be built-in, load all
-    
+          // Workshop not found in sources — might be built-in or local-dev, load all
+
           await Promise.all(
             contentSources.map(url => loadContentSource(url, availableContent.value, languageCodes.value, lang))
           )
+          if (import.meta.env.DEV) {
+            await loadLocalWorkshops(availableContent.value, languageCodes.value, lang)
+          }
           loadedSourceLangs.add(lang)
         }
       } else if (!loadedSourceLangs.has(lang)) {
