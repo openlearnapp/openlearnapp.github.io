@@ -278,11 +278,11 @@
             </div>
               </div><!-- end text column -->
 
-              <div v-if="example.image && !isInFocusMode" class="mt-3 flex justify-center">
+              <div v-if="example.image && !isInFocusMode" class="mt-3">
                 <img
                   :src="resolveImagePath(example.image)"
                   :alt="example.image_caption || example.q"
-                  class="w-full max-w-lg rounded-xl cursor-zoom-in shadow-sm"
+                  class="w-full rounded-xl cursor-zoom-in shadow-md"
                   @click.stop="openLightbox(resolveImagePath(example.image), example.image_caption)"
                 />
               </div>
