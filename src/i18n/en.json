@@ -284,5 +284,60 @@
     "availableContent": "Available Content",
     "add": "Add",
     "cancel": "Cancel"
+  },
+  "tour": {
+    "startTour": "Start tour",
+    "overview": {
+      "title1": "Choose a language",
+      "desc1": "Switch the language you want to learn here.",
+      "title2": "Filter workshops",
+      "desc2": "Narrow workshops by topic — e.g. beginner or advanced.",
+      "title3": "Open a workshop",
+      "desc3": "Tap a card to see the lessons inside.",
+      "title4": "Settings & Profile",
+      "desc4": "Find settings, your profile, and the coach here."
+    },
+    "lesson": {
+      "title1": "Reveal answer",
+      "desc1": "Tap the eye icon to reveal the answer for any example.",
+      "title2": "Take the test",
+      "desc2": "Start the interactive test here — practise what you've learned.",
+      "title3": "Learning cards",
+      "desc3": "Blue cards are new, green ones you've already learned. Tap to mark them.",
+      "title4": "Play audio",
+      "desc4": "Listen to all examples automatically — great for practising on the go.",
+      "title5": "Test results",
+      "desc5": "Opens a summary of your test answers — see what you got right and wrong.",
+      "title6": "Learning items",
+      "desc6": "Opens all vocabulary and learning cards for this lesson — tap to mark as learned.",
+      "titleToggle": "Switch view",
+      "descToggle": "This button cycles between lesson, learning cards, and results — tap multiple times!"
+    },
+    "story": {
+      "title1": "Tap left — go back",
+      "desc1": "Tap the left half of the screen to jump to the previous section.",
+      "title2": "Tap right — advance",
+      "desc2": "Tap the right half of the screen to move to the next section.",
+      "title3": "Swipe up — pause",
+      "desc3": "Swipe up or scroll up — the story pauses immediately.",
+      "title4": "Swipe down — play",
+      "desc4": "Swipe down or scroll down — the story continues playing.",
+      "title5": "Pause / Play",
+      "desc5": "This button pauses or resumes playback — just tap it directly.",
+      "title6": "Exit the story",
+      "desc6": "Hold this button for 2 seconds to leave the story and go back."
+    },
+    "next": "Next",
+    "done": "Let's go!",
+    "skip": "Skip",
+    "prev": "←",
+    "lessonsOverview": {
+      "title1": "Your progress",
+      "desc1": "Here you can see how many lessons you have already completed.",
+      "title2": "First lesson",
+      "desc2": "Tap a lesson to open it and get started!",
+      "title3": "Story mode",
+      "desc3": "Experience all lessons as an immersive story — just tap!"
+    }
   }
 }

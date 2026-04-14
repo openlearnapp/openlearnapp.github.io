@@ -29,6 +29,7 @@
       <!-- Take the test buttons — shown when the lesson has assessment items -->
       <div v-if="hasAssessments && !activeLabel && !isInFocusMode" class="mb-4 flex flex-wrap gap-2">
         <Button
+          id="tour-filter-test"
           size="sm"
           variant="outline"
           @click="activeLabel = LABEL_TEST">
@@ -90,18 +91,6 @@
             </video>
           </div>
 
-          <div v-if="section.image && !activeLabel && !isInFocusMode" class="mb-4">
-            <img
-              :src="resolveImagePath(section.image)"
-              :alt="section.image_caption || section.title"
-              class="w-full rounded-lg cursor-zoom-in shadow-sm"
-              @click="openLightbox(resolveImagePath(section.image), section.image_caption)"
-            />
-            <p v-if="section.image_caption" class="text-xs text-muted-foreground mt-1.5 text-center italic">
-              {{ section.image_caption }}
-            </p>
-          </div>
-
           <!-- Lightbox -->
           <Teleport to="body">
             <div
@@ -129,6 +118,18 @@
             v-html="DOMPurify.sanitize(marked(section.explanation))">
           </div>
 
+          <div v-if="section.image && !isInFocusMode" :class="activeLabel ? 'mb-3' : 'mb-4'">
+            <img
+              :src="resolveImagePath(section.image)"
+              :alt="section.image_caption || section.title"
+              class="w-full rounded-xl cursor-zoom-in shadow-md"
+              @click="openLightbox(resolveImagePath(section.image), section.image_caption)"
+            />
+            <p v-if="section.image_caption && !activeLabel" class="text-xs text-muted-foreground mt-1.5 text-center italic">
+              {{ section.image_caption }}
+            </p>
+          </div>
+
           <div
             v-for="(example, exIdx) in section.examples"
             :key="exIdx"
@@ -149,8 +150,8 @@
                   ? 'bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 shadow-sm'
                   : 'bg-slate-50 dark:bg-slate-700/50 border border-slate-200/80 dark:border-slate-600/40 shadow-md hover:shadow-lg hover:border-primary/30'
             ]">
-            <div :class="example.image ? 'flex gap-4' : ''">
-              <div :class="example.image ? 'flex-1 min-w-0' : ''">
+            <div>
+              <div>
                 <div class="text-lg font-semibold text-foreground mb-2 flex items-start gap-2">
                   <div class="flex-1">
                     <span v-if="isAssessmentCorrect(example)" class="text-green-600 dark:text-green-400 mr-1">✓</span>{{ example.q }}
@@ -158,6 +159,7 @@
                   <!-- Reveal answer button (only when answers are hidden and example has an answer) -->
                   <button
                     v-if="!isAssessmentType(example) && !settings.showAnswers && example.a"
+                    :id="idx === 0 && exIdx === 0 ? 'tour-answer-reveal' : undefined"
                     @click.stop="handleQuestionClick(example)"
                     class="flex-shrink-0 mt-0.5 p-1 rounded-md text-muted-foreground/40 hover:text-primary hover:bg-primary/10 transition"
                     :title="revealedAnswers[draftKey(example)] ? 'Hide answer' : 'Show answer'">
@@ -239,6 +241,7 @@
               <Badge
                 v-for="(item, relIdx) in example.rel"
                 :key="relIdx"
+                :id="idx === 0 && exIdx === 0 && relIdx === 0 ? 'tour-learning-item' : undefined"
                 variant="outline"
                 @click.stop="handleItemClick(item[0])"
                 :class="[
@@ -273,17 +276,17 @@
                 {{ label }}
               </Badge>
             </div>
-              </div><!-- end flex-1 text column -->
+              </div><!-- end text column -->
 
-              <div v-if="example.image && !isInFocusMode" class="flex-shrink-0 w-32 sm:w-40">
+              <div v-if="example.image && !isInFocusMode" class="mt-3">
                 <img
                   :src="resolveImagePath(example.image)"
                   :alt="example.image_caption || example.q"
-                  class="w-full rounded-lg object-contain cursor-zoom-in shadow-sm"
+                  class="w-full rounded-xl cursor-zoom-in shadow-md"
                   @click.stop="openLightbox(resolveImagePath(example.image), example.image_caption)"
                 />
               </div>
-            </div><!-- end flex row -->
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -308,6 +311,7 @@
     <!-- Floating play/pause button for mobile — only shown when audio is available -->
     <button
       v-if="lesson && (isLoadingAudio || hasAudio)"
+      id="tour-floating-play"
       @click="togglePlayPause"
       :disabled="isLoadingAudio"
       class="md:hidden fixed bottom-20 right-6 w-12 h-12 rounded-full shadow-lg z-50 flex items-center justify-center bg-primary text-white border-2 border-primary-foreground/30 disabled:opacity-50"

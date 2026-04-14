@@ -3,7 +3,7 @@
     <!-- Header with unified navigation - sticky on desktop -->
     <!-- Safe area spacer for iOS PWA (pushes header below status bar) -->
     <div v-if="!isHomePage && !isStoryMode" class="bg-primary sticky top-0 z-50" style="height: env(safe-area-inset-top, 0px)"></div>
-    <header v-if="!isHomePage && !isStoryMode" class="bg-primary text-white pt-1 pb-2 md:py-4 px-4 relative sticky z-50" style="top: env(safe-area-inset-top, 0px)">
+    <header id="tour-nav-header" v-if="!isHomePage && !isStoryMode" class="bg-primary text-white pt-1 pb-2 md:py-4 px-4 relative sticky z-50" style="top: env(safe-area-inset-top, 0px)">
       <div class="flex items-center justify-between gap-2">
         <!-- Left side: language dropdown + nav buttons -->
         <!-- Dimmed and disabled during focus mode (audio playback) so the
@@ -14,6 +14,7 @@
           <!-- Language dropdown (only on workshop overview) -->
           <div v-if="isWorkshopOverview && learningLanguages.length > 0" class="relative">
             <button
+              id="tour-language-btn"
               @click="toggleLanguageMenu"
               class="flex items-center gap-1.5 bg-white/20 border-2 border-white/50 text-white hover:bg-white/30 rounded-full px-3 py-1.5 text-sm font-medium transition flex-shrink-0"
               :title="$t('nav.changeLanguage')"
@@ -95,6 +96,7 @@
           <!-- Single click: toggle play/pause. Double click: continuous play. -->
           <Button
             v-if="isLessonPage"
+            id="tour-play-btn"
             variant="ghost"
             size="icon"
             @click="togglePlayPause"
@@ -116,6 +118,7 @@
           <!-- Story mode button (visible on lesson/overview pages) -->
           <Button
             v-if="canEnterStoryMode"
+            id="tour-story-btn"
             variant="ghost"
             size="icon"
             @click="enterStoryMode"
@@ -128,6 +131,7 @@
           <!-- Mobile: single toggle button cycling lesson → items → results -->
           <Button
             v-if="canShowToggleButton"
+            id="tour-nav-toggle"
             variant="ghost"
             size="icon"
             @click="cycleView"
@@ -144,6 +148,7 @@
           <!-- Results / Lesson# toggle button -->
           <Button
             v-if="canShowResultsButton"
+            id="tour-nav-results"
             variant="ghost"
             size="icon"
             @click="isOnResultsPage ? goBackToLesson() : goToResults()"
@@ -158,6 +163,7 @@
           <!-- Items / Lesson# toggle button -->
           <Button
             v-if="canShowItemsButton"
+            id="tour-nav-items"
             variant="ghost"
             size="icon"
             @click="isOnItemsPage ? goBackToLesson() : goToItems()"
@@ -172,6 +178,7 @@
           <!-- Burger menu (replaces Settings, Profile, Workshops buttons) -->
           <div v-if="!isHomePage" class="relative">
             <Button
+              id="tour-burger-btn"
               variant="ghost"
               size="icon"
               @click="showBurgerMenu = !showBurgerMenu"
@@ -205,6 +212,13 @@
                 :class="['flex items-center gap-3 w-full px-4 py-3 text-sm hover:bg-accent transition', isRtl ? 'text-right' : 'text-left', route.name === 'coach' ? 'bg-accent font-medium' : '']">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
                 <span>{{ $t('nav.coach') }}</span>
+              </button>
+              <!-- Start tour -->
+              <button
+                @click="onRestartTour(); showBurgerMenu = false"
+                :class="['flex items-center gap-3 w-full px-4 py-3 text-sm hover:bg-accent transition', isRtl ? 'text-right' : 'text-left']">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                <span>{{ $t('tour.startTour') }}</span>
               </button>
               <!-- Version -->
               <div class="px-4 py-2 text-xs text-muted-foreground/50 border-t">
@@ -273,6 +287,14 @@
     <!-- Audio debug overlay. Renders itself only when settings.showDebugOverlay
          is enabled or ?audioDebug=1 is in the URL. See useAudioDebug.js. -->
     <AudioDebugOverlay />
+
+    <!-- Guided tour overlay -->
+    <GuidedTour
+      :steps="tourSteps"
+      :visible="tourVisible"
+      @done="onTourDone"
+      @skip="onTourDone"
+    />
   </div>
 </template>
 
@@ -287,11 +309,13 @@ import { useLessons } from './composables/useLessons'
 import { useLanguage } from './composables/useLanguage'
 import { useFooter } from './composables/useFooter'
 import { useGun } from './composables/useGun'
+import { useTour } from './composables/useTour'
 import { isRtlLocale } from './i18n'
 import { formatLangName } from './utils/formatters'
 import { Button } from '@/components/ui/button'
 import Icon from '@/components/Icon.vue'
 import AudioDebugOverlay from '@/components/AudioDebugOverlay.vue'
+import GuidedTour from '@/components/GuidedTour.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -310,6 +334,7 @@ const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 const { nextLessonNumber: footerNextLesson, lessonLearning, lessonWorkshop } = useFooter()
 const { isLoggedIn: isGunLoggedIn, username: gunUsername } = useGun()
 const { isOnline: online } = useOffline()
+const { tourVisible, tourSteps, startTourForRoute, restartTour, onTourDone, closeTour } = useTour()
 
 const isRtl = computed(() => isRtlLocale(locale.value))
 
@@ -515,7 +540,50 @@ onMounted(async () => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeydown)
+  closeTour()
 })
+
+// Guided tour — trigger automatically on first visit per route segment
+function getTourTranslations() {
+  return {
+    workshopOverview: {
+      title1: t('tour.overview.title1'), desc1: t('tour.overview.desc1'),
+      title2: t('tour.overview.title2'), desc2: t('tour.overview.desc2'),
+      title3: t('tour.overview.title3'), desc3: t('tour.overview.desc3'),
+      title4: t('tour.overview.title4'), desc4: t('tour.overview.desc4'),
+    },
+    lessonsOverview: {
+      title1: t('tour.lessonsOverview.title1'), desc1: t('tour.lessonsOverview.desc1'),
+      title2: t('tour.lessonsOverview.title2'), desc2: t('tour.lessonsOverview.desc2'),
+      title3: t('tour.lessonsOverview.title3'), desc3: t('tour.lessonsOverview.desc3'),
+    },
+    lessonDetail: {
+      title1: t('tour.lesson.title1'), desc1: t('tour.lesson.desc1'),
+      title2: t('tour.lesson.title2'), desc2: t('tour.lesson.desc2'),
+      title3: t('tour.lesson.title3'), desc3: t('tour.lesson.desc3'),
+      title4: t('tour.lesson.title4'), desc4: t('tour.lesson.desc4'),
+      title5: t('tour.lesson.title5'), desc5: t('tour.lesson.desc5'),
+      title6: t('tour.lesson.title6'), desc6: t('tour.lesson.desc6'),
+      titleToggle: t('tour.lesson.titleToggle'), descToggle: t('tour.lesson.descToggle'),
+    },
+    storyMode: {
+      title1: t('tour.story.title1'), desc1: t('tour.story.desc1'),
+      title2: t('tour.story.title2'), desc2: t('tour.story.desc2'),
+      title3: t('tour.story.title3'), desc3: t('tour.story.desc3'),
+      title4: t('tour.story.title4'), desc4: t('tour.story.desc4'),
+      title5: t('tour.story.title5'), desc5: t('tour.story.desc5'),
+      title6: t('tour.story.title6'), desc6: t('tour.story.desc6'),
+    },
+  }
+}
+
+watch(() => route.name, (name) => {
+  startTourForRoute(name, getTourTranslations())
+}, { immediate: true })
+
+function onRestartTour() {
+  restartTour(route.name, getTourTranslations())
+}
 
 function goHome() {
   router.push({ name: 'home' })

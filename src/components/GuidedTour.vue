@@ -1,0 +1,514 @@
+<template>
+  <Teleport to="body">
+    <Transition name="tour-fade">
+      <div v-if="visible && currentStep" class="tour-root">
+
+        <!-- Backdrop blocks all clicks through the tour -->
+        <div class="tour-backdrop" @click.stop @touchstart.stop @pointerdown.stop />
+
+        <!-- Cloud glow: outer soft halo (element-based) -->
+        <div v-if="cloud" class="tour-cloud-outer" :style="cloudOuterStyle" />
+
+        <!-- Cloud glow: inner ring (element-based) -->
+        <div v-if="cloud" class="tour-cloud-ring" :style="cloudRingStyle" />
+
+        <!-- Directional zone highlight (gesture steps without a DOM element) -->
+        <div v-if="zoneHighlight" class="tour-zone" :style="zoneHighlight.style">
+          <span class="tour-zone-icon">{{ zoneHighlight.icon }}</span>
+        </div>
+
+        <!-- Step card — near the highlighted element -->
+        <Transition name="tour-card-slide" mode="out-in">
+          <div :key="stepIndex" class="tour-card" :style="cardStyle">
+
+            <!-- Gradient header -->
+            <div class="tour-card-header">
+              <span class="tour-emoji">{{ currentStep.emoji }}</span>
+              <div class="tour-dots-row">
+                <span
+                  v-for="(_, i) in steps"
+                  :key="i"
+                  class="tour-dot"
+                  :class="{ active: i === stepIndex, done: i < stepIndex }"
+                />
+              </div>
+              <span class="tour-counter">{{ stepIndex + 1 }}/{{ steps.length }}</span>
+            </div>
+
+            <!-- Content -->
+            <div class="tour-card-body">
+              <h3 class="tour-title">{{ currentStep.title }}</h3>
+              <p class="tour-desc">{{ currentStep.desc }}</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="tour-card-footer">
+              <div class="tour-btn-row">
+                <button v-if="stepIndex > 0" class="tour-prev-btn" @click="prevStep">
+                  {{ t('tour.prev') }}
+                </button>
+                <button class="tour-next-btn" :class="{ full: stepIndex === 0 }" @click="nextStep">
+                  <span>{{ isLast ? t('tour.done') : t('tour.next') }}</span>
+                  <span class="tour-next-icon">{{ isLast ? '🎉' : '→' }}</span>
+                </button>
+              </div>
+              <button class="tour-skip-btn" @click="skip">
+                {{ t('tour.skip') }}
+              </button>
+            </div>
+
+          </div>
+        </Transition>
+
+      </div>
+    </Transition>
+  </Teleport>
+</template>
+
+<script setup>
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
+const props = defineProps({
+  steps: { type: Array, default: () => [] },
+  visible: { type: Boolean, default: false },
+})
+
+const emit = defineEmits(['done', 'skip'])
+
+const stepIndex = ref(0)
+const cloud = ref(null)     // { top, left, width, height } of the target element
+const cardPos = ref(null)   // { top, left } for the card
+
+const currentStep = computed(() => props.steps[stepIndex.value] || null)
+const isLast = computed(() => stepIndex.value === props.steps.length - 1)
+
+const CARD_W   = 320
+const PAD_RING  = 10
+const PAD_OUTER = 44
+
+const cloudRingStyle = computed(() => {
+  if (!cloud.value) return {}
+  const { top, left, width, height } = cloud.value
+  return {
+    position: 'fixed',
+    top:    `${top    - PAD_RING}px`,
+    left:   `${left   - PAD_RING}px`,
+    width:  `${width  + PAD_RING * 2}px`,
+    height: `${height + PAD_RING * 2}px`,
+    borderRadius: '14px',
+    zIndex: 9992,
+    pointerEvents: 'none',
+  }
+})
+
+const cloudOuterStyle = computed(() => {
+  if (!cloud.value) return {}
+  const { top, left, width, height } = cloud.value
+  return {
+    position: 'fixed',
+    top:    `${top    - PAD_OUTER}px`,
+    left:   `${left   - PAD_OUTER}px`,
+    width:  `${width  + PAD_OUTER * 2}px`,
+    height: `${height + PAD_OUTER * 2}px`,
+    borderRadius: '32px',
+    zIndex: 9991,
+    pointerEvents: 'none',
+  }
+})
+
+const cardStyle = computed(() => {
+  // Element-tracked position (rAF loop)
+  if (cardPos.value) {
+    return { top: `${cardPos.value.top}px`, left: `${cardPos.value.left}px`, transform: 'none' }
+  }
+  // Directional position for gesture steps
+  const pos = currentStep.value?.position
+  const cardW = Math.min(CARD_W, window.innerWidth - 32)
+  const CARD_H = 300
+  const midV = Math.max(16, (window.innerHeight - CARD_H) / 2)
+  const midH = Math.max(16, window.innerWidth / 2 - cardW / 2)
+  if (pos === 'left')   return { top: `${midV}px`, left: '16px', transform: 'none' }
+  if (pos === 'right')  return { top: `${midV}px`, left: `${window.innerWidth - cardW - 16}px`, transform: 'none' }
+  if (pos === 'top')    return { top: '16px', left: `${midH}px`, transform: 'none' }
+  if (pos === 'bottom') return { bottom: '16px', left: `${midH}px`, transform: 'none' }
+  // Default: bottom center
+  return { bottom: '24px', left: '50%', transform: 'translateX(-50%)' }
+})
+
+// Zone highlight for directional gesture steps
+const zoneHighlight = computed(() => {
+  const step = currentStep.value
+  if (!step || cloud.value || !step.position) return null
+  const pos = step.position
+  const base = { position: 'fixed', zIndex: 9993, pointerEvents: 'none' }
+  const zones = {
+    left: {
+      style: { ...base, top: 0, left: 0, width: '50%', height: '100%',
+        background: 'linear-gradient(to right, hsl(var(--primary)/0.22) 0%, transparent 100%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '28px' },
+      icon: '👈',
+    },
+    right: {
+      style: { ...base, top: 0, right: 0, width: '50%', height: '100%',
+        background: 'linear-gradient(to left, hsl(var(--primary)/0.22) 0%, transparent 100%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '28px' },
+      icon: '👉',
+    },
+    top: {
+      style: { ...base, top: 0, left: 0, width: '100%', height: '45%',
+        background: 'linear-gradient(to bottom, hsl(var(--primary)/0.22) 0%, transparent 100%)',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '28px' },
+      icon: '☝️',
+    },
+    bottom: {
+      style: { ...base, bottom: 0, left: 0, width: '100%', height: '45%',
+        background: 'linear-gradient(to top, hsl(var(--primary)/0.22) 0%, transparent 100%)',
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '28px' },
+      icon: '👇',
+    },
+  }
+  return zones[pos] || null
+})
+
+// rAF loop — cloud glow + card follow the element while user scrolls
+let rafId = null
+let currentEl = null
+
+function updatePositions() {
+  if (!currentEl) return
+  const rect = currentEl.getBoundingClientRect()
+  cloud.value = { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
+
+  // Position card: below element if space, else above
+  const CARD_H   = 300
+  const cardW    = Math.min(CARD_W, window.innerWidth - 32)
+  const spaceBelow = window.innerHeight - rect.bottom - 20
+  const spaceAbove = rect.top - 20
+
+  let top
+  if (spaceBelow >= CARD_H || spaceBelow >= spaceAbove) {
+    top = rect.bottom + PAD_RING + 14
+    if (top + CARD_H > window.innerHeight - 16) top = Math.max(16, window.innerHeight - CARD_H - 16)
+  } else {
+    top = Math.max(16, rect.top - CARD_H - PAD_RING - 14)
+  }
+
+  // Horizontal: center on element, keep within screen
+  const rawLeft = rect.left + rect.width / 2 - cardW / 2
+  const left = Math.max(16, Math.min(rawLeft, window.innerWidth - cardW - 16))
+
+  cardPos.value = { top, left }
+}
+
+function startTracking(el) {
+  stopTracking()
+  currentEl = el
+  const loop = () => { updatePositions(); rafId = requestAnimationFrame(loop) }
+  rafId = requestAnimationFrame(loop)
+}
+
+function stopTracking() {
+  if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null }
+  currentEl = null
+  cloud.value = null
+  cardPos.value = null
+}
+
+async function showCloud() {
+  await nextTick()
+  const step = currentStep.value
+  if (!step?.element) { stopTracking(); return }
+  const el = document.querySelector(step.element)
+  if (!el) { stopTracking(); return }
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  await new Promise(r => setTimeout(r, 380))
+  startTracking(el)
+}
+
+watch([() => props.visible, stepIndex], async ([vis]) => {
+  if (vis) {
+    await showCloud()
+  } else {
+    stopTracking()
+    stepIndex.value = 0
+  }
+}, { immediate: true })
+
+onUnmounted(stopTracking)
+
+function nextStep() {
+  if (isLast.value) {
+    emit('done')
+    stepIndex.value = 0
+  } else {
+    stepIndex.value++
+  }
+}
+
+function prevStep() {
+  if (stepIndex.value > 0) stepIndex.value--
+}
+
+function skip() {
+  emit('skip')
+  stepIndex.value = 0
+}
+</script>
+
+<style scoped>
+.tour-root {
+  position: fixed;
+  inset: 0;
+  z-index: 9988;
+  pointer-events: none;
+}
+
+/* Backdrop — subtle dim + blocks all clicks through the tour */
+.tour-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+  z-index: 9989;
+  pointer-events: all;  /* blocks clicks through to page */
+  cursor: default;
+}
+
+/* ─── Cloud outer: large soft radial halo ─────────────────── */
+.tour-cloud-outer {
+  background: radial-gradient(
+    ellipse at center,
+    hsl(var(--primary) / 0.45) 0%,
+    hsl(var(--primary) / 0.20) 45%,
+    transparent 72%
+  );
+  filter: blur(14px);
+  animation: cloud-breathe 2.8s ease-in-out infinite;
+  z-index: 9991;
+}
+
+@keyframes cloud-breathe {
+  0%, 100% { opacity: 0.75; transform: scale(1);    }
+  50%       { opacity: 1;    transform: scale(1.10); }
+}
+
+/* ─── Cloud ring: tight bright border around element ─────── */
+.tour-cloud-ring {
+  border: 2.5px solid hsl(var(--primary));
+  background: hsl(var(--primary) / 0.08);
+  animation: ring-pulse 2.8s ease-in-out infinite;
+  z-index: 9992;
+}
+
+@keyframes ring-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0  10px  4px hsl(var(--primary) / 0.50),
+      0 0  24px  8px hsl(var(--primary) / 0.25);
+    border-color: hsl(var(--primary) / 0.9);
+  }
+  50% {
+    box-shadow:
+      0 0  18px  8px hsl(var(--primary) / 0.70),
+      0 0  40px 16px hsl(var(--primary) / 0.35);
+    border-color: hsl(var(--primary));
+  }
+}
+
+/* ─── Card — follows the element ─────────────────────────── */
+.tour-card {
+  position: fixed;
+  width: min(340px, calc(100vw - 32px));
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow:
+    0 28px 64px rgba(0,0,0,0.30),
+    0  6px 20px rgba(0,0,0,0.16);
+  pointer-events: all;
+  background: white;
+  z-index: 9999;
+}
+
+:global(.dark) .tour-card {
+  background: hsl(222.2, 50%, 10%);
+  color: hsl(210, 40%, 95%);
+}
+
+/* Header */
+.tour-card-header {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary, var(--primary))));
+  padding: 18px 20px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tour-emoji {
+  font-size: 32px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.tour-dots-row {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+
+.tour-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  transition: all 0.3s ease;
+}
+.tour-dot.active {
+  background: white;
+  width: 22px;
+  border-radius: 4px;
+}
+.tour-dot.done {
+  background: rgba(255,255,255,0.7);
+}
+
+.tour-counter {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.8);
+  white-space: nowrap;
+}
+
+/* Body */
+.tour-card-body {
+  padding: 20px 20px 8px;
+}
+
+.tour-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  line-height: 1.3;
+  color: hsl(222.2, 84%, 8%);
+}
+:global(.dark) .tour-title { color: hsl(210, 40%, 95%); }
+
+.tour-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  margin: 0;
+  color: hsl(215.4, 16.3%, 38%);
+}
+:global(.dark) .tour-desc { color: hsl(215, 20%, 68%); }
+
+/* Footer */
+.tour-card-footer {
+  padding: 12px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tour-btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tour-prev-btn {
+  flex-shrink: 0;
+  padding: 14px 18px;
+  border-radius: 13px;
+  background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.tour-prev-btn:hover { background: hsl(var(--primary) / 0.2); }
+
+.tour-next-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary, var(--primary))));
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 4px 16px hsl(var(--primary) / 0.45);
+  font-family: inherit;
+}
+.tour-next-btn:hover  { opacity: 0.92; }
+.tour-next-btn:active { transform: scale(0.97); }
+.tour-next-icon { font-size: 18px; }
+
+.tour-skip-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: hsl(215.4, 16.3%, 55%);
+  text-align: center;
+  padding: 2px;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+.tour-skip-btn:hover { color: hsl(215.4, 16.3%, 35%); }
+
+/* ─── Directional zone highlight ─────────────────────────── */
+.tour-zone {
+  animation: zone-breathe 1.8s ease-in-out infinite;
+}
+
+.tour-zone-icon {
+  font-size: 52px;
+  filter: drop-shadow(0 0 12px hsl(var(--primary) / 0.8));
+  animation: zone-icon-pulse 1.8s ease-in-out infinite;
+  line-height: 1;
+}
+
+@keyframes zone-breathe {
+  0%, 100% { opacity: 0.75; }
+  50%       { opacity: 1; }
+}
+
+@keyframes zone-icon-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%       { transform: scale(1.18); opacity: 1; }
+}
+
+/* Transitions */
+.tour-fade-enter-active, .tour-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.tour-fade-enter-from, .tour-fade-leave-to { opacity: 0; }
+
+.tour-card-slide-enter-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.tour-card-slide-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.tour-card-slide-enter-from {
+  opacity: 0;
+  transform: translateY(14px) scale(0.97);
+}
+.tour-card-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+}
+</style>

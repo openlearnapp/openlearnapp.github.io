@@ -17,8 +17,9 @@
     <!-- Lesson nodes -->
     <div class="relative space-y-4">
       <div
-        v-for="lesson in sortedLessons"
+        v-for="(lesson, lessonIdx) in sortedLessons"
         :key="lesson.number"
+        :id="lessonIdx === 0 ? 'tour-first-lesson' : undefined"
         :style="{ animationDelay: `${(lesson.number - 1) * 60}ms` }"
         class="relative flex items-start gap-4 min-w-0 animate-[fadeInUp_0.4s_ease_forwards] opacity-0">
 

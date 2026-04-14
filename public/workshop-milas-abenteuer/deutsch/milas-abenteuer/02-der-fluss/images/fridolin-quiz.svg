@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280">
+  <defs><style>
+    .fh{animation:fhp 2s ease-in-out infinite}@keyframes fhp{0%,70%,100%{transform:translateY(0)}80%{transform:translateY(-6px)}90%{transform:translateY(2px)}}
+    .think{animation:th 1.5s ease-in-out infinite}@keyframes th{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:.8;transform:translateY(-5px)}}
+  </style></defs>
+  <rect width="400" height="280" fill="#0f1e30"/>
+  <!-- Wasser unten -->
+  <path d="M0,220 Q100,210 200,220 Q300,230 400,215 L400,280 L0,280Z" fill="#1e3a5f"/>
+  <!-- Ufer -->
+  <path d="M0,200 Q80,195 160,205 L160,280 L0,280Z" fill="#2a4a1a"/>
+  <!-- Fridolin denkt nach (groß) -->
+  <g transform="translate(280,170)"><g class="fh">
+    <ellipse cx="0" cy="0" rx="20" ry="14" fill="#3aaa4a"/>
+    <circle cx="-8" cy="-12" r="8" fill="#3aaa4a"/>
+    <circle cx="8" cy="-12" r="8" fill="#3aaa4a"/>
+    <circle cx="-8" cy="-14" r="5" fill="white"/>
+    <circle cx="8" cy="-14" r="5" fill="white"/>
+    <circle cx="-6" cy="-14" r="2.5" fill="#1a3a1a"/>
+    <circle cx="10" cy="-14" r="2.5" fill="#1a3a1a"/>
+    <path d="M-6,3 Q0,9 6,3" stroke="#1a5a2a" stroke-width="1.2" fill="none"/>
+    <path d="M-12,-18 Q0,-30 12,-18" fill="#4a7af5"/>
+  </g></g>
+  <!-- Denkblasen -->
+  <circle cx="250" cy="120" r="5" fill="white" opacity="0.6" class="think"/>
+  <circle cx="240" cy="100" r="8" fill="white" opacity="0.5" class="think" style="animation-delay:.3s"/>
+  <ellipse cx="220" cy="72" rx="35" ry="22" fill="white" opacity="0.85"/>
+  <text x="220" y="77" text-anchor="middle" fill="#1a3a1a" font-size="16" font-weight="bold" font-family="Georgia,serif">?</text>
+  <!-- Mila sitzt und denkt -->
+  <g transform="translate(100,195)">
+    <ellipse cx="0" cy="-20" rx="8" ry="10" fill="#8B5E3C"/>
+    <circle cx="0" cy="-22" r="7" fill="#FDDCB5"/>
+    <circle cx="-2" cy="-24" r="1.2" fill="#3a2a1a"/><circle cx="3" cy="-24" r="1.2" fill="#3a2a1a"/>
+    <path d="M-1,-20 Q0,-18 1,-20" stroke="#c47a5a" stroke-width="0.6" fill="none"/>
+    <rect x="-5" y="-14" width="10" height="12" rx="2" fill="#e85d75"/>
+    <line x1="-5" y1="-10" x2="-8" y2="-14" stroke="#FDDCB5" stroke-width="2" stroke-linecap="round"/>
+    <line x1="5" y1="-10" x2="8" y2="-2" stroke="#FDDCB5" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-3" y1="-2" x2="-6" y2="5" stroke="#4a6fa5" stroke-width="2" stroke-linecap="round"/>
+    <line x1="3" y1="-2" x2="6" y2="5" stroke="#4a6fa5" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

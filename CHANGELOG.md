@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-04-14
+
+### Features
+
+#### Guided tour für neue Nutzer (#208)
+
+Interaktiver geführter Tour der auf jeder Seite beim ersten Besuch automatisch erscheint und die wichtigsten Funktionen erklärt.
+
+- **Animated spotlight** — glühender Ring + Aura um das erklärte Element, folgt dem Element beim Scrollen via rAF
+- **4 unabhängige Touren** — Workshop-Übersicht, Lektionen-Übersicht, Lektion-Detail, Story-Modus — je mit eigenem localStorage-Flag
+- **Directional gesture steps** — Story-Mode Gesten (links/rechts/hoch/runter tippen) werden mit farbiger Zonenhervorhebung + pulsierendem Emoji auf der richtigen Bildschirmseite erklärt
+- **Backdrop** — blockiert alle Klicks während der Tour (user kann nicht wegnavigieren)
+- **Prev/Next/Skip** — Zurück-Button, Weiter-Button, Überspringen
+- **Wiederholbar** — Burger-Menü → "Tour starten" setzt die Tour für die aktuelle Seite zurück
+- **Responsive** — Desktop und Mobile: Buttons die auf dem jeweiligen Gerät nicht sichtbar sind werden automatisch aus der Tour gefiltert
+- **4 Sprachen** — DE, EN, FA, AR vollständig
+
 ## 2026-04-13
 
 ### Docs & CI

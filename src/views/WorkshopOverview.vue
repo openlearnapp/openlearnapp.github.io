@@ -19,7 +19,7 @@
       </div>
 
       <!-- Filter chips -->
-      <div class="mb-3">
+      <div id="tour-filter-chips" class="mb-3">
         <div v-if="allLabels.length > 0" class="flex flex-wrap gap-2">
           <button
             v-for="label in allLabels"
@@ -38,7 +38,8 @@
       <!-- Workshop cards grid -->
       <div v-if="filteredWorkshops.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card
-          v-for="ws in filteredWorkshops"
+          v-for="(ws, wsIndex) in filteredWorkshops"
+          :id="wsIndex === 0 ? 'tour-workshop-card' : undefined"
           :key="ws"
           @click="openWorkshop(ws)"
           class="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/50 overflow-hidden"

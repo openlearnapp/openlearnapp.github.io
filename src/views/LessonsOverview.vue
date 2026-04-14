@@ -26,7 +26,7 @@
     </div>
 
     <!-- Progress bar -->
-    <div v-if="!isLoading && lessons.length > 0" class="mb-6">
+    <div id="tour-progress-bar" v-if="!isLoading && lessons.length > 0" class="mb-6">
       <ProgressBar
         :completed="completionInfo.completed"
         :total="completionInfo.total"
