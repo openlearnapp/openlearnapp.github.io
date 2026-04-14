@@ -280,7 +280,7 @@ function resolveLessonImage(lesson) {
   }
   const resolvedWorkshop = resolveWorkshopKey(learning.value, workshop.value)
   if (resolvedWorkshop !== workshop.value) {
-    const prefix = resolvedWorkshop.startsWith('http://') || resolvedWorkshop.startsWith('https://') ? '' : baseUrl
+    const prefix = (resolvedWorkshop.startsWith('http://') || resolvedWorkshop.startsWith('https://') || resolvedWorkshop.startsWith('/')) ? '' : baseUrl
     return `${prefix}${resolvedWorkshop}/${lesson._source?.path || lesson._filename}/${imagePath}`
   }
   return `${baseUrl}lessons/${learning.value}/${workshop.value}/${lesson._filename}/${imagePath}`
