@@ -47,7 +47,7 @@ function buildVisibleSteps(definitions) {
 }
 
 async function showTour(stepDefs, doneKey, force = false, anchorSelector = null) {
-  if (!force && isTourDone(doneKey)) return
+  if (!force && !urlForce && isTourDone(doneKey)) return
 
   // Wait for anchor element (guaranteed to appear when the view is ready)
   if (anchorSelector) {
@@ -64,6 +64,9 @@ async function showTour(stepDefs, doneKey, force = false, anchorSelector = null)
   tourDoneKey.value = doneKey
   tourVisible.value = true
 }
+
+// ?tour=1 in URL forces tour every time (for testing)
+const urlForce = new URLSearchParams(window.location.search).get('tour') === '1'
 
 export function useTour() {
   function startWorkshopOverviewTour(tr, force = false) {
@@ -143,7 +146,7 @@ export function useTour() {
   }
 
   function onTourDone() {
-    markTourDone(tourDoneKey.value)
+    if (!urlForce) markTourDone(tourDoneKey.value) // Don't save when ?tour=1
     tourVisible.value = false
     tourSteps.value = []
     tourDoneKey.value = null

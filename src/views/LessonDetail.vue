@@ -90,18 +90,6 @@
             </video>
           </div>
 
-          <div v-if="section.image && !activeLabel && !isInFocusMode" class="mb-4">
-            <img
-              :src="resolveImagePath(section.image)"
-              :alt="section.image_caption || section.title"
-              class="w-full rounded-lg cursor-zoom-in shadow-sm"
-              @click="openLightbox(resolveImagePath(section.image), section.image_caption)"
-            />
-            <p v-if="section.image_caption" class="text-xs text-muted-foreground mt-1.5 text-center italic">
-              {{ section.image_caption }}
-            </p>
-          </div>
-
           <!-- Lightbox -->
           <Teleport to="body">
             <div
@@ -127,6 +115,18 @@
             v-if="section.explanation && !activeLabel && !isInFocusMode"
             class="bg-muted/60 p-4 rounded-lg mb-4 border-l-4 border-primary/30 prose prose-sm dark:prose-invert max-w-none"
             v-html="DOMPurify.sanitize(marked(section.explanation))">
+          </div>
+
+          <div v-if="section.image && !isInFocusMode" :class="activeLabel ? 'mb-3' : 'mb-4'">
+            <img
+              :src="resolveImagePath(section.image)"
+              :alt="section.image_caption || section.title"
+              class="w-full rounded-xl cursor-zoom-in shadow-md"
+              @click="openLightbox(resolveImagePath(section.image), section.image_caption)"
+            />
+            <p v-if="section.image_caption && !activeLabel" class="text-xs text-muted-foreground mt-1.5 text-center italic">
+              {{ section.image_caption }}
+            </p>
           </div>
 
           <div
