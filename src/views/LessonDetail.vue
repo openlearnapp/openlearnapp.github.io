@@ -150,8 +150,8 @@
                   ? 'bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 shadow-sm'
                   : 'bg-slate-50 dark:bg-slate-700/50 border border-slate-200/80 dark:border-slate-600/40 shadow-md hover:shadow-lg hover:border-primary/30'
             ]">
-            <div :class="example.image && !isInFocusMode ? 'flex flex-col sm:flex-row gap-4 items-start' : ''">
-              <div :class="example.image && !isInFocusMode ? 'flex-1 min-w-0' : ''">
+            <div>
+              <div>
                 <div class="text-lg font-semibold text-foreground mb-2 flex items-start gap-2">
                   <div class="flex-1">
                     <span v-if="isAssessmentCorrect(example)" class="text-green-600 dark:text-green-400 mr-1">✓</span>{{ example.q }}
@@ -278,11 +278,11 @@
             </div>
               </div><!-- end text column -->
 
-              <div v-if="example.image && !isInFocusMode" class="sm:w-2/5 w-full flex-shrink-0">
+              <div v-if="example.image && !isInFocusMode" class="mt-3 flex justify-center">
                 <img
                   :src="resolveImagePath(example.image)"
                   :alt="example.image_caption || example.q"
-                  class="w-full rounded-xl cursor-zoom-in shadow-sm"
+                  class="w-full max-w-lg rounded-xl cursor-zoom-in shadow-sm"
                   @click.stop="openLightbox(resolveImagePath(example.image), example.image_caption)"
                 />
               </div>
