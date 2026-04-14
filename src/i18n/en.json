@@ -307,6 +307,17 @@
     },
     "next": "Next",
     "done": "Let's go!",
-    "skip": "Skip"
+    "skip": "Skip",
+    "prev": "←",
+    "lessonsOverview": {
+      "title1": "Your progress",
+      "desc1": "Here you can see how many lessons you have already completed.",
+      "title2": "First lesson",
+      "desc2": "Tap a lesson to open it and get started!",
+      "title3": "Story mode",
+      "desc3": "Experience all lessons as an immersive story — just tap!",
+      "title4": "Menu",
+      "desc4": "Settings, profile and more are here."
+    }
   }
 }

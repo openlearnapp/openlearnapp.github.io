@@ -307,6 +307,17 @@
     },
     "next": "Weiter",
     "done": "Los geht's!",
-    "skip": "Überspringen"
+    "skip": "Überspringen",
+    "prev": "←",
+    "lessonsOverview": {
+      "title1": "Dein Fortschritt",
+      "desc1": "Hier siehst du wie viele Lektionen du schon abgeschlossen hast.",
+      "title2": "Erste Lektion",
+      "desc2": "Tippe auf eine Lektion um sie zu öffnen und loszulegen!",
+      "title3": "Story-Modus",
+      "desc3": "Erlebe alle Lektionen als immersive Geschichte — einfach antippen!",
+      "title4": "Menü",
+      "desc4": "Einstellungen, Profil und mehr findest du hier."
+    }
   }
 }

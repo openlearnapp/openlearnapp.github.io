@@ -1,8 +1,9 @@
 import { ref } from 'vue'
 
 const TOUR_KEYS = {
-  workshopOverview: 'tour_workshop_overview_done',
-  lessonDetail: 'tour_lesson_detail_done',
+  workshopOverview:  'tour_workshop_overview_done',
+  lessonsOverview:   'tour_lessons_overview_done',
+  lessonDetail:      'tour_lesson_detail_done',
 }
 
 // Reactive global state (singleton)
@@ -99,6 +100,35 @@ export function useTour() {
     // ↑ Anchor = burger button (always visible). Waits for it, then extra 400ms for workshop cards.
   }
 
+  function startLessonsOverviewTour(tr, force = false) {
+    showTour([
+      {
+        element: '#tour-progress-bar',
+        emoji: '📊',
+        title: tr.title1,
+        desc: tr.desc1,
+      },
+      {
+        element: '#tour-first-lesson',
+        emoji: '📚',
+        title: tr.title2,
+        desc: tr.desc2,
+      },
+      {
+        element: '#tour-story-btn',
+        emoji: '📺',
+        title: tr.title3,
+        desc: tr.desc3,
+      },
+      {
+        element: '#tour-burger-btn',
+        emoji: '☰',
+        title: tr.title4,
+        desc: tr.desc4,
+      },
+    ], TOUR_KEYS.lessonsOverview, force, '#tour-burger-btn')
+  }
+
   function startLessonDetailTour(tr, force = false) {
     showTour([
       {
@@ -125,6 +155,8 @@ export function useTour() {
   function startTourForRoute(routeName, translations) {
     if (routeName === 'workshop-overview') {
       startWorkshopOverviewTour(translations.workshopOverview)
+    } else if (routeName === 'lessons-overview') {
+      startLessonsOverviewTour(translations.lessonsOverview)
     } else if (routeName === 'lesson-detail') {
       startLessonDetailTour(translations.lessonDetail)
     }
@@ -135,13 +167,14 @@ export function useTour() {
     if (routeName === 'workshop-overview') {
       localStorage.removeItem(TOUR_KEYS.workshopOverview)
       startWorkshopOverviewTour(translations.workshopOverview, true)
+    } else if (routeName === 'lessons-overview') {
+      localStorage.removeItem(TOUR_KEYS.lessonsOverview)
+      startLessonsOverviewTour(translations.lessonsOverview, true)
     } else if (routeName === 'lesson-detail') {
       localStorage.removeItem(TOUR_KEYS.lessonDetail)
       startLessonDetailTour(translations.lessonDetail, true)
     } else {
-      // On other pages: reset everything so tour runs next time they visit
-      localStorage.removeItem(TOUR_KEYS.workshopOverview)
-      localStorage.removeItem(TOUR_KEYS.lessonDetail)
+      Object.values(TOUR_KEYS).forEach(k => localStorage.removeItem(k))
     }
   }
 

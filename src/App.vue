@@ -544,22 +544,21 @@ onUnmounted(() => {
 function getTourTranslations() {
   return {
     workshopOverview: {
-      title1: t('tour.overview.title1'),
-      desc1: t('tour.overview.desc1'),
-      title2: t('tour.overview.title2'),
-      desc2: t('tour.overview.desc2'),
-      title3: t('tour.overview.title3'),
-      desc3: t('tour.overview.desc3'),
-      title4: t('tour.overview.title4'),
-      desc4: t('tour.overview.desc4'),
+      title1: t('tour.overview.title1'), desc1: t('tour.overview.desc1'),
+      title2: t('tour.overview.title2'), desc2: t('tour.overview.desc2'),
+      title3: t('tour.overview.title3'), desc3: t('tour.overview.desc3'),
+      title4: t('tour.overview.title4'), desc4: t('tour.overview.desc4'),
+    },
+    lessonsOverview: {
+      title1: t('tour.lessonsOverview.title1'), desc1: t('tour.lessonsOverview.desc1'),
+      title2: t('tour.lessonsOverview.title2'), desc2: t('tour.lessonsOverview.desc2'),
+      title3: t('tour.lessonsOverview.title3'), desc3: t('tour.lessonsOverview.desc3'),
+      title4: t('tour.lessonsOverview.title4'), desc4: t('tour.lessonsOverview.desc4'),
     },
     lessonDetail: {
-      title1: t('tour.lesson.title1'),
-      desc1: t('tour.lesson.desc1'),
-      title2: t('tour.lesson.title2'),
-      desc2: t('tour.lesson.desc2'),
-      title3: t('tour.lesson.title3'),
-      desc3: t('tour.lesson.desc3'),
+      title1: t('tour.lesson.title1'), desc1: t('tour.lesson.desc1'),
+      title2: t('tour.lesson.title2'), desc2: t('tour.lesson.desc2'),
+      title3: t('tour.lesson.title3'), desc3: t('tour.lesson.desc3'),
     },
   }
 }

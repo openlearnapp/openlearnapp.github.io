@@ -3,8 +3,8 @@
     <Transition name="tour-fade">
       <div v-if="visible && currentStep" class="tour-root">
 
-        <!-- Subtle backdrop -->
-        <div class="tour-backdrop" />
+        <!-- Backdrop blocks all clicks through the tour -->
+        <div class="tour-backdrop" @click.stop @touchstart.stop @pointerdown.stop />
 
         <!-- Cloud glow: outer soft halo -->
         <div v-if="cloud" class="tour-cloud-outer" :style="cloudOuterStyle" />
@@ -38,10 +38,15 @@
 
             <!-- Actions -->
             <div class="tour-card-footer">
-              <button class="tour-next-btn" @click="nextStep">
-                <span>{{ isLast ? t('tour.done') : t('tour.next') }}</span>
-                <span class="tour-next-icon">{{ isLast ? '🎉' : '→' }}</span>
-              </button>
+              <div class="tour-btn-row">
+                <button v-if="stepIndex > 0" class="tour-prev-btn" @click="prevStep">
+                  {{ t('tour.prev') }}
+                </button>
+                <button class="tour-next-btn" :class="{ full: stepIndex === 0 }" @click="nextStep">
+                  <span>{{ isLast ? t('tour.done') : t('tour.next') }}</span>
+                  <span class="tour-next-icon">{{ isLast ? '🎉' : '→' }}</span>
+                </button>
+              </div>
               <button class="tour-skip-btn" @click="skip">
                 {{ t('tour.skip') }}
               </button>
@@ -194,6 +199,10 @@ function nextStep() {
   }
 }
 
+function prevStep() {
+  if (stepIndex.value > 0) stepIndex.value--
+}
+
 function skip() {
   emit('skip')
   stepIndex.value = 0
@@ -208,14 +217,16 @@ function skip() {
   pointer-events: none;
 }
 
-/* Very subtle backdrop — doesn't block reading */
+/* Backdrop — subtle dim + blocks all clicks through the tour */
 .tour-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.22);
+  background: rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(1.5px);
   -webkit-backdrop-filter: blur(1.5px);
   z-index: 9989;
+  pointer-events: all;  /* blocks clicks through to page */
+  cursor: default;
 }
 
 /* ─── Cloud outer: large soft radial halo ─────────────────── */
@@ -353,12 +364,32 @@ function skip() {
   gap: 10px;
 }
 
+.tour-btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tour-prev-btn {
+  flex-shrink: 0;
+  padding: 14px 18px;
+  border-radius: 13px;
+  background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.tour-prev-btn:hover { background: hsl(var(--primary) / 0.2); }
+
 .tour-next-btn {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  width: 100%;
   padding: 14px 20px;
   border-radius: 13px;
   background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary, var(--primary))));
