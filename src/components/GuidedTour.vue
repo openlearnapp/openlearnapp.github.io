@@ -115,28 +115,8 @@ const cardStyle = computed(() => {
   return style
 })
 
-async function updateSpotlight() {
-  await nextTick()
-  const step = currentStep.value
-  if (!step?.element) {
-    spotlight.value = null
-    cardPosition.value = { top: null, bottom: null, left: null }
-    return
-  }
-
-  const el = document.querySelector(step.element)
-  if (!el) {
-    spotlight.value = null
-    cardPosition.value = { top: null, bottom: null, left: null }
-    return
-  }
-
-  // Scroll element into view
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-
-  // Wait for scroll to finish
-  await new Promise(r => setTimeout(r, 400))
-
+// Compute spotlight + card position from element rect (called on every frame)
+function applyRect(el) {
   const rect = el.getBoundingClientRect()
   const pad = 8
 
@@ -147,55 +127,85 @@ async function updateSpotlight() {
     height: rect.height,
   }
 
-  // Position card: below element if it fits, else above
-  const cardHeight = 280
+  const cardHeight = 300
   const cardWidth = Math.min(320, window.innerWidth - 32)
   const spaceBelow = window.innerHeight - rect.bottom - 20
   const spaceAbove = rect.top - 20
 
   let top = null
-  let bottom = null
   let left = null
 
   if (spaceBelow >= cardHeight || spaceBelow >= spaceAbove) {
-    top = rect.bottom + pad + 16
-    if (top + cardHeight > window.innerHeight) {
+    top = rect.bottom + pad + 12
+    // If card would go off screen bottom, clamp it
+    if (top + cardHeight > window.innerHeight - 16) {
       top = Math.max(16, window.innerHeight - cardHeight - 16)
     }
   } else {
-    top = Math.max(16, rect.top - cardHeight - pad - 16)
+    top = Math.max(16, rect.top - cardHeight - pad - 12)
   }
 
-  // Horizontal: align to element, keep within screen
   const preferredLeft = rect.left + rect.width / 2 - cardWidth / 2
   left = Math.max(16, Math.min(preferredLeft, window.innerWidth - cardWidth - 16))
 
-  cardPosition.value = { top, bottom, left }
+  cardPosition.value = { top, bottom: null, left }
 }
 
-// Lock body scroll while tour is visible — prevents spotlight drift
-function lockScroll() {
-  document.body.style.overflow = 'hidden'
-  document.body.style.touchAction = 'none'
+// rAF loop — keeps spotlight glued to element while user scrolls
+let rafId = null
+let currentEl = null
+
+function startTracking() {
+  stopTracking()
+  function loop() {
+    if (currentEl) applyRect(currentEl)
+    rafId = requestAnimationFrame(loop)
+  }
+  rafId = requestAnimationFrame(loop)
 }
-function unlockScroll() {
-  document.body.style.overflow = ''
-  document.body.style.touchAction = ''
+
+function stopTracking() {
+  if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null }
+  currentEl = null
+}
+
+async function updateSpotlight() {
+  await nextTick()
+  const step = currentStep.value
+  if (!step?.element) {
+    stopTracking()
+    spotlight.value = null
+    cardPosition.value = { top: null, bottom: null, left: null }
+    return
+  }
+
+  const el = document.querySelector(step.element)
+  if (!el) {
+    stopTracking()
+    spotlight.value = null
+    cardPosition.value = { top: null, bottom: null, left: null }
+    return
+  }
+
+  // Scroll element into view, then start live tracking
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  await new Promise(r => setTimeout(r, 380))
+
+  currentEl = el
+  startTracking()
 }
 
 watch([() => props.visible, stepIndex], async ([vis]) => {
   if (vis) {
-    lockScroll()
     await updateSpotlight()
   } else {
-    unlockScroll()
+    stopTracking()
     spotlight.value = null
     stepIndex.value = 0
   }
 }, { immediate: true })
 
-// Also unlock on unmount (safety)
-onUnmounted(() => unlockScroll())
+onUnmounted(() => stopTracking())
 
 function nextStep() {
   if (isLast.value) {
