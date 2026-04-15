@@ -68,7 +68,9 @@ async function showTour(stepDefs, doneKey, force = false, anchorSelector = null)
 }
 
 // ?tour=1 in URL forces tour every time (for testing)
-const urlForce = new URLSearchParams(window.location.search).get('tour') === '1'
+// Hash-based routing: query params are in the hash, not window.location.search
+const hashQuery = new URLSearchParams(window.location.hash.split('?')[1] || '')
+const urlForce = hashQuery.get('tour') === '1'
 
 export function useTour() {
   function startWorkshopOverviewTour(tr, force = false) {
