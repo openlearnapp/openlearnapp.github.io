@@ -1,105 +1,156 @@
 <template>
-  <div class="home-root">
+  <div class="home-root" @click="showLanguageMenu && (showLanguageMenu = false)">
 
-    <!-- ═══════════════════════════════════════════════════
-         HERO — full-viewport, cinematic, canvas animated
-    ═══════════════════════════════════════════════════ -->
+    <!-- ═══════ HERO ═══════ -->
     <section class="hero">
-
-      <!-- Animated canvas background (particles + figure) -->
-      <canvas ref="canvasEl" class="hero-canvas" aria-hidden="true" />
-
-      <!-- Gradient overlay so text stays readable -->
+      <canvas ref="bgCanvas" class="hero-bg" aria-hidden="true" />
       <div class="hero-overlay" />
 
-      <!-- Hero content -->
-      <div class="hero-content">
+      <div class="hero-inner">
 
-        <!-- Brand badge -->
-        <div class="hero-badge">
-          <span class="hero-badge-dot" />
-          Open Learn
-        </div>
+        <!-- Left: text + CTA -->
+        <div class="hero-left">
+          <div class="hero-pill">🎓 Open Learn</div>
+          <h1 class="hero-h1">{{ $t('home.title') }}</h1>
+          <p class="hero-p">{{ $t('home.subtitle') }}</p>
 
-        <!-- Headline -->
-        <h1 class="hero-headline">
-          {{ $t('home.title') }}
-        </h1>
-        <p class="hero-sub">{{ $t('home.subtitle') }}</p>
-
-        <!-- Language selector = primary CTA -->
-        <div class="hero-cta">
-          <div class="lang-selector-wrap">
-            <button
-              class="lang-btn"
-              @click.stop="showLanguageMenu = !showLanguageMenu"
-              aria-haspopup="listbox">
-              <span class="lang-flag">{{ getFlag(currentLanguage) }}</span>
-              <span class="lang-name">{{ formatLangName(currentLanguage) }}</span>
-              <svg class="lang-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
-            </button>
-
-            <Transition name="lang-drop">
-              <div v-if="showLanguageMenu" class="lang-menu" role="listbox">
-                <button
-                  v-for="lang in learningLanguages"
-                  :key="lang"
-                  class="lang-option"
-                  :class="{ active: currentLanguage === lang }"
-                  @click="selectLanguage(lang)">
-                  <span>{{ getFlag(lang) }}</span>
-                  <span>{{ formatLangName(lang) }}</span>
-                </button>
-              </div>
-            </Transition>
+          <!-- Style switcher — switches ALL quiz cards live -->
+          <div class="style-bar">
+            <button v-for="s in STYLES" :key="s"
+              class="sty-btn" :class="{ on: activeStyle === s }"
+              @click.stop="setStyle(s)">{{ s }}</button>
           </div>
 
-          <button class="start-btn" @click="goToWorkshops(currentLanguage)">
-            {{ $t('home.browseWorkshops') }}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
-            </svg>
-          </button>
+          <!-- Language selector -->
+          <div class="hero-cta" @click.stop>
+            <div class="lang-selector-wrap">
+              <button class="lang-btn" @click.stop="showLanguageMenu = !showLanguageMenu" aria-haspopup="listbox">
+                <span class="lang-flag">{{ getFlag(currentLanguage) }}</span>
+                <span class="lang-name">{{ formatLangName(currentLanguage) }}</span>
+                <svg class="lang-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </button>
+              <Transition name="lang-drop">
+                <div v-if="showLanguageMenu" class="lang-menu" role="listbox">
+                  <button v-for="lang in learningLanguages" :key="lang"
+                    class="lang-option" :class="{ active: currentLanguage === lang }"
+                    @click="selectLanguage(lang)">
+                    <span>{{ getFlag(lang) }}</span>
+                    <span>{{ formatLangName(lang) }}</span>
+                  </button>
+                </div>
+              </Transition>
+            </div>
+            <button class="start-btn" @click="goToWorkshops(currentLanguage)">
+              {{ $t('home.browseWorkshops') }}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="skill-tag">quiz-scenes skill · plugin-workshop-creator PR #15</div>
         </div>
 
-        <!-- Scroll hint -->
-        <button class="scroll-hint" @click="scrollToFeatures" aria-label="Mehr erfahren">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
-        </button>
+        <!-- Right: interactive quiz demo -->
+        <div class="hero-right">
+          <div class="demo-card">
+            <div class="demo-header">
+              <span class="demo-label">{{ heroQ.sub }}</span>
+              <span class="demo-word">{{ heroQ.q }}</span>
+            </div>
+            <div class="demo-grid">
+              <div v-for="(c, i) in heroQ.choices" :key="i"
+                class="choice-cell"
+                :class="{
+                  ok:  heroAnswered && i === heroQ.ans,
+                  no:  heroAnswered && heroChosen === i && i !== heroQ.ans,
+                  dim: heroAnswered && i !== heroQ.ans && heroChosen !== i
+                }"
+                @click="answerHero(i)">
+                <canvas :ref="el => setHeroCanvas(el, i, c.s)" class="choice-canvas" />
+                <div class="choice-label-row">
+                  <span class="choice-word">{{ c.w }}</span>
+                  <span v-if="heroAnswered && i === heroQ.ans" class="badge-ok">✓</span>
+                  <span v-else-if="heroAnswered && heroChosen === i" class="badge-no">✕</span>
+                </div>
+              </div>
+            </div>
+            <button v-if="heroAnswered" class="next-btn" @click="nextHeroQ">
+              {{ $t('lesson.nextLesson') }} →
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════
-         FEATURE PILLS — horizontal strip
-    ═══════════════════════════════════════════════════ -->
-    <section ref="featuresEl" class="features-strip">
-      <div class="features-inner">
-        <div
-          v-for="f in featurePills"
-          :key="f.key"
-          class="feature-pill">
-          <span class="pill-icon">{{ f.icon }}</span>
-          <span class="pill-label">{{ f.label }}</span>
+    <!-- ═══════ SCENE GALLERY — alle 6 Atmosphären ═══════ -->
+    <section class="gallery-sec">
+      <div class="sec-inner">
+        <div class="sec-tag">6 Atmosphären — automatisch aus Workshop-Inhalt erkannt</div>
+        <h2 class="sec-h2">Jede Antwort bekommt eine passende Szene</h2>
+        <p class="sec-p">
+          „Hola" → sonniger Platz · „Gute Nacht" → Mondlicht · „Lo siento" → Regen<br>
+          Der Skill liest dein YAML und wählt automatisch die passende Atmosphäre.
+        </p>
+        <div class="scene-gallery">
+          <div v-for="s in LANG_SCENES" :key="s.key" class="scene-tile">
+            <canvas :ref="el => registerGallery(el, s.key)" class="scene-canvas" />
+            <span class="scene-label">{{ s.label }}</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════
-         HOW IT WORKS — 3 visual steps
-    ═══════════════════════════════════════════════════ -->
-    <section class="how-section">
-      <h2 class="section-title">{{ $t('home.howItWorks') }}</h2>
-      <div class="steps-row">
-        <div v-for="(step, i) in steps" :key="i" class="step-card">
-          <div class="step-number">{{ i + 1 }}</div>
-          <div class="step-text">
+    <!-- ═══════ STYLE COMPARISON — 3 Stile gleichzeitig ═══════ -->
+    <section class="compare-sec">
+      <div class="sec-inner">
+        <div class="sec-tag">Ein Klick — drei Looks</div>
+        <h2 class="sec-h2">Cinematic · Neon · Minimal</h2>
+        <p class="sec-p">
+          Dieselbe Szene, drei komplett verschiedene Rendering-Stile.<br>
+          Oben im Style-Switcher umschalten — alle Karten wechseln sofort.
+        </p>
+        <div class="compare-row">
+          <div v-for="s in STYLES" :key="s" class="compare-tile"
+            :class="{ active: activeStyle === s }" @click="setStyle(s)">
+            <canvas :ref="el => registerComp(el, 'night', s)" class="comp-canvas" />
+            <div class="comp-footer">
+              <span class="comp-name">{{ s }}</span>
+              <span v-if="activeStyle === s" class="comp-active">← aktiv</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ IT / TECH SCENES ═══════ -->
+    <section class="tech-sec">
+      <div class="sec-inner">
+        <div class="sec-tag">Nicht nur Sprachen</div>
+        <h2 class="sec-h2">IT-Workshops bekommen Terminal-Szenen</h2>
+        <p class="sec-p">
+          Der Skill erkennt Linux-Befehle, Git, Docker — und zeichnet animierte Terminal-Karten.
+        </p>
+        <div class="tech-row">
+          <div v-for="s in TECH_SCENES" :key="s.key" class="tech-tile">
+            <canvas :ref="el => registerTech(el, s.key)" class="tech-canvas" />
+            <span class="scene-label">{{ s.label }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ HOW IT WORKS ═══════ -->
+    <section class="how-sec">
+      <div class="sec-inner">
+        <h2 class="sec-h2">{{ $t('home.howItWorks') }}</h2>
+        <div class="steps-row">
+          <div v-for="(step, i) in steps" :key="i" class="step-card">
+            <div class="step-num">{{ i + 1 }}</div>
             <div class="step-title">{{ step.title }}</div>
             <div class="step-desc">{{ step.desc }}</div>
           </div>
@@ -107,38 +158,18 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════
-         TOPIC GRID — compact icon grid
-    ═══════════════════════════════════════════════════ -->
-    <section class="topics-section">
-      <h2 class="section-title">{{ $t('home.whatYouCanLearn') }}</h2>
-      <div class="topics-grid">
-        <div
-          v-for="ex in useCaseExamples"
-          :key="ex.key"
-          class="topic-chip">
-          <span>{{ ex.icon }}</span>
-          <span class="topic-label">{{ ex.label }}</span>
+    <!-- ═══════ OPEN SOURCE CTA ═══════ -->
+    <section class="cta-sec">
+      <div class="sec-inner cta-inner">
+        <h2 class="cta-h2">{{ $t('home.openSourceTitle') }}</h2>
+        <p class="cta-p">{{ $t('home.openSourceDesc') }}</p>
+        <div class="cta-btns">
+          <a href="https://github.com/openlearnapp/openlearnapp.github.io"
+            target="_blank" rel="noopener" class="btn-primary">
+            {{ $t('home.viewOnGitHub') }}
+          </a>
+          <a href="#/creators" class="btn-ghost">{{ $t('home.forCreatorsLink') }}</a>
         </div>
-      </div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════
-         BOTTOM CTA
-    ═══════════════════════════════════════════════════ -->
-    <section class="bottom-cta">
-      <h2 class="cta-headline">{{ $t('home.openSourceTitle') }}</h2>
-      <p class="cta-sub">{{ $t('home.openSourceDesc') }}</p>
-      <div class="cta-btns">
-        <button class="start-btn" @click="goToWorkshops(currentLanguage)">
-          {{ $t('home.browseWorkshops') }} →
-        </button>
-        <a
-          href="https://github.com/openlearnapp/openlearnapp.github.io"
-          target="_blank" rel="noopener"
-          class="ghost-btn">
-          GitHub
-        </a>
       </div>
     </section>
 
@@ -155,338 +186,455 @@ import { formatLangName } from '../utils/formatters'
 
 const router = useRouter()
 const { t } = useI18n()
-const { availableContent, isLoading, loadAvailableContent } = useLessons()
+const { availableContent, loadAvailableContent } = useLessons()
 const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 
+// ─── Language selector ──────────────────────────────────────────────
 const showLanguageMenu = ref(false)
-const canvasEl = ref(null)
-const featuresEl = ref(null)
-
 const learningLanguages = computed(() => [...new Set(Object.keys(availableContent.value))])
-const currentLanguage = computed(() => selectedLanguage.value || learningLanguages.value[0] || 'english')
+const currentLanguage  = computed(() => selectedLanguage.value || learningLanguages.value[0] || 'english')
 
-function selectLanguage(lang) {
-  showLanguageMenu.value = false
-  setLanguage(lang)
-}
+function selectLanguage(lang) { showLanguageMenu.value = false; setLanguage(lang) }
+function goToWorkshops(lang)  { setLanguage(lang); router.push({ name: 'workshop-overview', params: { learning: lang } }) }
 
-function goToWorkshops(lang) {
-  setLanguage(lang)
-  router.push({ name: 'workshop-overview', params: { learning: lang } })
-}
-
-function scrollToFeatures() {
-  featuresEl.value?.scrollIntoView({ behavior: 'smooth' })
-}
-
-function handleClickOutside(e) {
-  if (showLanguageMenu.value && !e.target.closest('.lang-selector-wrap')) {
-    showLanguageMenu.value = false
-  }
-}
-
-// ── Feature pills ──────────────────────────────────────────────────────
-const featurePills = computed(() => [
-  { key: 'topic',    icon: '🎯', label: t('home.features.anySubject') },
-  { key: 'story',    icon: '🎬', label: t('home.features.richExperience') },
-  { key: 'test',     icon: '✅', label: t('home.tools.assessments') },
-  { key: 'audio',    icon: '🔊', label: t('home.tools.audio') },
-  { key: 'offline',  icon: '📶', label: t('home.tools.sync') },
-  { key: 'create',   icon: '✏️', label: t('home.features.yourContent') },
-  { key: 'infra',    icon: '🔒', label: t('home.features.zeroInfra') },
-])
-
+// ─── How it works ───────────────────────────────────────────────────
 const steps = computed(() => [
   { title: t('home.steps.pickLang'),      desc: t('home.steps.pickLangDesc') },
   { title: t('home.steps.startWorkshop'), desc: t('home.steps.startWorkshopDesc') },
   { title: t('home.steps.learnTrack'),    desc: t('home.steps.learnTrackDesc') },
 ])
 
-const useCaseExamples = computed(() => [
-  { key: 'lang',    icon: '🌍', label: t('home.useCases.languages') },
-  { key: 'math',    icon: '🧮', label: t('home.useCases.math') },
-  { key: 'drive',   icon: '🚗', label: t('home.useCases.driving') },
-  { key: 'music',   icon: '🎵', label: t('home.useCases.music') },
-  { key: 'code',    icon: '💻', label: t('home.useCases.coding') },
-  { key: 'science', icon: '🔬', label: t('home.useCases.science') },
-  { key: 'history', icon: '📜', label: t('home.useCases.history') },
-  { key: 'med',     icon: '🏥', label: t('home.useCases.medicine') },
-  { key: 'law',     icon: '⚖️', label: t('home.useCases.law') },
-])
+// ═══════════════════════════════════════════════════════════════════
+// SCENE DATA — ported from experiments/18-multi-style-quiz
+// ═══════════════════════════════════════════════════════════════════
+const STYLES = ['cinematic', 'neon', 'minimal']
+const activeStyle = ref('cinematic')
+function setStyle(s) { activeStyle.value = s }
 
-// ── Canvas animation ───────────────────────────────────────────────────
-// Inspired by experiments/18-multi-style-quiz (local, PR #15 in plugin repo)
-// Techniques: particle field, human figure with bezier curves, breathing animation
-// Using local experiments only — not from any external package
+const LANG_SCENES = [
+  { key: 'plaza_day',   label: 'Hallo / Hello / سلام' },
+  { key: 'golden_room', label: 'Danke / Thank you / ممنون' },
+  { key: 'sunrise',     label: 'Guten Morgen / صبح بخیر' },
+  { key: 'rainy',       label: 'Entschuldigung / Lo siento' },
+  { key: 'night',       label: 'Gute Nacht / شب بخیر' },
+  { key: 'park_sunset', label: 'Tschüss / Adiós / خداحافظ' },
+]
 
-let rafId = null
+const TECH_SCENES = [
+  { key: 'tech_list',   label: 'ls -la  — Dateien anzeigen' },
+  { key: 'tech_cd',     label: 'cd ..   — Ordner wechseln' },
+  { key: 'tech_delete', label: 'rm -rf  — Löschen (Vorsicht!)' },
+]
 
-function startCanvas(canvas) {
-  const ctx = canvas.getContext('2d')
-  let W, H, particles
-
-  function resize() {
-    W = canvas.width  = canvas.offsetWidth  * window.devicePixelRatio
-    H = canvas.height = canvas.offsetHeight * window.devicePixelRatio
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
-    W /= window.devicePixelRatio
-    H /= window.devicePixelRatio
-    initParticles()
-  }
-
-  function initParticles() {
-    particles = Array.from({ length: 60 }, () => ({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: Math.random() * 1.4 + 0.4,
-      vx: (Math.random() - 0.5) * 0.18,
-      vy: (Math.random() - 0.5) * 0.18,
-      a: Math.random() * 0.55 + 0.2,
-    }))
-  }
-
-  // ── Human figure system from experiments/17-18 ──────────────────
-  function drawFigure(cx, cy, h, t) {
-    const u = h / 160
-    const breath = Math.sin(t * 1.1) * h * 0.003
-
-    // Colors — primary glow palette
-    const skin  = '#F4A070'
-    const hair  = '#2D1A0E'
-    const shirt = '#6366F1'   // --primary
-    const pants = '#1E1B4B'
-    const shoe  = '#0F0D26'
-
-    // Pose: reading — arms slightly forward, head tilted down
-    const shoulderY = cy - h * 0.24 + breath
-    const hipY      = cy + h * 0.01
-    const headCy    = cy - h * 0.38 + breath
-    const headR     = u * 12
-
-    // Shadow
-    ctx.save()
-    ctx.beginPath()
-    ctx.ellipse(cx, cy + h * 0.02, u * 22, u * 5, 0, 0, Math.PI * 2)
-    ctx.fillStyle = 'rgba(0,0,0,0.25)'
-    ctx.fill()
-    ctx.restore()
-
-    // Torso (bezier-tapered)
-    drawTapered(cx, shoulderY, cx, hipY, u * 14, u * 10, shirt)
-
-    // Legs
-    drawTapered(cx - u * 6, hipY, cx - u * 8, cy + h * 0.18, u * 8, u * 5, pants)
-    drawTapered(cx + u * 6, hipY, cx + u * 8, cy + h * 0.18, u * 8, u * 5, pants)
-
-    // Shoes
-    ctx.save()
-    ctx.beginPath()
-    ctx.ellipse(cx - u * 10, cy + h * 0.19, u * 8, u * 4, -0.15, 0, Math.PI * 2)
-    ctx.fillStyle = shoe; ctx.fill()
-    ctx.restore()
-    ctx.save()
-    ctx.beginPath()
-    ctx.ellipse(cx + u * 10, cy + h * 0.19, u * 8, u * 4, 0.15, 0, Math.PI * 2)
-    ctx.fillStyle = shoe; ctx.fill()
-    ctx.restore()
-
-    // Arms (reading pose — both angled forward/down)
-    const waveL = Math.sin(t * 0.7) * u * 3
-    drawTapered(cx - u * 14, shoulderY + u * 4, cx - u * 24 + waveL, shoulderY + u * 28, u * 7, u * 4, skin)
-    drawTapered(cx + u * 14, shoulderY + u * 4, cx + u * 22 + waveL, shoulderY + u * 28, u * 7, u * 4, skin)
-
-    // Book in hands
-    ctx.save()
-    ctx.translate(cx, shoulderY + u * 32 + breath)
-    ctx.rotate(Math.sin(t * 0.3) * 0.04)
-    ctx.beginPath()
-    ctx.roundRect(-u * 15, -u * 10, u * 30, u * 20, u * 2)
-    ctx.fillStyle = '#E8F0FE'
-    ctx.fill()
-    ctx.beginPath()
-    ctx.rect(-u * 1.5, -u * 9.5, u * 3, u * 19)
-    ctx.fillStyle = '#C7D7FB'
-    ctx.fill()
-    // lines in book
-    for (let l = 0; l < 4; l++) {
-      ctx.beginPath()
-      ctx.rect(-u * 12, -u * 7 + l * u * 5, u * 10, u * 1.5)
-      ctx.fillStyle = 'rgba(99,102,241,0.25)'; ctx.fill()
-      ctx.beginPath()
-      ctx.rect(u * 3, -u * 7 + l * u * 5, u * 10, u * 1.5)
-      ctx.fillStyle = 'rgba(99,102,241,0.25)'; ctx.fill()
-    }
-    ctx.restore()
-
-    // Head
-    ctx.save()
-    ctx.beginPath()
-    ctx.arc(cx, headCy + breath, headR, 0, Math.PI * 2)
-    ctx.fillStyle = skin
-    ctx.fill()
-    ctx.restore()
-
-    // Hair
-    ctx.save()
-    ctx.beginPath()
-    ctx.arc(cx, headCy + breath - headR * 0.1, headR, Math.PI, Math.PI * 2)
-    ctx.fillStyle = hair
-    ctx.fill()
-    ctx.restore()
-
-    // Eyes (slightly down — reading)
-    const eyeY = headCy + headR * 0.12 + breath
-    const blink = Math.sin(t * 0.3) > 0.97 ? 0 : 1
-    ctx.save()
-    for (const ex of [cx - headR * 0.32, cx + headR * 0.32]) {
-      ctx.beginPath()
-      if (blink) ctx.arc(ex, eyeY, headR * 0.13, 0, Math.PI * 2)
-      else ctx.ellipse(ex, eyeY, headR * 0.13, headR * 0.04, 0, 0, Math.PI * 2)
-      ctx.fillStyle = '#1A1A2E'; ctx.fill()
-    }
-    ctx.restore()
-
-    // Glow around figure
-    ctx.save()
-    const grd = ctx.createRadialGradient(cx, cy - h * 0.1, h * 0.05, cx, cy - h * 0.1, h * 0.6)
-    grd.addColorStop(0, 'rgba(99,102,241,0.18)')
-    grd.addColorStop(1, 'rgba(99,102,241,0)')
-    ctx.fillStyle = grd
-    ctx.fillRect(cx - h, cy - h, h * 2, h * 2)
-    ctx.restore()
-  }
-
-  // Tapered limb (bezier, from experiments/17 & quiz-scenes skill PR #15)
-  function drawTapered(x1, y1, x2, y2, w1, w2, col) {
-    const dx = x2 - x1, dy = y2 - y1
-    const len = Math.sqrt(dx * dx + dy * dy) || 1
-    const nx = dy / len, ny = -dx / len
-    ctx.beginPath()
-    ctx.moveTo(x1 + nx * w1, y1 + ny * w1)
-    ctx.bezierCurveTo(
-      (x1 * 2 + x2) / 3 + nx * (w1 * 0.6 + w2 * 0.4),
-      (y1 * 2 + y2) / 3 + ny * (w1 * 0.6 + w2 * 0.4),
-      (x1 + x2 * 2) / 3 + nx * (w1 * 0.4 + w2 * 0.6),
-      (y1 + y2 * 2) / 3 + ny * (w1 * 0.4 + w2 * 0.6),
-      x2 + nx * w2, y2 + ny * w2
-    )
-    ctx.lineTo(x2 - nx * w2, y2 - ny * w2)
-    ctx.bezierCurveTo(
-      (x1 + x2 * 2) / 3 - nx * (w1 * 0.4 + w2 * 0.6),
-      (y1 + y2 * 2) / 3 - ny * (w1 * 0.4 + w2 * 0.6),
-      (x1 * 2 + x2) / 3 - nx * (w1 * 0.6 + w2 * 0.4),
-      (y1 * 2 + y2) / 3 - ny * (w1 * 0.6 + w2 * 0.4),
-      x1 - nx * w1, y1 - ny * w1
-    )
-    ctx.closePath()
-    ctx.fillStyle = col; ctx.fill()
-  }
-
-  let t0 = null
-  function draw(ts) {
-    rafId = requestAnimationFrame(draw)
-    if (!t0) t0 = ts
-    const t = (ts - t0) / 1000
-
-    ctx.clearRect(0, 0, W, H)
-
-    // Sky gradient
-    const sky = ctx.createLinearGradient(0, 0, 0, H)
-    sky.addColorStop(0,   '#07052A')
-    sky.addColorStop(0.5, '#0E0B3D')
-    sky.addColorStop(1,   '#1A0A2E')
-    ctx.fillStyle = sky
-    ctx.fillRect(0, 0, W, H)
-
-    // Particles / stars
-    particles.forEach(p => {
-      p.x += p.vx; p.y += p.vy
-      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0
-      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0
-      const pulse = 0.6 + 0.4 * Math.sin(t * 1.5 + p.x)
-      ctx.beginPath()
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-      ctx.fillStyle = `rgba(180,160,255,${p.a * pulse})`
-      ctx.fill()
-    })
-
-    // Floating glow orbs (background atmosphere)
-    for (const [ox, oy, or_, col] of [
-      [W * 0.15, H * 0.3, H * 0.3, 'rgba(99,102,241,0.08)'],
-      [W * 0.85, H * 0.6, H * 0.25, 'rgba(139,92,246,0.07)'],
-      [W * 0.5,  H * 0.8, H * 0.2,  'rgba(99,102,241,0.05)'],
-    ]) {
-      const g = ctx.createRadialGradient(ox, oy, 0, ox, oy, or_)
-      g.addColorStop(0, col); g.addColorStop(1, 'transparent')
-      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H)
-    }
-
-    // Figure — right side on desktop, centered on mobile
-    const figH = Math.min(H * 0.6, 280)
-    const figX = W > 640 ? W * 0.78 : W * 0.5
-    const figY = H * 0.55
-    drawFigure(figX, figY, figH, t)
-
-    // Ground line under figure
-    ctx.save()
-    const gl = ctx.createLinearGradient(figX - figH * 0.8, 0, figX + figH * 0.8, 0)
-    gl.addColorStop(0, 'transparent')
-    gl.addColorStop(0.5, 'rgba(99,102,241,0.35)')
-    gl.addColorStop(1, 'transparent')
-    ctx.strokeStyle = gl; ctx.lineWidth = 1.5
-    ctx.beginPath()
-    ctx.moveTo(figX - figH * 0.8, figY + figH * 0.2)
-    ctx.lineTo(figX + figH * 0.8, figY + figH * 0.2)
-    ctx.stroke()
-    ctx.restore()
-  }
-
-  resize()
-  window.addEventListener('resize', resize)
-  rafId = requestAnimationFrame(draw)
-
-  return () => {
-    cancelAnimationFrame(rafId)
-    window.removeEventListener('resize', resize)
-  }
+const CFG = {
+  plaza_day:   { sky:['#5DADE2','#F0A500'], sky2:'#FFB347', ground:'#C8956A',  pose:'wave',    neon:'#00FF99', min:'#FFF0E0', minFig:'#E74C3C', fig:{skin:'#F4A070',hair:'#3D2514',shirt:'#2E86AB',pants:'#2C3A50',shoe:'#1A1A2E'} },
+  golden_room: { sky:['#E8C46A','#FF8C00'], sky2:'#FFAA00', ground:'#8B6914',  pose:'bow',     neon:'#FFD700', min:'#FFF8E1', minFig:'#E67E22', fig:{skin:'#D4916A',hair:'#1A0A00',shirt:'#D4AC0D',pants:'#5C3D1E',shoe:'#2E1A0E'} },
+  sunrise:     { sky:['#C0392B','#F39C12'], sky2:'#FF6B9D', ground:'#4A3728',  pose:'stretch', neon:'#FF6B9D', min:'#FDE8F0', minFig:'#8E44AD', fig:{skin:'#F4A070',hair:'#5C3D1E',shirt:'#E74C3C',pants:'#4A5568',shoe:'#2C3040'} },
+  rainy:       { sky:['#5D6D7E','#2C3E50'], sky2:'#607D8B', ground:'#2C3A4A',  pose:'sad',     neon:'#4444FF', min:'#E8EEF4', minFig:'#2980B9', fig:{skin:'#B08068',hair:'#2D1B00',shirt:'#5D6D7E',pants:'#37474F',shoe:'#263238'} },
+  night:       { sky:['#0A0F1E','#0D1B2A'], sky2:'#0D1B2A', ground:'#06080F', pose:'gaze',    neon:'#AA44FF', min:'#E8E0F4', minFig:'#6C3483', fig:{skin:'#C4866A',hair:'#1A0800',shirt:'#1A237E',pants:'#0D1B2A',shoe:'#050A10'} },
+  park_sunset: { sky:['#C0392B','#E67E22'], sky2:'#FF5733', ground:'#2D4A1E',  pose:'wave2',   neon:'#FF4444', min:'#FFF0E8', minFig:'#C0392B', fig:{skin:'#E8906A',hair:'#2D1B00',shirt:'#E74C3C',pants:'#1C2833',shoe:'#1A1A2E'} },
+  tech_list:   { tech:true, cmd:'ls -la',   desc:'Alle Dateien', col:'#00FF41' },
+  tech_cd:     { tech:true, cmd:'cd ..',    desc:'Hoch',         col:'#00AAFF' },
+  tech_delete: { tech:true, cmd:'rm -rf',   desc:'Löschen!',     col:'#FF5555' },
 }
 
-onMounted(async () => {
-  document.addEventListener('click', handleClickOutside)
+const POSES = {
+  wave:    { aL:-82, aR:118, tor:0,   hd:6,   lL:-3, lR:3,  wa:true  },
+  bow:     { aL:-25, aR:-25, tor:-30, hd:25,  lL:0,  lR:0,  wa:false },
+  stretch: { aL:108, aR:108, tor:0,   hd:-18, lL:-5, lR:5,  wa:false },
+  sad:     { aL:-70, aR:-70, tor:12,  hd:28,  lL:0,  lR:0,  wa:false },
+  gaze:    { aL:-72, aR:-72, tor:0,   hd:-40, lL:5,  lR:-5, wa:false },
+  wave2:   { aL:-80, aR:108, tor:4,   hd:8,   lL:12, lR:-3, wa:true  },
+}
 
-  // PWA direct launch
+// Pre-computed static data (no new Random() per frame)
+const STARS  = Array.from({length:60}, () => ({x:Math.random(),y:Math.random()*.7,r:.5+Math.random()*1.8,ph:Math.random()*6,sp:.4+Math.random()*1.6}))
+const RAIN   = Array.from({length:60}, () => ({x:Math.random(),y:Math.random(),len:.05+Math.random()*.05,sp:3+Math.random()*2}))
+const PETALS = Array.from({length:20}, () => ({x:Math.random(),y:Math.random(),vx:-.003-.002*Math.random(),vy:.0015+.002*Math.random(),r:3+Math.random()*4}))
+const BLDG_W = [{x:.04,w:.09,h:.30},{x:.15,w:.07,h:.38},{x:.23,w:.05,h:.24},{x:.66,w:.10,h:.40},{x:.78,w:.07,h:.28},{x:.87,w:.09,h:.34}]
+const TREES  = [[.09,.28,.30],[.78,.32,.26],[.88,.20,.18]]
+
+function R(d) { return d * Math.PI / 180 }
+
+// ─── Drawing primitives (from experiments/18 + quiz-scenes PR #15) ──
+function drawTaperedLimb(ctx, x1, y1, x2, y2, w1, w2, col) {
+  const dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy); if(len<1) return
+  const nx=dy/len, ny=-dx/len
+  ctx.beginPath()
+  ctx.moveTo(x1+nx*w1, y1+ny*w1)
+  ctx.bezierCurveTo((x1*2+x2)/3+nx*(w1*.6+w2*.4),(y1*2+y2)/3+ny*(w1*.6+w2*.4),(x1+x2*2)/3+nx*(w1*.4+w2*.6),(y1+y2*2)/3+ny*(w1*.4+w2*.6),x2+nx*w2,y2+ny*w2)
+  ctx.lineTo(x2-nx*w2, y2-ny*w2)
+  ctx.bezierCurveTo((x1+x2*2)/3-nx*(w1*.4+w2*.6),(y1+y2*2)/3-ny*(w1*.4+w2*.6),(x1*2+x2)/3-nx*(w1*.6+w2*.4),(y1*2+y2)/3-ny*(w1*.6+w2*.4),x1-nx*w1,y1-ny*w1)
+  ctx.closePath(); ctx.fillStyle=col; ctx.fill()
+}
+
+function drawFigure(ctx, cx, by, h, pKey, col, t, glow) {
+  const P=POSES[pKey]||POSES.wave, u=h/160
+  const breath=Math.sin(t*1.1)*h*.004, swy=Math.sin(t*.65)*h*.0025
+  const wv=P.wa ? Math.sin(t*2.8)*.2 : 0
+  const hipY=by-82*u+breath, shY=by-122*u+breath, hdCY=by-147*u+breath
+  const sLX=cx-14*u+swy, sRX=cx+14*u+swy, hLX=cx-10*u, hRX=cx+10*u
+
+  if (!glow) {
+    const sg=ctx.createRadialGradient(cx+swy,by,0,cx+swy,by,22*u)
+    sg.addColorStop(0,'rgba(0,0,0,.3)'); sg.addColorStop(1,'rgba(0,0,0,0)')
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.ellipse(cx+swy,by,22*u,6*u,0,0,Math.PI*2); ctx.fill()
+  }
+
+  function limb(x1,y1,x2,y2,w1,w2,c) {
+    if (glow) {
+      ctx.shadowBlur=15; ctx.shadowColor=c; ctx.strokeStyle=c
+      ctx.lineWidth=w1*1.2; ctx.lineCap='round'
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.shadowBlur=0
+    } else { drawTaperedLimb(ctx,x1,y1,x2,y2,w1,w2,c) }
+  }
+
+  const aLr=R(P.aL-90), eLX=sLX+Math.cos(aLr)*24*u, eLY=shY+Math.sin(aLr)*24*u
+  limb(sLX,shY,eLX,eLY,5.5*u,4.5*u,col.skin)
+  limb(eLX,eLY,eLX+Math.cos(aLr+.28)*19*u,eLY+Math.sin(aLr+.28)*19*u,4.5*u,3.5*u,col.skin)
+
+  const lLr=R(P.lL-90), lRr=R(P.lR-90)
+  const kLX=hLX+Math.cos(lLr)*30*u, kLY=hipY+Math.sin(lLr)*30*u
+  const kRX=hRX+Math.cos(lRr)*30*u, kRY=hipY+Math.sin(lRr)*30*u
+  limb(hLX,hipY,kLX,kLY,8*u,6.5*u,col.pants)
+  limb(kLX,kLY,kLX+Math.cos(lLr+.1)*26*u,kLY+Math.sin(lLr+.1)*26*u,6.5*u,5*u,col.pants)
+  limb(hRX,hipY,kRX,kRY,8*u,6.5*u,col.pants)
+  limb(kRX,kRY,kRX+Math.cos(lRr-.1)*26*u,kRY+Math.sin(lRr-.1)*26*u,6.5*u,5*u,col.pants)
+
+  if (glow) {
+    ctx.shadowBlur=12; ctx.shadowColor=col.shirt; ctx.strokeStyle=col.shirt
+    ctx.lineWidth=10*u; ctx.lineCap='round'
+    ctx.beginPath(); ctx.moveTo(sLX,shY); ctx.lineTo(sRX,shY)
+    ctx.moveTo(hLX,hipY); ctx.lineTo(hRX,hipY); ctx.stroke(); ctx.shadowBlur=0
+  } else {
+    ctx.beginPath()
+    ctx.moveTo(sLX-1.5*u,shY)
+    ctx.bezierCurveTo(sLX-2*u,shY+20*u,hLX-1*u,hipY-10*u,hLX,hipY)
+    ctx.lineTo(hRX,hipY)
+    ctx.bezierCurveTo(hRX+1*u,hipY-10*u,sRX+2*u,shY+20*u,sRX+1.5*u,shY)
+    ctx.closePath(); ctx.fillStyle=col.shirt; ctx.fill()
+  }
+
+  limb(cx+swy,shY,cx+swy,by-132*u+breath,6*u,5*u,col.skin)
+
+  const aRr=R(P.aR-90), eRX=sRX+Math.cos(aRr)*24*u, eRY=shY+Math.sin(aRr+wv)*.88*24*u
+  limb(sRX,shY,eRX,eRY,5.5*u,4.5*u,col.skin)
+  limb(eRX,eRY,eRX+Math.cos(aRr-.3+wv*.5)*19*u,eRY+Math.sin(aRr-.3+wv*.5)*19*u,4.5*u,3.5*u,col.skin)
+
+  const hR=11*u, htilt=R(P.hd)*.4
+  ctx.save(); ctx.translate(cx+swy,hdCY); ctx.rotate(htilt)
+  if (glow) {
+    ctx.shadowBlur=20; ctx.shadowColor=col.skin
+    ctx.fillStyle=col.skin; ctx.beginPath(); ctx.arc(0,0,hR,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0
+  } else {
+    ctx.fillStyle=col.skin; ctx.beginPath(); ctx.arc(0,0,hR,0,Math.PI*2); ctx.fill()
+    ctx.fillStyle=col.hair; ctx.beginPath(); ctx.arc(0,-hR*.1,hR,Math.PI,Math.PI*2); ctx.fill()
+    const blink = Math.sin(t*.3) > .97 ? 0 : 1
+    ctx.fillStyle='#1A1A2E'
+    for (const ex of [-hR*.3, hR*.3]) {
+      ctx.beginPath()
+      if (blink) ctx.arc(ex,hR*.1,hR*.13,0,Math.PI*2)
+      else ctx.ellipse(ex,hR*.1,hR*.13,hR*.04,0,0,Math.PI*2)
+      ctx.fill()
+    }
+    ctx.fillStyle='#FF8A80'; ctx.beginPath(); ctx.arc(0,hR*.3,hR*.25,0,Math.PI); ctx.fill()
+  }
+  ctx.restore()
+}
+
+// ─── Cinematic renderer ─────────────────────────────────────────────
+function renderCinematic(ctx, w, h, key, t) {
+  const c=CFG[key]; if(!c) return
+  if (c.tech) { renderTech(ctx,w,h,c,t,'cinematic'); return }
+  const gy=h*.72
+  const sk=ctx.createLinearGradient(0,0,0,gy)
+  sk.addColorStop(0,c.sky[0]); sk.addColorStop(1,c.sky[1])
+  ctx.fillStyle=sk; ctx.fillRect(0,0,w,gy)
+  ctx.fillStyle=c.ground; ctx.fillRect(0,gy,w,h-gy)
+
+  if (key==='night'||key==='rainy') {
+    STARS.forEach(s=>{
+      const a = key==='night' ? (.4+.6*Math.sin(t*s.sp+s.ph)) : (.15+.1*Math.sin(t*s.sp+s.ph))
+      ctx.globalAlpha=a; ctx.fillStyle='#fff'
+      ctx.beginPath(); ctx.arc(w*s.x,h*s.y,s.r,0,Math.PI*2); ctx.fill()
+    }); ctx.globalAlpha=1
+  }
+  if (key==='plaza_day'||key==='park_sunset') {
+    BLDG_W.forEach(b=>{
+      ctx.fillStyle='rgba(0,0,0,.18)'
+      ctx.fillRect(w*b.x,gy-h*b.h,w*b.w,h*b.h)
+    })
+  }
+  if (key==='sunrise'||key==='park_sunset'||key==='plaza_day') {
+    TREES.forEach(([tx,tw,th])=>{
+      ctx.fillStyle='rgba(0,0,0,.28)'
+      ctx.beginPath(); ctx.moveTo(w*tx,gy-h*th); ctx.lineTo(w*tx-w*tw/2,gy); ctx.lineTo(w*tx+w*tw/2,gy); ctx.closePath(); ctx.fill()
+    })
+  }
+  if (key==='rainy') {
+    ctx.strokeStyle='rgba(180,200,255,.18)'; ctx.lineWidth=.8
+    RAIN.forEach(r=>{
+      const dy=(t*r.sp*.015)%1, ry=((r.y+dy)%1)*h
+      ctx.beginPath(); ctx.moveTo(w*r.x,ry); ctx.lineTo(w*r.x-2,ry+h*r.len); ctx.stroke()
+    })
+  }
+  if (key==='park_sunset') {
+    PETALS.forEach(p=>{
+      const ddx=(t*.003*300*Math.abs(p.vx||.002))%1, ddy=(t*.003*300*Math.abs(p.vy||.002))%1
+      ctx.globalAlpha=.5; ctx.fillStyle='#FFAB91'
+      ctx.beginPath(); ctx.arc(((p.x+ddx)%1)*w,((p.y+ddy)%1)*h,p.r,0,Math.PI*2); ctx.fill()
+    }); ctx.globalAlpha=1
+  }
+  drawFigure(ctx,w*.5,h*.86,h*.52,c.pose,c.fig,t,false)
+  // Film grain
+  ctx.globalAlpha=.04
+  const id=ctx.createImageData(w,h)
+  for(let i=0;i<id.data.length;i+=4){const n=(Math.random()*255)|0;id.data[i]=id.data[i+1]=id.data[i+2]=n;id.data[i+3]=255}
+  ctx.putImageData(id,0,0); ctx.globalAlpha=1
+  // Vignette
+  const vg=ctx.createRadialGradient(w*.5,h*.5,h*.2,w*.5,h*.5,h*.75)
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.55)')
+  ctx.fillStyle=vg; ctx.fillRect(0,0,w,h)
+}
+
+// ─── Neon renderer ──────────────────────────────────────────────────
+function renderNeon(ctx, w, h, key, t) {
+  const c=CFG[key]; if(!c) return
+  if (c.tech) { renderTech(ctx,w,h,c,t,'neon'); return }
+  const nCol=c.neon||'#00FF99'
+  ctx.fillStyle='#04040C'; ctx.fillRect(0,0,w,h)
+  // Scanlines
+  ctx.globalAlpha=.03; for(let y=0;y<h;y+=3){ctx.fillStyle='#000';ctx.fillRect(0,y,w,1)} ctx.globalAlpha=1
+  // Perspective grid
+  const vx=w*.5, vy=h*.62
+  ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.strokeStyle=nCol+'40'; ctx.lineWidth=.8
+  for(let i=0;i<8;i++){const yy=vy+(h-vy)*((i/8)**1.8);ctx.globalAlpha=.3*(1-i/8);ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(w,yy);ctx.stroke()}
+  for(let i=-8;i<=8;i++){ctx.globalAlpha=.2;ctx.beginPath();ctx.moveTo(vx+i*w*.14,h);ctx.lineTo(vx,vy);ctx.stroke()}
+  ctx.globalAlpha=1; ctx.restore()
+  // Horizon glow
+  const hg=ctx.createRadialGradient(w*.5,h*.62,0,w*.5,h*.62,w*.6)
+  hg.addColorStop(0,nCol+'30'); hg.addColorStop(1,'rgba(0,0,0,0)')
+  ctx.fillStyle=hg; ctx.fillRect(0,0,w,h)
+  // Scene-specific neon elements
+  ctx.save(); ctx.globalCompositeOperation='lighter'
+  if(key==='plaza_day'){for(let i=0;i<4;i++){const r=20+i*18+Math.sin(t*1.5+i*.8)*5;ctx.strokeStyle=nCol;ctx.lineWidth=1.5;ctx.globalAlpha=.35-i*.07;ctx.beginPath();ctx.arc(w*.5,h*.45,r,0,Math.PI*2);ctx.stroke()}}
+  else if(key==='night'){STARS.slice(0,20).forEach(s=>{const a=.5+.5*Math.sin(t*s.sp+s.ph);ctx.fillStyle=nCol;ctx.globalAlpha=a*.4;ctx.shadowBlur=8;ctx.shadowColor=nCol;ctx.beginPath();ctx.arc(w*s.x,h*s.y,s.r*.7,0,Math.PI*2);ctx.fill()});ctx.shadowBlur=0}
+  else if(key==='rainy'){ctx.strokeStyle=nCol;ctx.lineWidth=.8;RAIN.slice(0,30).forEach(r=>{const dy=(t*r.sp*.015)%1,ry=((r.y+dy)%1)*h;ctx.globalAlpha=.15;ctx.beginPath();ctx.moveTo(w*r.x,ry);ctx.lineTo(w*r.x-2,ry+h*r.len*.7);ctx.stroke()})}
+  else if(key==='golden_room'){for(let i=0;i<12;i++){const ang=(i/12)*Math.PI*2+t*.05,rl=h*.25+Math.sin(t*1.2+i)*.04*h;ctx.strokeStyle=nCol;ctx.lineWidth=1;ctx.globalAlpha=.2+.05*Math.sin(t*2+i);ctx.beginPath();ctx.moveTo(w*.5,h*.4);ctx.lineTo(w*.5+Math.cos(ang)*rl,h*.4+Math.sin(ang)*rl);ctx.stroke()}}
+  else if(key==='park_sunset'){PETALS.slice(0,10).forEach(p=>{const ddx=(t*.003*300*Math.abs(p.vx||.002))%1,ddy=(t*.003*300*Math.abs(p.vy||.002))%1;ctx.fillStyle=nCol;ctx.globalAlpha=.12;ctx.shadowBlur=10;ctx.shadowColor=nCol;ctx.beginPath();ctx.arc(((p.x+ddx)%1)*w,((p.y+ddy)%1)*h,4,0,Math.PI*2);ctx.fill()});ctx.shadowBlur=0}
+  ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over'; ctx.restore()
+  // Neon figure
+  const glowCol={skin:nCol,hair:nCol,shirt:nCol+'CC',pants:nCol+'AA',shoe:nCol+'88'}
+  drawFigure(ctx,w*.5,h*.84,h*.5,c.pose,glowCol,t,true)
+  // Vignette
+  const vg=ctx.createRadialGradient(w*.5,h*.5,h*.25,w*.5,h*.5,h*.8)
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.6)')
+  ctx.fillStyle=vg; ctx.fillRect(0,0,w,h)
+  ctx.strokeStyle=nCol+'33'; ctx.lineWidth=1.5; ctx.strokeRect(3,3,w-6,h-6)
+}
+
+// ─── Minimal renderer ───────────────────────────────────────────────
+function renderMinimal(ctx, w, h, key, t) {
+  const c=CFG[key]; if(!c) return
+  if (c.tech) { renderTech(ctx,w,h,c,t,'minimal'); return }
+  ctx.fillStyle=c.min||'#F5F0E8'; ctx.fillRect(0,0,w,h)
+  const gy=h*.72
+  ctx.fillStyle=c.sky[0]+'22'; ctx.fillRect(0,0,w,gy)
+  ctx.fillStyle=c.sky[1]+'18'; ctx.fillRect(0,gy,w,h-gy)
+  if(key==='plaza_day'){ctx.beginPath();ctx.arc(w*.78,h*.2,22,0,Math.PI*2);ctx.fillStyle=c.sky[1]+'CC';ctx.fill();ctx.fillStyle=c.sky[0]+'44';[[.06,.22,.32],[.18,.16,.40],[.68,.20,.36],[.82,.14,.28]].forEach(([bx,bw,bh])=>ctx.fillRect(w*bx,gy-h*bh,w*bw,h*bh))}
+  else if(key==='golden_room'){for(let i=3;i>0;i--){ctx.beginPath();ctx.arc(w*.5,h*.45,i*35,0,Math.PI*2);ctx.strokeStyle=c.sky[1]+Math.floor(60/i).toString(16).padStart(2,'0');ctx.lineWidth=i*2;ctx.stroke()}}
+  else if(key==='sunrise'){ctx.beginPath();ctx.arc(w*.5,gy,32,Math.PI,0);ctx.closePath();ctx.fillStyle=c.sky[1]+'EE';ctx.fill();TREES.forEach(([tx,tw,th])=>{ctx.fillStyle=c.sky[0]+'44';ctx.beginPath();ctx.moveTo(w*tx,gy-h*th);ctx.lineTo(w*tx-w*tw/2,gy);ctx.lineTo(w*tx+w*tw/2,gy);ctx.closePath();ctx.fill()})}
+  else if(key==='rainy'){ctx.fillStyle=c.sky[0]+'30';ctx.fillRect(0,0,w,h);ctx.strokeStyle=c.sky[1]+'40';ctx.lineWidth=1;RAIN.slice(0,30).forEach(r=>{const dy=(t*r.sp*.015)%1,ry=((r.y+dy)%1)*h;ctx.beginPath();ctx.moveTo(w*r.x,ry);ctx.lineTo(w*r.x-2,ry+h*r.len);ctx.stroke()})}
+  else if(key==='night'){ctx.fillStyle=c.sky[0]+'44';ctx.fillRect(0,0,w,gy);ctx.fillStyle=c.minFig+'33';ctx.beginPath();ctx.arc(w*.75,h*.15,20,0,Math.PI*2);ctx.fill();STARS.slice(0,15).forEach(s=>{ctx.fillStyle=c.minFig+'88';ctx.beginPath();ctx.arc(w*s.x,h*s.y*.6,s.r*.6,0,Math.PI*2);ctx.fill()})}
+  else if(key==='park_sunset'){ctx.beginPath();ctx.arc(w*.5,gy,28,Math.PI,0);ctx.closePath();ctx.fillStyle=c.sky[1]+'DD';ctx.fill();[[.1,.3,.28],[.75,.28,.22]].forEach(([tx,tw,th])=>{ctx.fillStyle='#2D4A1E88';ctx.beginPath();ctx.arc(w*tx,gy-h*th,h*tw*.4,0,Math.PI*2);ctx.fill()})}
+  const mFig={skin:'#F4A070',hair:'#2D1B00',shirt:c.minFig,pants:'#2C3A50',shoe:'#1A1A2E'}
+  drawFigure(ctx,w*.5,h*.86,h*.52,c.pose,mFig,t,false)
+  ctx.strokeStyle=c.sky[0]+'55'; ctx.lineWidth=1; ctx.strokeRect(12,12,w-24,h-24)
+}
+
+// ─── Tech/Terminal renderer ─────────────────────────────────────────
+function renderTech(ctx, w, h, c, t, mode) {
+  const col=c.col||'#00FF41'
+  ctx.textAlign='center'
+  if (mode==='minimal') {
+    ctx.fillStyle='#F0F4F8'; ctx.fillRect(0,0,w,h)
+    ctx.fillStyle=col+'22'; ctx.fillRect(12,12,w-24,h-24)
+    ctx.fillStyle='#1A1A2E'; ctx.font=`bold ${Math.round(w*.08)}px monospace`
+    ctx.fillText(c.cmd,w*.5,h*.4)
+    ctx.fillStyle='#666'; ctx.font=`${Math.round(w*.06)}px monospace`
+    ctx.fillText(c.desc,w*.5,h*.58)
+  } else if (mode==='neon') {
+    ctx.fillStyle='#04040C'; ctx.fillRect(0,0,w,h)
+    ctx.save(); ctx.globalCompositeOperation='lighter'
+    ctx.fillStyle=col+'18'; ctx.font=`${Math.round(w*.055)}px monospace`
+    for(let i=0;i<8;i++){const x=w*.1+i*w*.1,y=((t*.8+i*.3)%1)*h;ctx.fillText('01',x,y)}
+    ctx.restore()
+    ctx.shadowBlur=20; ctx.shadowColor=col; ctx.fillStyle=col; ctx.font=`bold ${Math.round(w*.09)}px monospace`
+    ctx.fillText(c.cmd,w*.5,h*.42)
+    ctx.shadowBlur=0; ctx.fillStyle=col+'AA'; ctx.font=`${Math.round(w*.065)}px monospace`
+    ctx.fillText(c.desc,w*.5,h*.58)
+    ctx.strokeStyle=col+'22'; ctx.lineWidth=1; ctx.strokeRect(3,3,w-6,h-6)
+  } else {
+    ctx.fillStyle='#0D1117'; ctx.fillRect(0,0,w,h)
+    ctx.fillStyle='#21262D'; ctx.fillRect(0,0,w,h*.1)
+    ctx.fillStyle=col+'CC'; ctx.font=`bold ${Math.round(w*.085)}px monospace`
+    ctx.fillText(c.cmd,w*.5,h*.42)
+    ctx.fillStyle='rgba(255,255,255,.45)'; ctx.font=`${Math.round(w*.062)}px monospace`
+    ctx.fillText(c.desc,w*.5,h*.58)
+    const blink=Math.sin(t*4)>0
+    if(blink){ctx.fillStyle=col;ctx.fillRect(w*.5+45,h*.3,2,h*.1)}
+    const vg=ctx.createRadialGradient(w*.5,h*.5,h*.1,w*.5,h*.5,h*.7)
+    vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.5)')
+    ctx.fillStyle=vg; ctx.fillRect(0,0,w,h)
+  }
+  ctx.textAlign='start'
+}
+
+// ─── Background starfield canvas (hero) ─────────────────────────────
+const bgCanvas = ref(null)
+
+function renderBg(ctx, w, h, t) {
+  const sky=ctx.createLinearGradient(0,0,0,h)
+  sky.addColorStop(0,'#07052A'); sky.addColorStop(.5,'#0E0B3D'); sky.addColorStop(1,'#1A0A2E')
+  ctx.fillStyle=sky; ctx.fillRect(0,0,w,h)
+  STARS.forEach(s=>{
+    const a=.2+.5*Math.sin(t*s.sp+s.ph)
+    ctx.globalAlpha=a; ctx.fillStyle='#fff'
+    ctx.beginPath(); ctx.arc(w*s.x,h*s.y*.5,s.r*.6,0,Math.PI*2); ctx.fill()
+  }); ctx.globalAlpha=1
+  ;[{x:.15,y:.3,r:120,c:'rgba(99,102,241,.06)'},{x:.85,y:.6,r:180,c:'rgba(139,92,246,.05)'}].forEach(o=>{
+    const g=ctx.createRadialGradient(w*o.x,h*o.y,0,w*o.x,h*o.y,o.r)
+    g.addColorStop(0,o.c); g.addColorStop(1,'rgba(0,0,0,0)')
+    ctx.fillStyle=g; ctx.fillRect(0,0,w,h)
+  })
+}
+
+// ─── Canvas pool management ─────────────────────────────────────────
+// Each entry: { el, ctx, w, h, key, fixedStyle|null }
+const canvasPool = []
+
+function initCanvas(el) {
+  const dpr=window.devicePixelRatio||1
+  const pw=el.offsetWidth||160, ph=el.offsetHeight||220
+  el.width=pw*dpr; el.height=ph*dpr
+  const ctx=el.getContext('2d')
+  ctx.scale(dpr,dpr)
+  return { ctx, w:pw, h:ph }
+}
+
+function registerCanvas(el, key, fixedStyle) {
+  if (!el) return
+  const existing = canvasPool.find(e => e.el === el)
+  if (existing) { existing.key=key; return }
+  const { ctx, w, h } = initCanvas(el)
+  canvasPool.push({ el, ctx, w, h, key, fixedStyle: fixedStyle ?? null })
+}
+
+const heroCardKeys = ref(['plaza_day','golden_room','sunrise','park_sunset']) // will update on nextQ
+
+function setHeroCanvas(el, idx, sceneKey) {
+  if (!el) return
+  const existing = canvasPool.find(e => e.el === el)
+  if (existing) { existing.key=sceneKey; return }
+  const { ctx, w, h } = initCanvas(el)
+  canvasPool.push({ el, ctx, w, h, key: sceneKey, fixedStyle: null })
+}
+
+function registerGallery(el, key) { registerCanvas(el, key, null) }
+function registerComp(el, key, fixedStyle) { registerCanvas(el, key, fixedStyle) }
+function registerTech(el, key) { registerCanvas(el, key, 'cinematic') }
+
+// ─── rAF render loop ────────────────────────────────────────────────
+let rafId = null, t0 = null
+
+function loop(ts) {
+  rafId = requestAnimationFrame(loop)
+  if (!t0) t0 = ts
+  const t = (ts - t0) / 1000
+
+  // Background
+  if (bgCanvas.value) {
+    const el = bgCanvas.value
+    if (!el._rdy) {
+      const dpr=window.devicePixelRatio||1
+      el.width=el.offsetWidth*dpr; el.height=el.offsetHeight*dpr
+      el._ctx=el.getContext('2d'); el._ctx.scale(dpr,dpr); el._rdy=true
+    }
+    renderBg(el._ctx, el.offsetWidth, el.offsetHeight, t)
+  }
+
+  // All registered canvases
+  const style = activeStyle.value
+  canvasPool.forEach(item => {
+    const s = item.fixedStyle ?? style
+    const { ctx, w, h, key } = item
+    ctx.clearRect(0,0,w,h)
+    if (s==='cinematic')    renderCinematic(ctx,w,h,key,t)
+    else if (s==='neon')    renderNeon(ctx,w,h,key,t)
+    else                    renderMinimal(ctx,w,h,key,t)
+  })
+}
+
+// ─── Hero quiz state ────────────────────────────────────────────────
+const QUIZ = [
+  { q:'Hola',          sub:'Spanisch → Deutsch', ans:0, choices:[{w:'Hallo',s:'plaza_day'},{w:'Danke',s:'golden_room'},{w:'Guten Morgen',s:'sunrise'},{w:'Tschüss',s:'park_sunset'}] },
+  { q:'Gracias',       sub:'Spanisch → Deutsch', ans:1, choices:[{w:'Entschuldigung',s:'rainy'},{w:'Danke',s:'golden_room'},{w:'Hallo',s:'plaza_day'},{w:'Gute Nacht',s:'night'}] },
+  { q:'Buenas noches', sub:'Spanisch → Deutsch', ans:0, choices:[{w:'Gute Nacht',s:'night'},{w:'Hallo',s:'plaza_day'},{w:'Danke',s:'golden_room'},{w:'Tschüss',s:'park_sunset'}] },
+  { q:'Lo siento',     sub:'Spanisch → Deutsch', ans:3, choices:[{w:'Hallo',s:'plaza_day'},{w:'Guten Morgen',s:'sunrise'},{w:'Danke',s:'golden_room'},{w:'Entschuldigung',s:'rainy'}] },
+]
+const heroQIdx    = ref(0)
+const heroQ       = computed(() => QUIZ[heroQIdx.value])
+const heroAnswered = ref(false)
+const heroChosen  = ref(-1)
+
+function answerHero(i) {
+  if (heroAnswered.value) return
+  heroChosen.value = i
+  heroAnswered.value = true
+}
+function nextHeroQ() {
+  heroQIdx.value = (heroQIdx.value + 1) % QUIZ.length
+  heroAnswered.value = false
+  heroChosen.value   = -1
+  // Update scene keys for hero canvases in pool
+  const q = QUIZ[heroQIdx.value]
+  // find hero canvases by their index order (they registered first within the demo-grid)
+  const heroItems = canvasPool.filter(e => e.fixedStyle === null && !LANG_SCENES.find(s => s.key === e.key) && !TECH_SCENES.find(s => s.key === e.key))
+  q.choices.forEach((c, i) => { if (heroItems[i]) heroItems[i].key = c.s })
+}
+
+// ─── Lifecycle ──────────────────────────────────────────────────────
+onMounted(async () => {
+  // PWA standalone: skip home page
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
   if (isStandalone) {
     const lang = selectedLanguage.value || localStorage.getItem('lastLearningLanguage') || 'deutsch'
     router.replace({ name: 'workshop-overview', params: { learning: lang } })
     return
   }
-
   if (Object.keys(availableContent.value).length === 0) {
     await loadAvailableContent()
   }
-
-  // Start canvas after DOM is ready
-  if (canvasEl.value) {
-    const cleanup = startCanvas(canvasEl.value)
-    onUnmounted(cleanup)
-  }
+  // Two rAF ticks so layout is complete before reading canvas sizes
+  requestAnimationFrame(() => requestAnimationFrame(() => { rafId = requestAnimationFrame(loop) }))
 })
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
   if (rafId) cancelAnimationFrame(rafId)
+  canvasPool.length = 0
 })
 </script>
 
 <style scoped>
-/* ── Root ────────────────────────────────────────────────── */
+/* ── Root ─────────────────────────────────────────────────────────── */
 .home-root {
   min-height: 100vh;
-  background: hsl(222.2, 84%, 4.9%);
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #080810;
+  color: #f4f4f5;
 }
 
-/* ── Hero ────────────────────────────────────────────────── */
+/* ── HERO ─────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
   min-height: 100svh;
@@ -494,381 +642,197 @@ onUnmounted(() => {
   align-items: center;
   overflow: hidden;
 }
-
-.hero-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+.hero-bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  display: block;
 }
-
 .hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to right,
-    rgba(7, 5, 42, 0.92) 0%,
-    rgba(7, 5, 42, 0.65) 55%,
-    rgba(7, 5, 42, 0.15) 100%
-  );
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(7,5,42,.88) 42%, rgba(7,5,42,.25) 100%);
   pointer-events: none;
 }
-
-.hero-content {
-  position: relative;
-  z-index: 2;
-  padding: 40px 24px 80px;
-  max-width: 600px;
-  width: 100%;
+.hero-inner {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 1200px; margin: 0 auto;
+  padding: 80px 24px 56px;
+  display: flex; align-items: center; gap: 48px;
 }
+.hero-left  { flex: 1; min-width: 0; }
+.hero-right { flex: 0 0 470px; }
 
-/* Badge */
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(99, 102, 241, 0.18);
-  border: 1px solid rgba(99, 102, 241, 0.35);
+.hero-pill {
+  display: inline-block;
+  padding: 5px 14px;
+  border: 1px solid rgba(99,102,241,.45);
   border-radius: 100px;
-  padding: 5px 14px 5px 10px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: rgba(180, 160, 255, 0.95);
-  margin-bottom: 24px;
-  text-transform: uppercase;
+  font-size: 12px; font-weight: 700; letter-spacing: 1px;
+  color: #818cf8; background: rgba(99,102,241,.1);
+  margin-bottom: 20px;
+}
+.hero-h1 {
+  font-size: clamp(26px,4.5vw,54px);
+  font-weight: 900; letter-spacing: -1.5px; line-height: 1.08;
+  color: #fff; margin-bottom: 16px;
+}
+.hero-p {
+  font-size: 15px; color: rgba(255,255,255,.52); line-height: 1.65;
+  margin-bottom: 24px; max-width: 420px;
 }
 
-.hero-badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #6366f1;
-  animation: badge-pulse 2s ease-in-out infinite;
+/* Style bar */
+.style-bar { display: flex; gap: 6px; margin-bottom: 28px; }
+.sty-btn {
+  padding: 7px 16px; border-radius: 100px;
+  border: 1.5px solid rgba(255,255,255,.14);
+  background: transparent; color: rgba(255,255,255,.38);
+  font-size: 12px; font-weight: 700; letter-spacing: .5px;
+  cursor: pointer; transition: all .2s; text-transform: uppercase;
+}
+.sty-btn.on, .sty-btn:hover {
+  background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.4); color: #fff;
 }
 
-@keyframes badge-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.7); }
-  50%       { box-shadow: 0 0 0 6px rgba(99,102,241,0); }
-}
-
-/* Headline */
-.hero-headline {
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  line-height: 1.08;
-  color: #ffffff;
-  margin-bottom: 16px;
-}
-
-.hero-sub {
-  font-size: clamp(0.95rem, 2.5vw, 1.15rem);
-  color: rgba(200, 190, 255, 0.72);
-  line-height: 1.6;
-  margin-bottom: 36px;
-  max-width: 420px;
-}
-
-/* CTA row */
-.hero-cta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-/* Language selector */
-.lang-selector-wrap {
-  position: relative;
-}
-
+/* Lang selector */
+.hero-cta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.lang-selector-wrap { position: relative; }
 .lang-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1.5px solid rgba(99, 102, 241, 0.5);
-  border-radius: 14px;
-  padding: 12px 18px;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-  font-family: inherit;
-  backdrop-filter: blur(8px);
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: 12px;
+  border: 1.5px solid rgba(99,102,241,.6);
+  background: rgba(99,102,241,.12); color: #fff;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: background .2s;
 }
-
-.lang-btn:hover {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: rgba(99, 102, 241, 0.8);
-}
-
-.lang-flag { font-size: 20px; line-height: 1; }
-.lang-name { font-size: 15px; }
-.lang-chevron { opacity: 0.6; flex-shrink: 0; }
-
+.lang-btn:hover { background: rgba(99,102,241,.22); }
+.lang-chevron { opacity: .55; }
 .lang-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  min-width: 170px;
-  background: hsl(240, 20%, 10%);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-  z-index: 200;
-  backdrop-filter: blur(16px);
+  position: absolute; top: calc(100% + 6px); left: 0;
+  background: #1a1a2e; border: 1px solid rgba(99,102,241,.3);
+  border-radius: 12px; padding: 6px; min-width: 180px; z-index: 100;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
 }
-
 .lang-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 11px 16px;
-  background: transparent;
-  border: none;
-  color: rgba(255,255,255,0.8);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.15s;
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 8px 12px; border: none; border-radius: 8px;
+  background: transparent; color: rgba(255,255,255,.72);
+  font-size: 13px; cursor: pointer; transition: background .15s;
 }
-
-.lang-option:hover { background: rgba(99, 102, 241, 0.2); color: #fff; }
-.lang-option.active { background: rgba(99, 102, 241, 0.25); color: #fff; }
-
-.lang-drop-enter-active, .lang-drop-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }
-.lang-drop-enter-from, .lang-drop-leave-to { opacity: 0; transform: translateY(-6px) scale(0.97); }
-
-/* Start button */
+.lang-option:hover, .lang-option.active { background: rgba(99,102,241,.25); color: #fff; }
 .start-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
-  border: none;
-  border-radius: 14px;
-  padding: 13px 22px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  box-shadow: 0 6px 24px rgba(99,102,241,0.5);
-  transition: opacity 0.15s, transform 0.1s;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 12px; border: none;
+  background: #6366f1; color: #fff; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: opacity .2s;
 }
-
-.start-btn:hover  { opacity: 0.92; }
-.start-btn:active { transform: scale(0.97); }
-
-/* Scroll hint */
-.scroll-hint {
-  position: absolute;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: none;
-  border: none;
-  color: rgba(180,160,255,0.4);
-  cursor: pointer;
-  animation: bounce-y 2.2s ease-in-out infinite;
+.start-btn:hover { opacity: .85; }
+.skill-tag {
+  margin-top: 20px; font-size: 10px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: rgba(255,255,255,.18);
 }
+.lang-drop-enter-active, .lang-drop-leave-active { transition: opacity .15s, transform .15s; }
+.lang-drop-enter-from, .lang-drop-leave-to { opacity: 0; transform: translateY(-6px); }
 
-@keyframes bounce-y {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50%       { transform: translateX(-50%) translateY(8px); }
+/* ── DEMO CARD ────────────────────────────────────────────────────── */
+.demo-card {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 24px; padding: 18px; backdrop-filter: blur(12px);
 }
-
-/* ── Features strip ──────────────────────────────────────── */
-.features-strip {
-  background: hsl(240, 10%, 8%);
-  border-top: 1px solid rgba(99,102,241,0.15);
-  border-bottom: 1px solid rgba(99,102,241,0.15);
-  padding: 20px 0;
-  overflow-x: auto;
-  scrollbar-width: none;
+.demo-header { text-align: center; margin-bottom: 14px; }
+.demo-label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,.28); margin-bottom: 6px; }
+.demo-word  { font-size: 34px; font-weight: 900; letter-spacing: -1px; color: #fff; }
+.demo-grid  {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; height: 340px;
 }
-
-.features-strip::-webkit-scrollbar { display: none; }
-
-.features-inner {
-  display: flex;
-  gap: 10px;
-  padding: 0 20px;
-  width: max-content;
-  min-width: 100%;
-  justify-content: center;
+.choice-cell {
+  position: relative; border-radius: 16px; overflow: hidden;
+  cursor: pointer; transition: box-shadow .25s, transform .2s, opacity .25s;
+  box-shadow: 0 6px 24px rgba(0,0,0,.5);
 }
-
-@media (max-width: 640px) {
-  .features-inner { justify-content: flex-start; }
+.choice-cell:hover:not(.ok):not(.no) { transform: translateY(-2px); }
+.choice-cell.ok  { box-shadow: 0 0 0 3px #4ade80, 0 6px 24px rgba(74,222,128,.25); }
+.choice-cell.no  { box-shadow: 0 0 0 3px #f87171, 0 6px 24px rgba(248,113,113,.2); }
+.choice-cell.dim { opacity: .45; }
+.choice-canvas { width: 100%; height: 100%; display: block; }
+.choice-label-row {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 32px 10px 10px;
+  background: linear-gradient(to top, rgba(0,0,0,.85), transparent);
+  display: flex; align-items: center; justify-content: space-between;
 }
-
-.feature-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(99,102,241,0.1);
-  border: 1px solid rgba(99,102,241,0.2);
-  border-radius: 100px;
-  padding: 8px 16px;
-  white-space: nowrap;
-  color: rgba(200,185,255,0.9);
-  font-size: 13px;
-  font-weight: 600;
-  transition: background 0.2s;
+.choice-word { font-size: 16px; font-weight: 800; color: #fff; }
+.badge-ok { width: 20px; height: 20px; border-radius: 50%; background: #4ade80; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; color: #fff; }
+.badge-no { width: 20px; height: 20px; border-radius: 50%; background: #f87171; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; color: #fff; }
+.next-btn {
+  display: block; width: 100%; margin-top: 10px; padding: 10px;
+  border-radius: 12px; border: 1px solid rgba(99,102,241,.4);
+  background: rgba(99,102,241,.15); color: #a5b4fc;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s;
 }
+.next-btn:hover { background: rgba(99,102,241,.28); }
 
-.feature-pill:hover {
-  background: rgba(99,102,241,0.2);
+/* ── SHARED SECTION STYLES ───────────────────────────────────────── */
+.sec-inner  { max-width: 1100px; margin: 0 auto; padding: 80px 24px; }
+.sec-tag    { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #6366f1; margin-bottom: 12px; }
+.sec-h2     { font-size: clamp(22px,3.5vw,38px); font-weight: 900; letter-spacing: -1px; color: #fff; margin-bottom: 10px; }
+.sec-p      { font-size: 15px; color: rgba(255,255,255,.42); line-height: 1.65; margin-bottom: 36px; }
+.scene-label { display: block; margin-top: 8px; font-size: 11px; color: rgba(255,255,255,.32); text-align: center; line-height: 1.4; }
+
+/* ── SCENE GALLERY ───────────────────────────────────────────────── */
+.gallery-sec { background: rgba(255,255,255,.02); }
+.scene-gallery { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; }
+.scene-tile    { position: relative; }
+.scene-canvas  { width: 100%; aspect-ratio: 2/3; display: block; border-radius: 14px; }
+
+/* ── STYLE COMPARISON ────────────────────────────────────────────── */
+.compare-sec  { background: #06060F; }
+.compare-row  { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.compare-tile {
+  cursor: pointer; border-radius: 18px; overflow: hidden;
+  border: 2px solid transparent; transition: border-color .25s, transform .2s;
 }
+.compare-tile:hover { transform: translateY(-3px); }
+.compare-tile.active { border-color: #6366f1; }
+.comp-canvas  { width: 100%; aspect-ratio: 3/4; display: block; }
+.comp-footer  { padding: 10px 14px; background: rgba(255,255,255,.04); display: flex; align-items: center; justify-content: space-between; }
+.comp-name    { font-size: 13px; font-weight: 700; text-transform: capitalize; color: rgba(255,255,255,.65); }
+.comp-active  { font-size: 11px; color: #818cf8; font-weight: 600; }
 
-.pill-icon { font-size: 16px; }
+/* ── TECH SCENES ─────────────────────────────────────────────────── */
+.tech-sec  { background: rgba(255,255,255,.015); }
+.tech-row  { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.tech-tile { border-radius: 14px; overflow: hidden; }
+.tech-canvas { width: 100%; aspect-ratio: 16/10; display: block; }
 
-/* ── Sections ────────────────────────────────────────────── */
-.how-section,
-.topics-section {
-  padding: 48px 24px;
-  max-width: 720px;
-  margin: 0 auto;
+/* ── HOW IT WORKS ────────────────────────────────────────────────── */
+.how-sec   { background: #06060F; }
+.steps-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.step-card { padding: 24px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); }
+.step-num  { width: 34px; height: 34px; border-radius: 50%; background: #6366f1; color: #fff; font-size: 15px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+.step-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.step-desc  { font-size: 13px; color: rgba(255,255,255,.38); line-height: 1.55; }
+
+/* ── CTA ─────────────────────────────────────────────────────────── */
+.cta-sec    { border-top: 1px solid rgba(255,255,255,.06); }
+.cta-inner  { text-align: center; }
+.cta-h2     { font-size: clamp(22px,3.5vw,38px); font-weight: 900; color: #fff; margin-bottom: 12px; }
+.cta-p      { font-size: 15px; color: rgba(255,255,255,.42); margin-bottom: 28px; }
+.cta-btns   { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary { padding: 12px 24px; border-radius: 12px; background: #6366f1; color: #fff; font-size: 14px; font-weight: 700; text-decoration: none; transition: opacity .2s; }
+.btn-primary:hover { opacity: .84; }
+.btn-ghost { padding: 12px 24px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,.14); color: rgba(255,255,255,.65); font-size: 14px; font-weight: 600; text-decoration: none; transition: border-color .2s; }
+.btn-ghost:hover { border-color: rgba(255,255,255,.38); color: #fff; }
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .hero-inner { flex-direction: column; padding: 70px 16px 40px; gap: 28px; }
+  .hero-right { flex: none; width: 100%; max-width: 440px; align-self: center; }
+  .scene-gallery { grid-template-columns: repeat(3,1fr); }
+  .compare-row, .steps-row, .tech-row { grid-template-columns: repeat(2,1fr); }
 }
-
-.section-title {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: rgba(255,255,255,0.92);
-  margin-bottom: 28px;
-  letter-spacing: -0.02em;
+@media (max-width: 540px) {
+  .scene-gallery { grid-template-columns: repeat(2,1fr); }
+  .compare-row, .steps-row, .tech-row { grid-template-columns: 1fr; }
+  .demo-grid { height: 260px; }
 }
-
-/* Steps */
-.steps-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-@media (max-width: 500px) {
-  .steps-row { grid-template-columns: 1fr; }
-}
-
-.step-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 18px;
-  background: rgba(99,102,241,0.07);
-  border: 1px solid rgba(99,102,241,0.18);
-  border-radius: 16px;
-}
-
-.step-number {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(99,102,241,0.4);
-}
-
-.step-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.9);
-  margin-bottom: 4px;
-}
-
-.step-desc {
-  font-size: 12px;
-  color: rgba(200,185,255,0.55);
-  line-height: 1.5;
-}
-
-/* Topics */
-.topics-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-@media (max-width: 400px) {
-  .topics-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-.topic-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px;
-  font-size: 13px;
-  color: rgba(200,185,255,0.75);
-  font-weight: 500;
-  transition: background 0.2s;
-}
-
-.topic-chip:hover { background: rgba(99,102,241,0.1); }
-
-/* ── Bottom CTA ──────────────────────────────────────────── */
-.bottom-cta {
-  padding: 56px 24px 72px;
-  text-align: center;
-  background: linear-gradient(to top, rgba(99,102,241,0.08), transparent);
-  border-top: 1px solid rgba(99,102,241,0.15);
-}
-
-.cta-headline {
-  font-size: clamp(1.4rem, 4vw, 2rem);
-  font-weight: 900;
-  color: #fff;
-  letter-spacing: -0.02em;
-  margin-bottom: 12px;
-}
-
-.cta-sub {
-  font-size: 14px;
-  color: rgba(200,185,255,0.6);
-  margin-bottom: 32px;
-  max-width: 420px;
-  margin-inline: auto;
-  line-height: 1.6;
-}
-
-.cta-btns {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.ghost-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255,255,255,0.06);
-  border: 1.5px solid rgba(255,255,255,0.18);
-  border-radius: 14px;
-  padding: 13px 22px;
-  font-size: 15px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.8);
-  text-decoration: none;
-  transition: background 0.2s;
-  font-family: inherit;
-}
-
-.ghost-btn:hover { background: rgba(255,255,255,0.12); }
 </style>
