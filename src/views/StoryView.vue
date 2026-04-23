@@ -106,8 +106,13 @@
 
         <!-- Book page layout -->
         <template v-if="!isAssessmentState">
-          <!-- Intro: lesson title with dramatic entrance -->
-          <div v-if="showingIntro" class="absolute inset-0 flex items-center justify-center p-6 pointer-events-none">
+          <!-- Intro: lesson image + title with dramatic entrance -->
+          <div v-if="showingIntro" class="absolute inset-0 flex flex-col items-center justify-center p-6 gap-6 pointer-events-none">
+            <img
+              v-if="currentLessonImage"
+              :src="currentLessonImage"
+              :alt="currentLesson?.title || ''"
+              class="intro-lesson-image" />
             <div class="intro-title">
               <p class="story-text text-3xl md:text-4xl font-semibold text-center leading-relaxed intro-text-glow">
                 {{ currentLesson?.title }}
@@ -127,20 +132,21 @@
                 <div class="h-px flex-1 bg-gradient-to-l from-transparent" :class="sceneTitleLineColor" />
               </div>
 
+              <!-- Section image – full width banner, only on first page, keyed to force update -->
+              <div v-if="currentSection?.image && currentPage === 0" class="section-image-banner flex-shrink-0">
+                <img
+                  :key="resolvedSectionImage"
+                  :src="resolvedSectionImage"
+                  :alt="currentSection?.title || ''"
+                  class="section-banner-img"
+                  @error="(e) => console.error('IMG error:', e.target.src)" />
+                <div class="image-glow section-banner-glow" :class="`glow-${sceneType}`" />
+              </div>
+
               <!-- Content area -->
               <div class="flex-1 overflow-hidden px-6 pb-4 relative" ref="pageContentRef">
                 <div class="h-full overflow-hidden">
                   <div ref="textFlowRef" class="story-text-flow">
-                    <!-- Section image (floats left, text wraps around) -->
-                    <div v-if="currentSection?.image" class="book-image-wrapper">
-                      <img
-                        :src="resolvedSectionImage"
-                        :alt="currentSection?.title || ''"
-                        class="book-float-image"
-                        @error="(e) => console.error('IMG error:', e.target.src)" />
-                      <div class="image-glow" :class="`glow-${sceneType}`" />
-                    </div>
-
                     <template v-for="(para, pIdx) in visibleParagraphs" :key="`${currentPage}-${pIdx}`">
                       <!-- Story/narration paragraph with staggered animation -->
                       <p v-if="!para.hasAnswer"
@@ -1336,6 +1342,16 @@ onUnmounted(() => {
 @keyframes glowPulse { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
 
 /* === Intro Title === */
+.intro-lesson-image {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  animation: introAppear 1.2s ease-out;
+  filter: drop-shadow(0 0 30px rgba(255, 200, 100, 0.25));
+}
+@media (max-width: 640px) {
+  .intro-lesson-image { width: 140px; height: 140px; }
+}
 .intro-title { animation: introAppear 1.5s ease-out; }
 .intro-text-glow {
   font-family: Georgia, serif;
@@ -1360,23 +1376,26 @@ onUnmounted(() => {
   100% { opacity: 1; transform: translateX(0) scale(1); }
 }
 
-/* === Float Image with 3D Pop === */
-.book-image-wrapper {
-  float: left;
-  width: 45%;
-  margin: 0 1.2rem 0.8rem 0;
+/* === Section Image Banner === */
+.section-image-banner {
   position: relative;
-  perspective: 600px;
-}
-.book-float-image {
   width: 100%;
-  max-height: 38vh;
-  object-fit: contain;
-  border-radius: 0.6rem;
-  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-height: 36vh;
+  overflow: hidden;
+  border-radius: 0 0 0.75rem 0.75rem;
 }
-/* Image always visible, subtle float animation */
-.book-float-image { animation: imageFloat 6s ease-in-out infinite; }
+.section-banner-img {
+  width: 100%;
+  max-height: 36vh;
+  object-fit: contain;
+  display: block;
+  animation: sectionImageAppear 0.7s ease-out;
+}
+.section-banner-glow {
+  position: absolute; inset: 0; border-radius: 0 0 0.75rem 0.75rem;
+  pointer-events: none; opacity: 0.5;
+  animation: imageGlowPulse 4s ease-in-out infinite;
+}
 .image-glow {
   position: absolute; inset: -10%; border-radius: 1rem;
   pointer-events: none; z-index: -1; opacity: 0.4;
@@ -1386,15 +1405,19 @@ onUnmounted(() => {
 .glow-water { background: radial-gradient(ellipse, rgba(100, 180, 255, 0.15), transparent 70%); }
 .glow-house { background: radial-gradient(ellipse, rgba(255, 180, 60, 0.15), transparent 70%); }
 
+@keyframes sectionImageAppear {
+  0% { opacity: 0; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
 @keyframes imageFloat {
-  0%, 100% { transform: translateY(0) rotateY(0deg); }
-  50% { transform: translateY(-4px) rotateY(1deg); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 @keyframes imageGlowPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
 
 @media (max-width: 640px) {
-  .book-image-wrapper { width: 40%; }
-  .book-float-image { max-height: 28vh; }
+  .section-image-banner { max-height: 28vh; }
+  .section-banner-img { max-height: 28vh; }
 }
 
 /* === Text Flow === */
