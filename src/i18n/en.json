@@ -288,8 +288,8 @@
   "tour": {
     "startTour": "Start tour",
     "overview": {
-      "title1": "Choose a language",
-      "desc1": "Switch the language you want to learn here.",
+      "title1": "Workshop language",
+      "desc1": "Choose which language your workshops appear in — not your native language, but the one you want to learn in.",
       "title2": "Filter workshops",
       "desc2": "Narrow workshops by topic — e.g. beginner or advanced.",
       "title3": "Open a workshop",
