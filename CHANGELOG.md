@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-04-29
+
+### Features
+
+#### Prefetch von Lessons beim Hover über Workshop-Karten (#124)
+
+Wenn der Maus-Cursor über eine Workshop-Karte schwebt, lädt die App im Hintergrund schon die Lessons. Beim Klick navigiert die App dadurch ohne sichtbare Wartezeit.
+
+- **Shimmer im Akzent-Balken** während des Ladens — animierter Glanz von links nach rechts
+- **Glow-Pulse am Karten-Rand** sobald die Daten im Cache sind — Karte signalisiert "klick mich"
+- **Touch-Geräte ausgeschlossen** — `pointerType === 'touch'` wird übersprungen, kein Prefetch beim Scrollen
+- **Daten-Schonmodus** — `Save-Data` und `slow-2g`/`2g` Verbindungen bekommen kein Prefetch
+- **`prefers-reduced-motion`** — Shimmer und Glow werden für User mit reduzierten Bewegungen abgeschaltet
+
 ## 2026-04-14
 
 ### Features

@@ -42,11 +42,19 @@
           :id="wsIndex === 0 ? 'tour-workshop-card' : undefined"
           :key="ws"
           @click="openWorkshop(ws)"
-          class="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/50 overflow-hidden"
+          @pointerenter="handlePointerEnter($event, ws)"
+          class="group cursor-pointer relative transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/50 overflow-hidden"
+          :class="{ 'card-prefetch-ready': prefetchState[ws] === 'ready' }"
           :style="getWorkshopCardStyle(ws)">
 
           <!-- Color accent bar at top (always shown) -->
-          <div class="h-1.5 bg-gradient-to-r from-primary to-secondary" :style="getWorkshopBarStyle(ws)"></div>
+          <div class="h-1.5 relative overflow-hidden bg-gradient-to-r from-primary to-secondary" :style="getWorkshopBarStyle(ws)">
+            <!-- Loading shimmer: visible while prefetching -->
+            <div
+              v-if="prefetchState[ws] === 'loading'"
+              class="absolute inset-0 card-prefetch-shimmer"
+              aria-hidden="true"></div>
+          </div>
 
           <!-- Workshop thumbnail image (optional, no fallback) -->
           <div v-if="getWorkshopImage(ws)" class="overflow-hidden aspect-[16/9] bg-accent/20">
@@ -184,7 +192,7 @@ const emit = defineEmits(['update-title'])
 const router = useRouter()
 const route = useRoute()
 
-const { availableContent, isLoading, loadAvailableContent, loadWorkshopsForLanguage, removeContentSource, isRemoteWorkshop, isDefaultSource, getSourceForSlug, getWorkshopMeta, getContentSources } = useLessons()
+const { availableContent, isLoading, loadAvailableContent, loadWorkshopsForLanguage, loadAllLessonsForWorkshop, removeContentSource, isRemoteWorkshop, isDefaultSource, getSourceForSlug, getWorkshopMeta, getContentSources } = useLessons()
 const { selectedLanguage, setLanguage } = useLanguage()
 const { isWorkshopOffline } = useOffline()
 const { setDefaultManifest } = useManifest()
@@ -198,6 +206,36 @@ const workshopsLoading = ref(true)
 const activeFilters = ref(new Set())
 const copiedWorkshop = ref(null)
 const addedNotice = ref(null)
+
+// Prefetch status per workshop slug: 'loading' | 'ready'
+// Drives the shimmer-on-load and glow-on-ready visual feedback
+const prefetchState = ref({})
+
+function shouldSkipPrefetch(event) {
+  // Touch fires pointerenter on scroll — only Maus/Pen prefetchen
+  if (event.pointerType === 'touch') return true
+  const conn = navigator.connection
+  if (!conn) return false
+  if (conn.saveData) return true
+  if (conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g') return true
+  return false
+}
+
+function handlePointerEnter(event, ws) {
+  if (shouldSkipPrefetch(event)) return
+  if (prefetchState.value[ws]) return // already loading or ready
+  prefetchState.value = { ...prefetchState.value, [ws]: 'loading' }
+  loadAllLessonsForWorkshop(learning.value, ws)
+    .then(() => {
+      prefetchState.value = { ...prefetchState.value, [ws]: 'ready' }
+    })
+    .catch(() => {
+      // Best-effort — drop state so a retry can happen on next hover
+      const next = { ...prefetchState.value }
+      delete next[ws]
+      prefetchState.value = next
+    })
+}
 const favorites = ref(JSON.parse(localStorage.getItem('workshopFavorites') || '[]'))
 const activeWorkshops = ref(JSON.parse(localStorage.getItem('activeWorkshops') || '[]'))
 
