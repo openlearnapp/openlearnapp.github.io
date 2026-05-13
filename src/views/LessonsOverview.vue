@@ -1,7 +1,7 @@
 <template>
   <div>
-    <!-- Source indicator for remote topics -->
-    <div v-if="!isLoading && (isRemote || lessons.length > 0)" class="mb-4 flex items-center justify-between text-sm">
+    <!-- Source indicator (alle Workshops) -->
+    <div v-if="!isLoading && !isLinuxWorkshop && (isRemote || lessons.length > 0)" class="mb-4 flex items-center justify-between text-sm">
       <div>
         <span v-if="workshopDescription" class="text-muted-foreground">{{ workshopDescription }}</span>
         <span v-if="workshopDescription && sourceLabel" class="text-muted-foreground/40 mx-2">·</span>
@@ -25,53 +25,86 @@
       </div>
     </div>
 
-    <!-- Progress bar -->
-    <div id="tour-progress-bar" v-if="!isLoading && lessons.length > 0" class="mb-6">
-      <ProgressBar
-        :completed="completionInfo.completed"
-        :total="completionInfo.total"
-        :label="$t('lesson.completed')" />
-    </div>
+    <!-- ══ ALLE WORKSHOPS: Video-Placeholder + Lektionen im Unit-Frame ══ -->
+    <div v-if="!isLoading && lessons.length > 0" class="unit-frame mb-8">
+      <div class="unit-glow" aria-hidden="true"></div>
 
-    <!-- Learning path -->
-    <div v-if="!isLoading && lessons.length > 0">
-      <LearningPath
-        :lessons="lessons"
-        :next-lesson-number="nextLessonNumber"
-        :favorites="favorites"
-        :get-status="getLessonStatusForPath"
-        :completed-count="completionInfo.completed"
-        :draggable="favorites.length > 1"
-        @reorder="handleReorder">
-        <template #card="{ lesson, status, isFavorite, isNext }">
-          <LessonCard
-            :lesson="lesson"
-            :status="status"
-            :is-favorite="isFavorite"
-            :is-next="isNext"
-            :image-url="resolveLessonImage(lesson)"
-            :answered-count="getAnsweredCount(lesson)"
-            :learned-item-count="getLearnedItemCount(lesson)"
-            :next-label="$t('lesson.continueLabel')"
-            :sections-label="$t('lesson.sections')"
-            :examples-label="$t('lesson.examples')"
-            :quizzes-label="$t('lesson.quizzes')"
-            :audio-label="$t('lesson.audioAvailable')"
-            :video-label="$t('lesson.videoAvailable')"
-            :add-favorite-label="$t('lesson.addFavorite')"
-            :remove-favorite-label="$t('lesson.removeFavorite')"
-            :mark-complete-label="$t('lesson.markComplete')"
-            :mark-incomplete-label="$t('lesson.markIncomplete')"
-            :items-label="$t('lesson.itemsLearned')"
-            @open="openLesson"
-            @toggle-favorite="handleToggleFavorite"
-            @toggle-completed="handleToggleCompleted" />
-        </template>
-      </LearningPath>
+      <WorkshopHeroVideo
+        :title="workshopTitle || 'Linux Grundlagen'"
+        :description="workshopDescription || 'Vom kompletten Anfänger zum sicheren Linux-Bediener — in 10 unterhaltsamen Lektionen, mit Pinguinen.'"
+        :lesson-count="lessons.length"
+        :total-minutes="12"
+        :play-label="isDE ? '▶  Video-Trailer' : '▶  Video Trailer'"
+        :duration-label="isDE ? `${lessons.length} Lektionen` : `${lessons.length} lessons`"
+        :scroll-label="isDE ? 'Lektionen entdecken' : 'Discover lessons'"
+        :workshop-label="workshopTitle"
+        :show-penguin="isLinuxWorkshop"
+        @start="showTrailer = true"
+      />
+
+      <!-- Trailer Modal -->
+      <WorkshopTrailer
+        v-if="showTrailer"
+        :is-d-e="isDE"
+        :workshop-title="workshopTitle"
+        @close="showTrailer = false"
+      />
+
+      <div class="unit-connector">
+        <div class="unit-connector-line"></div>
+        <span class="unit-connector-label">
+          {{ isDE ? `${lessons.length} Lektionen` : `${lessons.length} Lessons` }}
+        </span>
+        <div class="unit-connector-line"></div>
+      </div>
+
+      <div class="unit-lessons">
+        <div id="tour-progress-bar" class="mb-4 px-3 pt-1">
+          <ProgressBar
+            :completed="completionInfo.completed"
+            :total="completionInfo.total"
+            :label="$t('lesson.completed')" />
+        </div>
+        <div class="px-2 pb-4">
+          <LearningPath
+            :lessons="lessons"
+            :next-lesson-number="nextLessonNumber"
+            :favorites="favorites"
+            :get-status="getLessonStatusForPath"
+            :completed-count="completionInfo.completed"
+            :draggable="favorites.length > 1"
+            @reorder="handleReorder">
+            <template #card="{ lesson, status, isFavorite, isNext }">
+              <LessonCard
+                :lesson="lesson"
+                :status="status"
+                :is-favorite="isFavorite"
+                :is-next="isNext"
+                :image-url="resolveLessonImage(lesson)"
+                :answered-count="getAnsweredCount(lesson)"
+                :learned-item-count="getLearnedItemCount(lesson)"
+                :next-label="$t('lesson.continueLabel')"
+                :sections-label="$t('lesson.sections')"
+                :examples-label="$t('lesson.examples')"
+                :quizzes-label="$t('lesson.quizzes')"
+                :audio-label="$t('lesson.audioAvailable')"
+                :video-label="$t('lesson.videoAvailable')"
+                :add-favorite-label="$t('lesson.addFavorite')"
+                :remove-favorite-label="$t('lesson.removeFavorite')"
+                :mark-complete-label="$t('lesson.markComplete')"
+                :mark-incomplete-label="$t('lesson.markIncomplete')"
+                :items-label="$t('lesson.itemsLearned')"
+                @open="openLesson"
+                @toggle-favorite="handleToggleFavorite"
+                @toggle-completed="handleToggleCompleted" />
+            </template>
+          </LearningPath>
+        </div>
+      </div>
     </div>
 
     <!-- Loading state -->
-    <div v-else-if="isLoading" class="text-center py-8">
+    <div v-if="isLoading" class="text-center py-8">
       <div class="text-2xl font-bold text-primary mb-4">
         {{ $t('lesson.loadingLessons') }}
       </div>
@@ -152,6 +185,8 @@ import { formatLangName } from '../utils/formatters'
 import ProgressBar from '@/components/ProgressBar.vue'
 import LessonCard from '@/components/LessonCard.vue'
 import LearningPath from '@/components/LearningPath.vue'
+import WorkshopHeroVideo from '@/components/WorkshopHeroVideo.vue'
+import WorkshopTrailer from '@/components/WorkshopTrailer.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -171,11 +206,18 @@ const { setWorkshopManifest: applyWorkshopManifest, setDefaultManifest } = useMa
 const lessons = ref([])
 const isLoading = ref(true)
 const showIOSInstall = ref(false)
+const showTrailer = ref(false)
 let deferredInstallPrompt = null
 
 const learning = computed(() => route.params.learning)
 const workshop = computed(() => route.params.workshop)
 const isDE = computed(() => learning.value === 'deutsch')
+
+// Linux-Workshop-Erkennung — Hero-Video nur dort zeigen (Platzhalter-Phase)
+const isLinuxWorkshop = computed(() => {
+  const w = (workshop.value || '').toLowerCase()
+  return w.includes('linux')
+})
 const isStandalone = computed(() =>
   window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
 )
@@ -362,3 +404,81 @@ onUnmounted(() => {
   setDefaultManifest()
 })
 </script>
+
+<style scoped>
+/* ══ Unit-Frame: Video + Lektionen visuell gruppiert ══ */
+.unit-frame {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(16,185,129,0.18);
+  box-shadow:
+    0 0 0 1px rgba(16,185,129,0.08),
+    0 8px 40px rgba(0,0,0,0.08),
+    0 0 60px rgba(16,185,129,0.06);
+  animation: unit-breathe 5s ease-in-out infinite;
+}
+:global(.dark) .unit-frame {
+  background: #0f1623;
+  border-color: rgba(16,185,129,0.22);
+  box-shadow:
+    0 0 0 1px rgba(16,185,129,0.1),
+    0 8px 40px rgba(0,0,0,0.35),
+    0 0 80px rgba(16,185,129,0.08);
+}
+
+@keyframes unit-breathe {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(16,185,129,0.08), 0 8px 40px rgba(0,0,0,0.08), 0 0 60px rgba(16,185,129,0.06); }
+  50%       { box-shadow: 0 0 0 1px rgba(16,185,129,0.16), 0 8px 40px rgba(0,0,0,0.1),  0 0 90px rgba(16,185,129,0.14); }
+}
+
+/* Animierter Farbverlauf-Rand oben */
+.unit-glow {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #a855f7, #3b82f6, #10b981);
+  background-size: 300% 100%;
+  animation: unit-glow-slide 4s linear infinite;
+  z-index: 10;
+}
+@keyframes unit-glow-slide {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 300% 0%; }
+}
+
+/* Verbindungs-Divider zwischen Video und Lektionen */
+.unit-connector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px 10px;
+  background: linear-gradient(to bottom, rgba(16,185,129,0.04), transparent);
+}
+:global(.dark) .unit-connector {
+  background: linear-gradient(to bottom, rgba(16,185,129,0.06), transparent);
+}
+.unit-connector-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(16,185,129,0.3), transparent);
+}
+.unit-connector-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #10b981;
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+/* Lektionen-Bereich */
+.unit-lessons {
+  background: rgba(248,250,252,0.6);
+}
+:global(.dark) .unit-lessons {
+  background: rgba(15,22,35,0.6);
+}
+</style>

@@ -25,7 +25,7 @@
     ]"></div>
 
     <!-- Thumbnail -->
-    <div v-if="imageUrl" class="relative flex-shrink-0 w-24 sm:w-28 overflow-hidden">
+    <div v-if="imageUrl" class="relative flex-shrink-0 w-20 sm:w-24 h-20 sm:h-24 overflow-hidden">
       <img
         :src="imageUrl"
         :alt="lesson.title"
