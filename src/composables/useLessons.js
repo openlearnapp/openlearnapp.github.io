@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import yaml from 'js-yaml'
 import { useGun } from './useGun'
+import { cachedFetch } from '../lib/cachedFetch'
 
 // Helper function to resolve IPFS URLs to HTTP gateway URLs
 function resolveUrl(urlOrPath) {
@@ -193,7 +194,7 @@ export function useLessons() {
       }
 
 
-      const response = await fetch(fetchUrl)
+      const response = await cachedFetch(fetchUrl, 'network-first')
       if (!response.ok) {
         console.warn(`⚠️ Failed to fetch ${fetchUrl}: ${response.status}`)
         return
@@ -229,7 +230,7 @@ export function useLessons() {
         for (const filename of ['workshops.yaml', 'topics.yaml']) {
           const workshopsUrl = `${baseUrl}/${langKey}/${filename}`
           try {
-            const workshopsResponse = await fetch(workshopsUrl)
+            const workshopsResponse = await cachedFetch(workshopsUrl, 'network-first')
             if (!workshopsResponse.ok) continue
             const workshopsText = await workshopsResponse.text()
             workshopsData = yaml.load(workshopsText)
@@ -556,7 +557,7 @@ export function useLessons() {
         lessonsUrl = `${workshop}/lessons.yaml`
       }
 
-      const response = await fetch(lessonsUrl)
+      const response = await cachedFetch(lessonsUrl, 'network-first')
 
       if (!response.ok) {
         throw new Error(`Failed to fetch lessons.yaml for ${lang}/${workshop}: ${response.status}`)
@@ -606,7 +607,7 @@ export function useLessons() {
         lessonPath = `${workshop}/${source.path}/content.yaml`
       }
 
-      const response = await fetch(lessonPath)
+      const response = await cachedFetch(lessonPath, 'cache-first')
 
       if (!response.ok) {
         console.error(`❌ Failed to fetch lesson ${lessonPath}: ${response.status}`)
