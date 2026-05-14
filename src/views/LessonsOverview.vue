@@ -26,7 +26,7 @@
     </div>
 
     <!-- ══ ALLE WORKSHOPS: Video-Placeholder + Lektionen im Unit-Frame ══ -->
-    <div v-if="!isLoading && lessons.length > 0" class="unit-frame mb-8">
+    <div v-if="!isLoading && lessons.length > 0" class="unit-frame mb-8 bg-[#f8fafc] dark:bg-[#0a0f1a]">
       <div class="unit-glow" aria-hidden="true"></div>
 
       <WorkshopHeroVideo
@@ -58,7 +58,7 @@
         <div class="unit-connector-line"></div>
       </div>
 
-      <div class="unit-lessons">
+      <div class="unit-lessons bg-white dark:bg-[#0d1320]">
         <div id="tour-progress-bar" class="mb-4 px-3 pt-1">
           <ProgressBar
             :completed="completionInfo.completed"
@@ -407,30 +407,25 @@ onUnmounted(() => {
 
 <style scoped>
 /* ══ Unit-Frame: Video + Lektionen visuell gruppiert ══ */
+/* background + dark mode via Tailwind-Klassen im Template */
 .unit-frame {
+  --frame-shadow-base: 0 0 0 1px rgba(16,185,129,0.08), 0 8px 40px rgba(0,0,0,0.08), 0 0 60px rgba(16,185,129,0.06);
+  --frame-shadow-pulse: 0 0 0 1px rgba(16,185,129,0.18), 0 8px 40px rgba(0,0,0,0.12), 0 0 90px rgba(16,185,129,0.14);
   position: relative;
   border-radius: 22px;
   overflow: hidden;
-  background: #fff;
   border: 1px solid rgba(16,185,129,0.18);
-  box-shadow:
-    0 0 0 1px rgba(16,185,129,0.08),
-    0 8px 40px rgba(0,0,0,0.08),
-    0 0 60px rgba(16,185,129,0.06);
   animation: unit-breathe 5s ease-in-out infinite;
 }
 :global(.dark) .unit-frame {
-  background: #0f1623;
-  border-color: rgba(16,185,129,0.22);
-  box-shadow:
-    0 0 0 1px rgba(16,185,129,0.1),
-    0 8px 40px rgba(0,0,0,0.35),
-    0 0 80px rgba(16,185,129,0.08);
+  --frame-shadow-base: 0 0 0 1px rgba(16,185,129,0.12), 0 8px 48px rgba(0,0,0,0.5), 0 0 80px rgba(16,185,129,0.1);
+  --frame-shadow-pulse: 0 0 0 1px rgba(16,185,129,0.22), 0 8px 48px rgba(0,0,0,0.6), 0 0 120px rgba(16,185,129,0.18);
+  border-color: rgba(16,185,129,0.2);
 }
 
 @keyframes unit-breathe {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(16,185,129,0.08), 0 8px 40px rgba(0,0,0,0.08), 0 0 60px rgba(16,185,129,0.06); }
-  50%       { box-shadow: 0 0 0 1px rgba(16,185,129,0.16), 0 8px 40px rgba(0,0,0,0.1),  0 0 90px rgba(16,185,129,0.14); }
+  0%, 100% { box-shadow: var(--frame-shadow-base); }
+  50%       { box-shadow: var(--frame-shadow-pulse); }
 }
 
 /* Animierter Farbverlauf-Rand oben */
@@ -454,15 +449,18 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   padding: 14px 20px 10px;
-  background: linear-gradient(to bottom, rgba(16,185,129,0.04), transparent);
+  background: linear-gradient(to bottom, rgba(16,185,129,0.05), transparent);
 }
 :global(.dark) .unit-connector {
-  background: linear-gradient(to bottom, rgba(16,185,129,0.06), transparent);
+  background: linear-gradient(to bottom, rgba(16,185,129,0.08), transparent);
 }
 .unit-connector-line {
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(16,185,129,0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(16,185,129,0.35), transparent);
+}
+:global(.dark) .unit-connector-line {
+  background: linear-gradient(90deg, transparent, rgba(16,185,129,0.5), transparent);
 }
 .unit-connector-label {
   font-size: 11px;
@@ -471,14 +469,11 @@ onUnmounted(() => {
   text-transform: uppercase;
   color: #10b981;
   white-space: nowrap;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
-/* Lektionen-Bereich */
+/* Lektionen-Bereich — Farbe über Tailwind dark: Klasse im Template */
 .unit-lessons {
-  background: rgba(248,250,252,0.6);
-}
-:global(.dark) .unit-lessons {
-  background: rgba(15,22,35,0.6);
+  /* background via bg-white dark:bg-[#0d1320] im Template */
 }
 </style>
