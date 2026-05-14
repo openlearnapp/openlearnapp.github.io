@@ -34,7 +34,7 @@
         :description="workshopDescription || 'Vom kompletten Anfänger zum sicheren Linux-Bediener — in 10 unterhaltsamen Lektionen, mit Pinguinen.'"
         :lesson-count="lessons.length"
         :total-minutes="12"
-        :play-label="isDE ? '▶  Video-Trailer' : '▶  Video Trailer'"
+        :play-label="isDE ? 'Video-Trailer' : 'Video Trailer'"
         :duration-label="isDE ? `${lessons.length} Lektionen` : `${lessons.length} lessons`"
         :scroll-label="isDE ? 'Lektionen entdecken' : 'Discover lessons'"
         :workshop-label="workshopTitle"
