@@ -34,49 +34,48 @@
             </radialGradient>
           </defs>
 
-          <!-- Sky -->
-          <rect width="800" height="420" fill="url(#hSky)" />
-
-          <!-- Stars -->
-          <g>
+          <!-- ── Layer 1: Background (slowest, drifts down) ── -->
+          <g :transform="`translate(0, ${parallax.back})`">
+            <rect width="800" height="420" fill="url(#hSky)" />
             <circle v-for="(s, i) in stars" :key="i"
               :cx="s.x" :cy="s.y" :r="s.r"
               fill="#fff"
               :opacity="0.2 + Math.sin(animFrame * 0.05 + s.phase) * 0.35 + 0.3" />
           </g>
 
-          <!-- Aurora wave 1 -->
-          <path
-            :d="`M 0 ${130 + Math.sin(animFrame * 0.018) * 18}
-                 Q 200 ${165 + Math.sin(animFrame * 0.02 + 1) * 22}
-                   400 ${140 + Math.sin(animFrame * 0.02 + 2) * 18}
-                 T 800 ${150 + Math.sin(animFrame * 0.018 + 3) * 15}
-                 L 800 260 L 0 260 Z`"
-            fill="url(#hAurora1)" opacity="0.75"
-          />
-          <!-- Aurora wave 2 -->
-          <path
-            :d="`M 0 ${160 + Math.sin(animFrame * 0.022 + 2) * 20}
-                 Q 300 ${210 + Math.sin(animFrame * 0.022 + 3) * 24}
-                   600 ${175 + Math.sin(animFrame * 0.022 + 4) * 16}
-                 T 800 ${190 + Math.sin(animFrame * 0.022 + 5) * 20}
-                 L 800 300 L 0 300 Z`"
-            fill="url(#hAurora2)" opacity="0.55"
-          />
+          <!-- ── Layer 2: Mid (aurora + glow, medium drift) ── -->
+          <g :transform="`translate(0, ${parallax.mid})`">
+            <path
+              :d="`M 0 ${130 + Math.sin(animFrame * 0.018) * 18}
+                   Q 200 ${165 + Math.sin(animFrame * 0.02 + 1) * 22}
+                     400 ${140 + Math.sin(animFrame * 0.02 + 2) * 18}
+                   T 800 ${150 + Math.sin(animFrame * 0.018 + 3) * 15}
+                   L 800 260 L 0 260 Z`"
+              fill="url(#hAurora1)" opacity="0.75"
+            />
+            <path
+              :d="`M 0 ${160 + Math.sin(animFrame * 0.022 + 2) * 20}
+                   Q 300 ${210 + Math.sin(animFrame * 0.022 + 3) * 24}
+                     600 ${175 + Math.sin(animFrame * 0.022 + 4) * 16}
+                   T 800 ${190 + Math.sin(animFrame * 0.022 + 5) * 20}
+                   L 800 300 L 0 300 Z`"
+              fill="url(#hAurora2)" opacity="0.55"
+            />
+            <ellipse cx="400" cy="230" rx="320" ry="160" fill="url(#hGlow)" />
+          </g>
 
-          <!-- Central glow -->
-          <ellipse cx="400" cy="230" rx="320" ry="160" fill="url(#hGlow)" />
-
-          <!-- Floating language words -->
-          <text v-for="(p, i) in langParticles" :key="'lp' + i"
-            :x="p.x + Math.sin(animFrame * 0.02 + p.phase) * 10"
-            :y="p.y + Math.cos(animFrame * 0.025 + p.phase) * 8"
-            :font-size="p.size"
-            :fill="p.color"
-            :opacity="0.18 + Math.sin(animFrame * 0.03 + p.phase) * 0.1"
-            font-family="system-ui, sans-serif"
-            font-weight="700"
-          >{{ p.word }}</text>
+          <!-- ── Layer 3: Foreground (lang words, fastest, opposite direction) ── -->
+          <g :transform="`translate(0, ${parallax.front})`">
+            <text v-for="(p, i) in langParticles" :key="'lp' + i"
+              :x="p.x + Math.sin(animFrame * 0.02 + p.phase) * 10"
+              :y="p.y + Math.cos(animFrame * 0.025 + p.phase) * 8"
+              :font-size="p.size"
+              :fill="p.color"
+              :opacity="0.18 + Math.sin(animFrame * 0.03 + p.phase) * 0.1"
+              font-family="system-ui, sans-serif"
+              font-weight="700"
+            >{{ p.word }}</text>
+          </g>
         </svg>
 
         <!-- Hero content overlay -->
@@ -283,7 +282,21 @@ const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 
 const showLanguageMenu = ref(false)
 const animFrame = ref(0)
+const scrollY = ref(0)
 let rafId = null
+
+// Parallax-Tiefe: 3 Layer.
+// Scroll + kontinuierliche Drift (sin) — dadurch immer sichtbar Bewegung, auch ohne Scrollen.
+// back = treibt nach unten (weit weg), mid = subtil, front = wandert nach oben (nah dran)
+const parallax = computed(() => ({
+  back:  scrollY.value *  0.55 + Math.sin(animFrame.value * 0.008)      * 12,
+  mid:   scrollY.value *  0.25 + Math.sin(animFrame.value * 0.012 + 1)  * 8,
+  front: scrollY.value * -0.40 + Math.sin(animFrame.value * 0.015 + 2)  * 14,
+}))
+
+function onScroll() {
+  scrollY.value = Math.min(window.scrollY, 800)
+}
 
 const learningLanguages = computed(() => [...new Set(Object.keys(availableContent.value))])
 const currentLanguage = computed(() => selectedLanguage.value || learningLanguages.value[0] || 'english')
@@ -374,6 +387,7 @@ function tick() {
 
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
+  window.addEventListener('scroll', onScroll, { passive: true })
   rafId = requestAnimationFrame(tick)
 
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
@@ -390,6 +404,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('scroll', onScroll)
   if (rafId) cancelAnimationFrame(rafId)
 })
 </script>
