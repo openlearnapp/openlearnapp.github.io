@@ -139,17 +139,34 @@
         <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
       </div>
 
-      <!-- ══ FEATURES ══ -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-        <div v-for="feature in features" :key="feature.key"
-          class="flex items-start gap-3 p-4 rounded-xl bg-accent/30 border border-border/50">
-          <span class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-base flex-shrink-0">
-            {{ feature.icon }}
-          </span>
-          <div>
-            <div class="text-sm font-semibold text-foreground">{{ feature.title }}</div>
-            <div class="text-xs text-muted-foreground mt-0.5">{{ feature.desc }}</div>
+      <!-- ══ FEATURES — 4 Premium-Karten mit Custom-SVG-Icons und Glow ══ -->
+      <div class="feat-grid grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
+        <div
+          v-for="feature in features"
+          :key="feature.key"
+          class="feat-card group relative overflow-hidden"
+          @mousemove="onFeatMove($event, feature.key)"
+          @mouseleave="featActive = ''"
+          :data-active="featActive === feature.key"
+        >
+          <!-- Color-themed glow behind card -->
+          <span class="feat-glow" :style="{ '--c': featureColor(feature.key) }" aria-hidden="true"></span>
+
+          <!-- Card content -->
+          <div class="relative z-10 flex items-start gap-4 p-5">
+            <!-- Icon block with gradient -->
+            <div class="feat-icon flex-shrink-0" :style="{ '--c': featureColor(feature.key) }">
+              <component :is="featureIcon(feature.key)" class="w-7 h-7" />
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <h4 class="text-base font-bold text-foreground mb-1 tracking-tight">{{ feature.title }}</h4>
+              <p class="text-sm text-muted-foreground leading-relaxed">{{ feature.desc }}</p>
+            </div>
           </div>
+
+          <!-- Hover-Streifen unten -->
+          <span class="feat-underline" :style="{ '--c': featureColor(feature.key) }" aria-hidden="true"></span>
         </div>
       </div>
 
@@ -463,6 +480,40 @@ const USE_CASE_COLORS = {
 function useCaseIcon(key) { return USE_CASE_ICONS[key] || IconGlobe }
 function iconColor(key)   { return USE_CASE_COLORS[key] || '#10b981' }
 
+// ── Feature Cards: Custom Icons + Themen-Farben + Cursor-Tracking ──
+const IconTarget = makeIcon('#f97316', [
+  'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z',
+  'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z',
+  'M12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z',
+])
+const IconFilm = makeIcon('#06b6d4', [
+  'M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z',
+  'M3 8h4 M3 12h4 M3 16h4 M17 8h4 M17 12h4 M17 16h4',
+  'M10 9l5 3-5 3V9z',
+])
+const IconPencil = makeIcon('#10b981', [
+  'M16.4 3.6a2.1 2.1 0 0 1 3 3L7.5 18.5l-4 1 1-4L16.4 3.6z',
+  'M14 6l4 4',
+])
+const IconShield = makeIcon('#a855f7', [
+  'M12 3l8 3v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V6l8-3z',
+  'M9 12l2 2 4-4',
+])
+
+const FEATURE_ICONS = { any: IconTarget, rich: IconFilm, create: IconPencil, infra: IconShield }
+const FEATURE_COLORS = { any: '#f97316', rich: '#06b6d4', create: '#10b981', infra: '#a855f7' }
+function featureIcon(key)  { return FEATURE_ICONS[key]  || IconTarget }
+function featureColor(key) { return FEATURE_COLORS[key] || '#10b981' }
+
+const featActive = ref('')
+function onFeatMove(e, key) {
+  const card = e.currentTarget
+  const rect = card.getBoundingClientRect()
+  card.style.setProperty('--mx', ((e.clientX - rect.left) / rect.width  * 100) + '%')
+  card.style.setProperty('--my', ((e.clientY - rect.top)  / rect.height * 100) + '%')
+  featActive.value = key
+}
+
 // ── Use-Case Panel: Maus-Parallax + Partikel ──
 const ucPanelX = ref(0)
 function onUcPanelMove(e) {
@@ -543,6 +594,87 @@ onUnmounted(() => {
 .dropdown-enter-active, .dropdown-leave-active { transition: opacity 0.15s, transform 0.15s; }
 .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-6px) translateX(-50%); }
 .dropdown-enter-to, .dropdown-leave-from { transform: translateY(0) translateX(-50%); }
+
+/* ── Feature Cards (Sektion A) ── */
+.feat-card {
+  position: relative;
+  border-radius: 18px;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s,
+              box-shadow 0.35s;
+  isolation: isolate;
+}
+.feat-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--c, #10b981) 50%, transparent);
+  box-shadow: 0 16px 40px -8px rgba(0,0,0,0.12),
+              0 0 0 1px color-mix(in srgb, var(--c, #10b981) 25%, transparent);
+}
+:global(.dark) .feat-card:hover {
+  box-shadow: 0 20px 50px -8px rgba(0,0,0,0.5),
+              0 0 0 1px color-mix(in srgb, var(--c, #10b981) 35%, transparent);
+}
+
+/* Spotlight that follows cursor */
+.feat-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%),
+              color-mix(in srgb, var(--c) 22%, transparent) 0%,
+              transparent 55%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 1;
+}
+.feat-card:hover .feat-glow { opacity: 1; }
+
+/* Themed icon box */
+.feat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c);
+  background: linear-gradient(135deg,
+              color-mix(in srgb, var(--c) 15%, transparent),
+              color-mix(in srgb, var(--c) 5%, transparent));
+  border: 1px solid color-mix(in srgb, var(--c) 25%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c) 20%, transparent),
+              0 4px 14px -4px color-mix(in srgb, var(--c) 40%, transparent);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.35s;
+}
+.feat-card:hover .feat-icon {
+  transform: scale(1.08) rotate(-3deg);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--c) 30%, transparent),
+              0 8px 24px -4px color-mix(in srgb, var(--c) 60%, transparent);
+}
+
+/* Animated bottom underline */
+.feat-underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--c, #10b981), transparent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2;
+}
+.feat-card:hover .feat-underline { transform: scaleX(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .feat-card, .feat-icon, .feat-underline, .feat-glow { transition: none; }
+  .feat-card:hover { transform: none; }
+  .feat-card:hover .feat-icon { transform: none; }
+}
 
 /* ── Use-Case Premium Panel ── */
 .uc-panel {
