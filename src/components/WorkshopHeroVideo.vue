@@ -222,19 +222,39 @@
           {{ description }}
         </p>
         <div class="flex items-center gap-3 flex-wrap">
-          <button
-            @click.stop="$emit('start')"
-            class="flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all hover:scale-105"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            {{ playLabel }}
-          </button>
           <div class="text-sm text-slate-300/80">
             {{ durationLabel }}
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Zentrierter Play-Button (immer sichtbar, verschwindet bei controlsVisible) -->
+    <Transition name="center-play">
+      <div
+        v-if="!controlsVisible"
+        class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+      >
+        <!-- Puls-Ringe -->
+        <div class="relative flex items-center justify-center">
+          <div class="play-pulse-ring" />
+          <div class="play-pulse-ring play-pulse-ring--delay" />
+          <!-- Button -->
+          <button
+            class="play-center-btn pointer-events-auto relative z-10 flex items-center justify-center"
+            @click.stop="$emit('start')"
+          >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="ml-1">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
+        </div>
+        <!-- Label unter dem Button -->
+        <span class="mt-3 text-xs font-bold tracking-widest uppercase text-white/70 pointer-events-none select-none">
+          {{ playLabel }}
+        </span>
+      </div>
+    </Transition>
 
     <!-- Hover-Glow Border -->
     <div
@@ -453,6 +473,47 @@ onBeforeUnmount(() => {
   background: linear-gradient(180deg, #0c1b3a 0%, #1e1b4b 100%);
   will-change: transform;
 }
+
+/* ── Zentrierter Play-Button ── */
+.play-center-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 2.5px solid rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 0 32px rgba(16, 185, 129, 0.35), 0 4px 24px rgba(0,0,0,0.4);
+}
+.play-center-btn:hover {
+  transform: scale(1.1);
+  background: rgba(16, 185, 129, 0.3);
+  border-color: #10b981;
+}
+.play-center-btn:active { transform: scale(0.95); }
+
+/* Puls-Ringe */
+.play-pulse-ring {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 185, 129, 0.5);
+  animation: play-pulse 2.4s ease-out infinite;
+}
+.play-pulse-ring--delay {
+  animation-delay: 1.2s;
+}
+@keyframes play-pulse {
+  0%   { transform: scale(1);    opacity: 0.7; }
+  100% { transform: scale(2.2);  opacity: 0; }
+}
+
+/* Transition für Einblenden/Ausblenden */
+.center-play-enter-active, .center-play-leave-active { transition: opacity 0.25s ease; }
+.center-play-enter-from, .center-play-leave-to { opacity: 0; }
 
 /* Cinema bars */
 .hero-video-container::before,
