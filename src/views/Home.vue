@@ -187,15 +187,65 @@
         </div>
       </div>
 
-      <!-- ══ WHAT YOU CAN LEARN ══ -->
-      <div class="mb-8">
-        <h3 class="text-lg font-semibold text-foreground mb-3">{{ $t('home.whatYouCanLearn') }}</h3>
-        <p class="text-sm text-muted-foreground mb-4">{{ $t('home.whatYouCanLearnDesc') }}</p>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <div v-for="example in useCaseExamples" :key="example.key"
-            class="flex items-center gap-2 p-2 rounded-md bg-accent/20 text-sm">
-            <span class="text-base">{{ example.icon }}</span>
-            <span class="text-foreground text-xs">{{ example.label }}</span>
+      <!-- ══ WHAT YOU CAN LEARN — Premium-Panel, 2 Reihen, glühende Icons, Maus-Parallax ══ -->
+      <div class="mb-12">
+        <h3 class="text-lg font-semibold text-foreground mb-1">{{ $t('home.whatYouCanLearn') }}</h3>
+        <p class="text-sm text-muted-foreground mb-5">{{ $t('home.whatYouCanLearnDesc') }}</p>
+
+        <div
+          class="uc-panel relative overflow-hidden rounded-2xl"
+          @mousemove="onUcPanelMove"
+          @mouseleave="ucPanelX = 0"
+        >
+          <!-- Animated dark gradient backdrop -->
+          <div class="uc-bg" aria-hidden="true"></div>
+
+          <!-- Subtle particles -->
+          <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 800 280" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <circle v-for="(p, i) in ucParticles" :key="i"
+              :cx="p.x + Math.sin(animFrame * 0.02 + p.phase) * 20"
+              :cy="p.y + Math.cos(animFrame * 0.025 + p.phase) * 12"
+              :r="p.r"
+              :fill="p.color"
+              :opacity="0.15 + Math.sin(animFrame * 0.04 + p.phase) * 0.12" />
+          </svg>
+
+          <!-- Edge-Fades -->
+          <div class="absolute inset-y-0 left-0 w-20 z-20 pointer-events-none uc-fade-l"></div>
+          <div class="absolute inset-y-0 right-0 w-20 z-20 pointer-events-none uc-fade-r"></div>
+
+          <!-- Row 1: scroll left -->
+          <div class="uc-row-wrap" :style="{ transform: `translateX(${ucPanelX * -8}px)` }">
+            <div class="uc-track uc-track--left">
+              <div
+                v-for="(example, i) in [...useCaseExamples, ...useCaseExamples]"
+                :key="'r1' + i + example.key"
+                class="uc-chip group"
+              >
+                <span class="uc-chip-glow" :style="{ '--glow': iconColor(example.key) }" aria-hidden="true"></span>
+                <span class="uc-chip-icon" :style="{ color: iconColor(example.key) }">
+                  <component :is="useCaseIcon(example.key)" class="w-7 h-7 transition-transform group-hover:scale-110" />
+                </span>
+                <span class="uc-chip-label">{{ example.label }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 2: scroll right (reversed order for variety) -->
+          <div class="uc-row-wrap" :style="{ transform: `translateX(${ucPanelX * 8}px)` }">
+            <div class="uc-track uc-track--right">
+              <div
+                v-for="(example, i) in [...useCaseExamples].reverse().concat([...useCaseExamples].reverse())"
+                :key="'r2' + i + example.key"
+                class="uc-chip group"
+              >
+                <span class="uc-chip-glow" :style="{ '--glow': iconColor(example.key) }" aria-hidden="true"></span>
+                <span class="uc-chip-icon" :style="{ color: iconColor(example.key) }">
+                  <component :is="useCaseIcon(example.key)" class="w-7 h-7 transition-transform group-hover:scale-110" />
+                </span>
+                <span class="uc-chip-label">{{ example.label }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -268,7 +318,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, h, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useLessons } from '../composables/useLessons'
@@ -380,6 +430,54 @@ function selectLanguage(lang) {
   setLanguage(lang)
 }
 
+// ── Custom SVG icons für „What you can learn" ──
+// Linien-Stil, farblich passend zum Hero (emerald, indigo, violet, sky, rose)
+const ICON_BASE = {
+  fill: 'none',
+  stroke: 'currentColor',
+  'stroke-width': '1.6',
+  'stroke-linecap': 'round',
+  'stroke-linejoin': 'round',
+}
+const makeIcon = (color, paths) => () =>
+  h('svg', { viewBox: '0 0 24 24', ...ICON_BASE, style: { color } },
+    paths.map(d => h('path', { d })))
+const IconGlobe   = makeIcon('#10b981', ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', 'M3 12h18', 'M12 3a13 13 0 0 1 0 18', 'M12 3a13 13 0 0 0 0 18'])
+const IconMath    = makeIcon('#818cf8', ['M5 7h6', 'M8 4v6', 'M5 17l6 0', 'M5 14l6 6', 'M5 20l6-6', 'M16 6h4', 'M16 9h4', 'M18 15v4', 'M16 17h4'])
+const IconCar     = makeIcon('#f472b6', ['M5 15h14l-1.5-5a2 2 0 0 0-1.9-1.4H8.4A2 2 0 0 0 6.5 10L5 15z', 'M5 15v3a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1', 'M16 15v3a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1', 'M8 12h.01', 'M16 12h.01'])
+const IconMusic   = makeIcon('#a78bfa', ['M9 18V5l12-2v13', 'M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3z', 'M21 16a3 3 0 1 1-3-3 3 3 0 0 1 3 3z'])
+const IconCode    = makeIcon('#60a5fa', ['M16 18l6-6-6-6', 'M8 6l-6 6 6 6', 'M14 4l-4 16'])
+const IconScience = makeIcon('#34d399', ['M9 3h6', 'M10 3v6l-5 8a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-8V3', 'M7.5 14h9'])
+const IconHistory = makeIcon('#fbbf24', ['M4 7V5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1v2', 'M4 7h15v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z', 'M8 11h7', 'M8 15h7'])
+const IconMedical = makeIcon('#f87171', ['M12 5v14', 'M5 12h14', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'])
+const IconLaw     = makeIcon('#c084fc', ['M12 3v18', 'M5 8l7-3 7 3', 'M5 8l-2 7a4 4 0 0 0 8 0L9 8', 'M19 8l2 7a4 4 0 0 1-8 0L15 8'])
+
+const USE_CASE_ICONS = {
+  lang: IconGlobe, math: IconMath, drive: IconCar, music: IconMusic, code: IconCode,
+  science: IconScience, history: IconHistory, med: IconMedical, law: IconLaw,
+}
+const USE_CASE_COLORS = {
+  lang: '#10b981', math: '#818cf8', drive: '#f472b6', music: '#a78bfa', code: '#60a5fa',
+  science: '#34d399', history: '#fbbf24', med: '#f87171', law: '#c084fc',
+}
+function useCaseIcon(key) { return USE_CASE_ICONS[key] || IconGlobe }
+function iconColor(key)   { return USE_CASE_COLORS[key] || '#10b981' }
+
+// ── Use-Case Panel: Maus-Parallax + Partikel ──
+const ucPanelX = ref(0)
+function onUcPanelMove(e) {
+  const rect = e.currentTarget.getBoundingClientRect()
+  const x = (e.clientX - rect.left) / rect.width - 0.5  // -0.5 .. +0.5
+  ucPanelX.value = x
+}
+const ucParticles = Array.from({ length: 18 }, (_, i) => ({
+  x: (i * 71.7 + 20) % 800,
+  y: (i * 43.1 + 15) % 280,
+  r: 1 + (i % 3) * 0.8,
+  color: ['#10b981', '#818cf8', '#a78bfa', '#60a5fa', '#34d399', '#f472b6'][i % 6],
+  phase: i * 0.37,
+}))
+
 function tick() {
   animFrame.value += 1
   rafId = requestAnimationFrame(tick)
@@ -445,4 +543,101 @@ onUnmounted(() => {
 .dropdown-enter-active, .dropdown-leave-active { transition: opacity 0.15s, transform 0.15s; }
 .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-6px) translateX(-50%); }
 .dropdown-enter-to, .dropdown-leave-from { transform: translateY(0) translateX(-50%); }
+
+/* ── Use-Case Premium Panel ── */
+.uc-panel {
+  padding: 22px 0;
+  background: linear-gradient(180deg, #060d24 0%, #131040 50%, #1e1b4b 100%);
+  border: 1px solid rgba(99,102,241,0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    0 12px 40px rgba(0,0,0,0.25),
+    0 0 60px rgba(99,102,241,0.12);
+  transition: box-shadow 0.4s;
+}
+.uc-panel:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 12px 50px rgba(0,0,0,0.35),
+    0 0 100px rgba(99,102,241,0.25);
+}
+.uc-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(16,185,129,0.18), transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(168,85,247,0.18), transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+.uc-fade-l { background: linear-gradient(to right, #060d24 0%, transparent 100%); }
+.uc-fade-r { background: linear-gradient(to left,  #1e1b4b 0%, transparent 100%); }
+
+.uc-row-wrap {
+  position: relative;
+  z-index: 5;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.uc-row-wrap + .uc-row-wrap { margin-top: 12px; }
+
+.uc-track {
+  display: flex;
+  gap: 14px;
+  width: max-content;
+  padding: 0 8px;
+}
+.uc-track--left  { animation: uc-marquee-l 42s linear infinite; }
+.uc-track--right { animation: uc-marquee-r 48s linear infinite; }
+@keyframes uc-marquee-l { from { transform: translateX(0); }    to { transform: translateX(-50%); } }
+@keyframes uc-marquee-r { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+.uc-panel:hover .uc-track { animation-play-state: paused; }
+
+.uc-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+  transition: transform 0.3s, background 0.3s, border-color 0.3s;
+  isolation: isolate;
+}
+.uc-chip:hover {
+  transform: translateY(-3px) scale(1.04);
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+}
+.uc-chip-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  background: radial-gradient(circle at center, var(--glow, #10b981) 0%, transparent 60%);
+  opacity: 0;
+  z-index: -1;
+  filter: blur(14px);
+  transition: opacity 0.3s;
+}
+.uc-chip:hover .uc-chip-glow { opacity: 0.55; }
+.uc-chip-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+.uc-chip-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #f1f5f9;
+  letter-spacing: 0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .uc-track { animation: none; }
+}
 </style>
