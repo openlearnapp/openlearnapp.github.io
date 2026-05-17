@@ -237,11 +237,11 @@
               <div
                 v-for="(example, i) in [...useCaseExamples, ...useCaseExamples]"
                 :key="'r1' + i + example.key"
-                class="uc-chip group"
+                class="uc-chip"
               >
                 <span class="uc-chip-glow" :style="{ '--glow': iconColor(example.key) }" aria-hidden="true"></span>
                 <span class="uc-chip-icon" :style="{ color: iconColor(example.key) }">
-                  <component :is="useCaseIcon(example.key)" class="w-7 h-7 transition-transform group-hover:scale-110" />
+                  <component :is="useCaseIcon(example.key)" class="w-7 h-7" />
                 </span>
                 <span class="uc-chip-label">{{ example.label }}</span>
               </div>
@@ -254,11 +254,11 @@
               <div
                 v-for="(example, i) in [...useCaseExamples].reverse().concat([...useCaseExamples].reverse())"
                 :key="'r2' + i + example.key"
-                class="uc-chip group"
+                class="uc-chip"
               >
                 <span class="uc-chip-glow" :style="{ '--glow': iconColor(example.key) }" aria-hidden="true"></span>
                 <span class="uc-chip-icon" :style="{ color: iconColor(example.key) }">
-                  <component :is="useCaseIcon(example.key)" class="w-7 h-7 transition-transform group-hover:scale-110" />
+                  <component :is="useCaseIcon(example.key)" class="w-7 h-7" />
                 </span>
                 <span class="uc-chip-label">{{ example.label }}</span>
               </div>
@@ -736,25 +736,19 @@ onUnmounted(() => {
   border: 1px solid rgba(255,255,255,0.08);
   backdrop-filter: blur(10px);
   flex-shrink: 0;
-  transition: transform 0.3s, background 0.3s, border-color 0.3s;
   isolation: isolate;
+  cursor: default;
 }
-.uc-chip:hover {
-  transform: translateY(-3px) scale(1.04);
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.2);
-}
+/* Sanftes ambient Leuchten in Icon-Farbe — immer sichtbar, kein Hover-Trigger */
 .uc-chip-glow {
   position: absolute;
   inset: -2px;
   border-radius: 16px;
   background: radial-gradient(circle at center, var(--glow, #10b981) 0%, transparent 60%);
-  opacity: 0;
+  opacity: 0.18;
   z-index: -1;
   filter: blur(14px);
-  transition: opacity 0.3s;
 }
-.uc-chip:hover .uc-chip-glow { opacity: 0.55; }
 .uc-chip-icon {
   display: flex;
   align-items: center;
