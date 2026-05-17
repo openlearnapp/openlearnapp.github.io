@@ -170,36 +170,66 @@
         </div>
       </div>
 
-      <!-- ══ HOW IT WORKS ══ -->
-      <div class="mb-8">
-        <h3 class="text-lg font-semibold text-foreground mb-4">{{ $t('home.howItWorks') }}</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="text-center p-4">
-            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-lg font-bold mx-auto mb-3">1</div>
-            <div class="text-sm font-medium text-foreground mb-3">{{ steps[0].title }}</div>
-            <div class="relative inline-block mb-3">
-              <button
-                @click="showLanguageMenu = !showLanguageMenu"
-                class="flex items-center gap-1.5 bg-primary text-white font-medium text-sm rounded-full px-4 py-2 cursor-pointer hover:bg-primary/90 transition">
-                <span class="text-base leading-none">{{ getFlag(currentLanguage) }}</span>
-                <span>{{ formatLangName(currentLanguage) }}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-70"><path d="m6 9 6 6 6-6"/></svg>
-              </button>
+      <!-- ══ HOW IT WORKS — animierte Timeline mit Glow-Verbindung ══ -->
+      <div class="mb-12">
+        <h3 class="text-lg font-semibold text-foreground mb-6">{{ $t('home.howItWorks') }}</h3>
+
+        <div class="hiw-timeline relative">
+          <!-- Verbindungs-Linie (horizontal auf Desktop, vertikal auf Mobile) -->
+          <div class="hiw-line" aria-hidden="true">
+            <div class="hiw-line-fill"></div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4 relative">
+            <!-- Step 1: Pick a language -->
+            <div class="hiw-step group">
+              <div class="hiw-num" data-step="1">
+                <span>1</span>
+                <span class="hiw-num-glow" aria-hidden="true"></span>
+              </div>
+              <h4 class="hiw-title">{{ steps[0].title }}</h4>
+              <div class="relative inline-block mb-3">
+                <button
+                  @click="showLanguageMenu = !showLanguageMenu"
+                  class="hiw-action flex items-center gap-1.5"
+                >
+                  <span class="text-base leading-none">{{ getFlag(currentLanguage) }}</span>
+                  <span>{{ formatLangName(currentLanguage) }}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-70"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+              </div>
+              <p class="hiw-desc">{{ steps[0].desc }}</p>
             </div>
-            <div class="text-xs text-muted-foreground">{{ steps[0].desc }}</div>
-          </div>
-          <div class="text-center p-4">
-            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-lg font-bold mx-auto mb-3">2</div>
-            <div class="text-sm font-medium text-foreground mb-3">{{ steps[1].title }}</div>
-            <a :href="'#/' + currentLanguage" class="inline-flex items-center gap-1.5 bg-primary text-white font-medium text-sm rounded-full px-4 py-2 cursor-pointer hover:bg-primary/90 transition mb-3">
-              {{ $t('home.browseWorkshops') }} →
-            </a>
-            <div class="text-xs text-muted-foreground">{{ steps[1].desc }}</div>
-          </div>
-          <div class="text-center p-4">
-            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-lg font-bold mx-auto mb-3">3</div>
-            <div class="text-sm font-medium text-foreground mb-1">{{ steps[2].title }}</div>
-            <div class="text-xs text-muted-foreground">{{ steps[2].desc }}</div>
+
+            <!-- Step 2: Start a Workshop -->
+            <div class="hiw-step group">
+              <div class="hiw-num" data-step="2">
+                <span>2</span>
+                <span class="hiw-num-glow" aria-hidden="true"></span>
+              </div>
+              <h4 class="hiw-title">{{ steps[1].title }}</h4>
+              <a :href="'#/' + currentLanguage" class="hiw-action inline-flex items-center gap-1.5">
+                {{ $t('home.browseWorkshops') }} →
+              </a>
+              <p class="hiw-desc mt-3">{{ steps[1].desc }}</p>
+            </div>
+
+            <!-- Step 3: Learn & Track -->
+            <div class="hiw-step group">
+              <div class="hiw-num" data-step="3">
+                <span>3</span>
+                <span class="hiw-num-glow" aria-hidden="true"></span>
+              </div>
+              <h4 class="hiw-title">{{ steps[2].title }}</h4>
+              <div class="hiw-progress" aria-hidden="true">
+                <span class="hiw-bar"></span>
+                <span class="hiw-bar"></span>
+                <span class="hiw-bar"></span>
+                <span class="hiw-bar"></span>
+                <span class="hiw-bar"></span>
+              </div>
+              <p class="hiw-desc">{{ steps[2].desc }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -594,6 +624,178 @@ onUnmounted(() => {
 .dropdown-enter-active, .dropdown-leave-active { transition: opacity 0.15s, transform 0.15s; }
 .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-6px) translateX(-50%); }
 .dropdown-enter-to, .dropdown-leave-from { transform: translateY(0) translateX(-50%); }
+
+/* ── How-It-Works Timeline (Sektion B) ── */
+.hiw-timeline { padding: 16px 0; }
+
+/* Verbindungs-Linie zwischen den Steps */
+.hiw-line {
+  position: absolute;
+  top: 30px;
+  left: 16%;
+  right: 16%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+              color-mix(in srgb, hsl(var(--primary)) 30%, transparent),
+              color-mix(in srgb, hsl(var(--primary)) 50%, transparent),
+              color-mix(in srgb, hsl(var(--primary)) 30%, transparent));
+  overflow: hidden;
+}
+.hiw-line-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary)), transparent);
+  width: 30%;
+  animation: hiw-flow 3.5s linear infinite;
+}
+@keyframes hiw-flow {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+/* Mobile: Linie vertikal */
+@media (max-width: 639px) {
+  .hiw-line {
+    top: 30px;
+    bottom: 30px;
+    left: calc(50% - 1px);
+    right: auto;
+    width: 2px;
+    height: auto;
+    background: linear-gradient(180deg,
+                color-mix(in srgb, hsl(var(--primary)) 30%, transparent),
+                color-mix(in srgb, hsl(var(--primary)) 50%, transparent),
+                color-mix(in srgb, hsl(var(--primary)) 30%, transparent));
+  }
+  .hiw-line-fill {
+    width: 100%;
+    height: 30%;
+    background: linear-gradient(180deg, transparent, hsl(var(--primary)), transparent);
+    animation: hiw-flow-v 3.5s linear infinite;
+  }
+  @keyframes hiw-flow-v {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(400%); }
+  }
+}
+
+.hiw-step {
+  position: relative;
+  text-align: center;
+  padding: 0 8px;
+  z-index: 1;
+}
+
+/* Number-Badge mit Glow */
+.hiw-num {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: hsl(var(--background));
+  border: 2px solid hsl(var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: hsl(var(--primary));
+  letter-spacing: -0.02em;
+  box-shadow: 0 0 0 6px hsl(var(--background)),
+              0 4px 16px color-mix(in srgb, hsl(var(--primary)) 30%, transparent);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.35s;
+  isolation: isolate;
+}
+.hiw-num span:first-child {
+  position: relative;
+  z-index: 2;
+}
+.hiw-num-glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, hsl(var(--primary)) 40%, transparent), transparent 70%);
+  z-index: 0;
+  animation: hiw-pulse 2.4s ease-out infinite;
+}
+@keyframes hiw-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.6; }
+  50%      { transform: scale(1.25); opacity: 0.3; }
+}
+
+.hiw-step:hover .hiw-num {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 6px hsl(var(--background)),
+              0 8px 24px color-mix(in srgb, hsl(var(--primary)) 50%, transparent);
+}
+
+.hiw-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.hiw-action {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  display: inline-flex;
+  box-shadow: 0 4px 12px color-mix(in srgb, hsl(var(--primary)) 30%, transparent);
+  margin-bottom: 8px;
+}
+.hiw-action:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, hsl(var(--primary)) 90%, white);
+  box-shadow: 0 8px 20px color-mix(in srgb, hsl(var(--primary)) 50%, transparent);
+}
+
+.hiw-desc {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.5;
+  max-width: 220px;
+  margin: 0 auto;
+}
+
+/* Step 3: Progress-Balken-Animation */
+.hiw-progress {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.hiw-bar {
+  width: 18px;
+  height: 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, hsl(var(--primary)) 20%, transparent);
+  animation: hiw-bar-fill 2.5s ease-in-out infinite;
+}
+.hiw-bar:nth-child(1) { animation-delay: 0s; }
+.hiw-bar:nth-child(2) { animation-delay: 0.2s; }
+.hiw-bar:nth-child(3) { animation-delay: 0.4s; }
+.hiw-bar:nth-child(4) { animation-delay: 0.6s; }
+.hiw-bar:nth-child(5) { animation-delay: 0.8s; }
+@keyframes hiw-bar-fill {
+  0%, 50%  { background: color-mix(in srgb, hsl(var(--primary)) 20%, transparent); transform: scaleY(0.7); }
+  25%      { background: hsl(var(--primary)); transform: scaleY(1.4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hiw-line-fill, .hiw-num-glow, .hiw-bar { animation: none; }
+  .hiw-step:hover .hiw-num { transform: none; }
+  .hiw-action:hover { transform: none; }
+}
 
 /* ── Feature Cards (Sektion A) ── */
 .feat-card {
