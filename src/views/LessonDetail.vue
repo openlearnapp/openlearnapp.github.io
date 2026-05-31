@@ -82,6 +82,14 @@
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen>
             </iframe>
+            <iframe
+              v-else-if="isHtmlVideoUrl(section.video)"
+              :src="resolveVideoPath(section.video)"
+              class="w-full aspect-video rounded"
+              frameborder="0"
+              allow="autoplay; fullscreen"
+              loading="lazy">
+            </iframe>
             <video
               v-else
               :src="resolveVideoPath(section.video)"
@@ -112,12 +120,6 @@
             </div>
           </Teleport>
 
-          <div
-            v-if="section.explanation && !activeLabel && !isInFocusMode"
-            class="bg-muted/60 p-4 rounded-lg mb-4 border-l-4 border-primary/30 prose prose-sm dark:prose-invert max-w-none"
-            v-html="DOMPurify.sanitize(marked(section.explanation))">
-          </div>
-
           <div v-if="section.image && !isInFocusMode" :class="activeLabel ? 'mb-3' : 'mb-4'">
             <img
               :src="resolveImagePath(section.image)"
@@ -128,6 +130,12 @@
             <p v-if="section.image_caption && !activeLabel" class="text-xs text-muted-foreground mt-1.5 text-center italic">
               {{ section.image_caption }}
             </p>
+          </div>
+
+          <div
+            v-if="section.explanation && !activeLabel && !isInFocusMode"
+            class="bg-muted/60 p-4 rounded-lg mb-4 border-l-4 border-primary/30 prose prose-sm dark:prose-invert max-w-none"
+            v-html="DOMPurify.sanitize(marked(section.explanation))">
           </div>
 
           <div
@@ -152,7 +160,7 @@
             ]">
             <div>
               <div>
-                <div class="text-lg font-semibold text-foreground mb-2 flex items-start gap-2">
+                <div v-if="!isAssessmentType(example)" class="text-lg font-semibold text-foreground mb-2 flex items-start gap-2">
                   <div class="flex-1">
                     <span v-if="isAssessmentCorrect(example)" class="text-green-600 dark:text-green-400 mr-1">✓</span>{{ example.q }}
                   </div>
@@ -329,6 +337,7 @@ import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } 
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useLessons } from '../composables/useLessons'
+import { usePremium } from '../composables/usePremium'
 import { useSettings } from '../composables/useSettings'
 import { useProgress } from '../composables/useProgress'
 import { useAudio } from '../composables/useAudio'
@@ -350,7 +359,8 @@ const router = useRouter()
 const { t } = useI18n()
 const emit = defineEmits(['update-title'])
 
-const { loadAllLessonsForWorkshop, resolveWorkshopKey } = useLessons()
+const { loadAllLessonsForWorkshop, resolveWorkshopKey, getWorkshopMeta } = useLessons()
+const premiumGuard = usePremium()
 const { settings } = useSettings()
 const { isItemLearned, toggleItemLearned, areAllItemsLearned, progress, setLastVisited } = useProgress()
 // jumpToExample still comes from useAudio directly; everything else flows
@@ -431,6 +441,10 @@ function isYouTubeUrl(url) {
   return /(?:youtube\.com|youtu\.be)/.test(url)
 }
 
+function isHtmlVideoUrl(url) {
+  return /\.html(\?|#|$)/.test(url || '')
+}
+
 function normalizeVideoUrl(url) {
   const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/)
   if (match) return `https://www.youtube.com/embed/${match[1]}`
@@ -484,10 +498,16 @@ function isAssessmentType(example) {
   return example.type && example.type !== 'qa'
 }
 
+function baseExType(example) {
+  const t = example.type || 'qa'
+  return t.startsWith('terminal-') ? t.replace('terminal-', '') : t
+}
+
 function hasValidation(example) {
   if (!isAssessmentType(example)) return false
-  if (example.type === 'input') return !!example.a
-  if (example.type === 'multiple-choice' || example.type === 'select') {
+  const t = baseExType(example)
+  if (t === 'input') return !!example.a
+  if (t === 'multiple-choice' || t === 'select') {
     return example.options?.some(opt => opt.correct === true)
   }
   return false
@@ -499,7 +519,7 @@ function isAssessmentCorrect(example) {
   if (!hasValidation(example)) {
     return !!sub
   }
-  if (example.type === 'multiple-choice') {
+  if (baseExType(example) === 'multiple-choice') {
     return getMcLive(example) === true || sub?.correct === true
   }
   return sub?.correct === true
@@ -902,6 +922,21 @@ async function loadCurrentLesson() {
   setWorkshopLessons(currentLearning, currentWorkshop, lessons)
 
   lesson.value = lessons.find(l => l.number === currentLessonNumber)
+
+  // Premium gate: wenn Workshop premium ist und diese Lektion nicht frei
+  // und Workshop noch nicht freigeschaltet, zurück zur Übersicht.
+  const wsMeta = getWorkshopMeta(currentLearning, currentWorkshop)
+  if (lesson.value && wsMeta?.premium && !premiumGuard.isUnlocked(currentLearning, currentWorkshop)) {
+    const idx = lessons.findIndex(l => l.number === currentLessonNumber)
+    if (!premiumGuard.isLessonFree(wsMeta, idx, currentLessonNumber)) {
+      router.replace({
+        name: 'lessons-overview',
+        params: { learning: currentLearning, workshop: currentWorkshop },
+        query: { locked: '1' }
+      })
+      return
+    }
+  }
 
   if (lesson.value) {
     emit('update-title', `${t('results.lessonLabel')} ${lesson.value.number}`)
