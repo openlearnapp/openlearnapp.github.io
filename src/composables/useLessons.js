@@ -21,10 +21,10 @@ function parseSource(source) {
   }
   if (typeof source === 'object') {
     if (source.folder) {
-      return { type: 'folder', path: source.folder, code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null, labels: source.labels || [] }
+      return { type: 'folder', path: source.folder, code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null, labels: source.labels || [], premium: source.premium === true, free_lessons: source.free_lessons ?? null, free_lesson_numbers: Array.isArray(source.free_lesson_numbers) ? source.free_lesson_numbers : null, total_lessons: source.total_lessons ?? null, unlock_token: source.unlock_token || null, provider: source.provider || null }
     }
     if (source.url) {
-      return { type: 'url', path: resolveUrl(source.url), code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null, labels: source.labels || [] }
+      return { type: 'url', path: resolveUrl(source.url), code: source.code, title: source.title || null, description: source.description || null, coach: source.coach || null, color: source.color || null, primaryColor: source.primaryColor || null, image: source.image || null, labels: source.labels || [], premium: source.premium === true, free_lessons: source.free_lessons ?? null, free_lesson_numbers: Array.isArray(source.free_lesson_numbers) ? source.free_lesson_numbers : null, total_lessons: source.total_lessons ?? null, unlock_token: source.unlock_token || null, provider: source.provider || null }
     }
   }
   return null
@@ -172,7 +172,7 @@ export function useLessons() {
 
   // Get metadata (title, description) for a workshop
   function getWorkshopMeta(langFolder, workshopFolder) {
-    return workshopMeta.value[langFolder]?.[workshopFolder] || { title: null, description: null }
+    return workshopMeta.value[langFolder]?.[workshopFolder] || { title: null, description: null, premium: false, provider: null, free_lessons: null, free_lesson_numbers: null, total_lessons: null }
   }
 
   // Get share URL for a remote workshop
@@ -275,6 +275,9 @@ export function useLessons() {
             const imageUrl = workshopSource.image
               ? `${baseUrl}/${langKey}/${workshopSource.image}`
               : null
+            const providerLogo = workshopSource.provider?.logo
+              ? `${baseUrl}/${langKey}/${workshopSource.provider.logo}`
+              : null
             workshopMeta.value[langKey][slug] = {
               title: workshopSource.title || null,
               description: workshopSource.description || null,
@@ -282,7 +285,15 @@ export function useLessons() {
               color: workshopSource.color || null,
               primaryColor: workshopSource.primaryColor || null,
               image: imageUrl,
-              labels: workshopSource.labels || []
+              labels: workshopSource.labels || [],
+              premium: workshopSource.premium === true,
+              free_lessons: workshopSource.free_lessons ?? null,
+              free_lesson_numbers: Array.isArray(workshopSource.free_lesson_numbers) ? workshopSource.free_lesson_numbers : null,
+              total_lessons: workshopSource.total_lessons ?? null,
+              unlock_token: workshopSource.unlock_token || null,
+              provider: workshopSource.provider
+                ? { ...workshopSource.provider, logo: providerLogo }
+                : null
             }
 
             // verbose: console.log(`  ✓ Remote workshop: ${slug} → ${workshopUrl}`)
@@ -360,6 +371,9 @@ export function useLessons() {
 
               if (!workshopMeta.value[langKey]) workshopMeta.value[langKey] = {}
               const imageUrl = ws.image ? `${baseUrl}/${langKey}/${ws.image}` : null
+              const providerLogo = ws.provider?.logo
+                ? `${baseUrl}/${langKey}/${ws.provider.logo}`
+                : null
               workshopMeta.value[langKey][localSlug] = {
                 title: `🔧 ${ws.title || ws.path}`,
                 description: ws.description || null,
@@ -367,7 +381,15 @@ export function useLessons() {
                 color: ws.color || null,
                 primaryColor: ws.primaryColor || null,
                 image: imageUrl,
-                labels: [...(ws.labels || []), 'local-dev']
+                labels: [...(ws.labels || []), 'local-dev'],
+                premium: ws.premium === true,
+                free_lessons: ws.free_lessons ?? null,
+                free_lesson_numbers: Array.isArray(ws.free_lesson_numbers) ? ws.free_lesson_numbers : null,
+                total_lessons: ws.total_lessons ?? null,
+                unlock_token: ws.unlock_token || null,
+                provider: ws.provider
+                  ? { ...ws.provider, logo: providerLogo }
+                  : null
               }
 
 

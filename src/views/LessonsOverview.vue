@@ -42,6 +42,22 @@
         @start="showTrailer = true"
       />
 
+      <!-- Premium: Anbieter-Werbung direkt unter dem Trailer (nahtlos integriert) -->
+      <ProviderBanner
+        v-if="isPremium"
+        :provider="workshopMetaData.provider"
+        :unlocked="isWorkshopUnlocked"
+        :buy-label="isDE ? 'Kurs freischalten' : 'Unlock course'"
+        :demo-label="isDE ? 'Demo entsperren' : 'Demo unlock'"
+        :demo-title="isDE ? 'Schaltet alle Lektionen lokal frei — nur zum Anschauen.' : 'Unlocks all lessons locally — preview only.'"
+        :unlocked-label="isDE ? 'Freigeschaltet' : 'Unlocked'"
+        :relock-label="isDE ? 'Demo zurücksetzen' : 'Reset demo'"
+        :powered-by="isDE ? 'Angeboten von' : 'Offered by'"
+        class="unit-provider"
+        @buy="handleBuy"
+        @demo-unlock="handleDemoUnlock"
+        @lock-again="handleRelock" />
+
       <!-- Trailer Modal -->
       <WorkshopTrailer
         v-if="showTrailer"
@@ -75,7 +91,27 @@
             :draggable="favorites.length > 1"
             @reorder="handleReorder">
             <template #card="{ lesson, status, isFavorite, isNext }">
+              <LockedLessonCard
+                v-if="isLessonLocked(lesson, lessons.indexOf(lesson))"
+                :lesson="lesson"
+                :status="status"
+                :is-favorite="isFavorite"
+                :image-url="resolveLessonImage(lesson)"
+                :locked-label="isDE ? 'Mit Kauf freigeschaltet' : 'Unlock with purchase'"
+                :next-label="$t('lesson.continueLabel')"
+                :sections-label="$t('lesson.sections')"
+                :examples-label="$t('lesson.examples')"
+                :quizzes-label="$t('lesson.quizzes')"
+                :audio-label="$t('lesson.audioAvailable')"
+                :video-label="$t('lesson.videoAvailable')"
+                :add-favorite-label="$t('lesson.addFavorite')"
+                :remove-favorite-label="$t('lesson.removeFavorite')"
+                :mark-complete-label="$t('lesson.markComplete')"
+                :mark-incomplete-label="$t('lesson.markIncomplete')"
+                :items-label="$t('lesson.itemsLearned')"
+                @unlock="handleLockedClick" />
               <LessonCard
+                v-else
                 :lesson="lesson"
                 :status="status"
                 :is-favorite="isFavorite"
@@ -187,6 +223,9 @@ import LessonCard from '@/components/LessonCard.vue'
 import LearningPath from '@/components/LearningPath.vue'
 import WorkshopHeroVideo from '@/components/WorkshopHeroVideo.vue'
 import WorkshopTrailer from '@/components/WorkshopTrailer.vue'
+import ProviderBanner from '@/components/ProviderBanner.vue'
+import LockedLessonCard from '@/components/LockedLessonCard.vue'
+import { usePremium } from '../composables/usePremium'
 
 const router = useRouter()
 const route = useRoute()
@@ -202,6 +241,7 @@ const {
 const { getAssessments } = useAssessments()
 const { isOnline: online, isWorkshopOffline, getDownloadStatus, downloadWorkshop } = useOffline()
 const { setWorkshopManifest: applyWorkshopManifest, setDefaultManifest } = useManifest()
+const premium = usePremium()
 
 const lessons = ref([])
 const isLoading = ref(true)
@@ -226,6 +266,33 @@ const workshopTitle = computed(() => {
   const meta = getWorkshopMeta(learning.value, workshop.value)
   return meta.title || formatLangName(workshop.value)
 })
+
+const workshopMetaData = computed(() => getWorkshopMeta(learning.value, workshop.value))
+const isPremium = computed(() => workshopMetaData.value?.premium === true && !!workshopMetaData.value?.provider)
+const isWorkshopUnlocked = computed(() => premium.unlocked.value && premium.isUnlocked(learning.value, workshop.value))
+
+function isLessonLocked(lesson, index) {
+  if (!isPremium.value) return false
+  if (isWorkshopUnlocked.value) return false
+  return !premium.isLessonFree(workshopMetaData.value, index, lesson.number)
+}
+
+function handleBuy() {
+  const url = workshopMetaData.value?.provider?.landing_url
+  if (url) window.open(url, '_blank', 'noopener')
+}
+
+function handleDemoUnlock() {
+  premium.unlock(learning.value, workshop.value)
+}
+
+function handleRelock() {
+  premium.lock(learning.value, workshop.value)
+}
+
+function handleLockedClick() {
+  handleBuy()
+}
 
 const workshopOffline = computed(() => isWorkshopOffline(learning.value, workshop.value))
 const downloadStatus = computed(() => getDownloadStatus(learning.value, workshop.value))
@@ -475,5 +542,17 @@ onUnmounted(() => {
 /* Lektionen-Bereich — Farbe über Tailwind dark: Klasse im Template */
 .unit-lessons {
   /* background via bg-white dark:bg-[#0d1320] im Template */
+}
+
+/* Provider-Banner direkt im unit-frame — nahtlos angeschlossen an den Trailer */
+.unit-provider {
+  border-radius: 0 !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.18);
+  margin: 0;
+}
+:global(.dark) .unit-provider {
+  border-bottom-color: rgba(124, 58, 237, 0.28);
 }
 </style>
