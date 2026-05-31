@@ -42,8 +42,18 @@
           :id="wsIndex === 0 ? 'tour-workshop-card' : undefined"
           :key="ws"
           @click="openWorkshop(ws)"
-          class="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/50 overflow-hidden"
+          class="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/50 overflow-hidden relative"
+          :class="{ 'workshop-card--premium': isPremiumWorkshop(ws) }"
           :style="getWorkshopCardStyle(ws)">
+
+          <!-- Premium badge floating top-right -->
+          <div v-if="isPremiumWorkshop(ws)" class="absolute top-2.5 right-2.5 z-10">
+            <PremiumBadge
+              :accent="getWorkshopProvider(ws)?.accent_color || '#7c3aed'"
+              :accent-soft="getWorkshopProvider(ws)?.accent_color_soft || '#a78bfa'">
+              {{ isWorkshopUnlocked(ws) ? (isDE ? 'Freigeschaltet' : 'Unlocked') : (isDE ? 'Premium' : 'Premium') }}
+            </PremiumBadge>
+          </div>
 
           <!-- Color accent bar at top (always shown) -->
           <div class="h-1.5 bg-gradient-to-r from-primary to-secondary" :style="getWorkshopBarStyle(ws)"></div>
@@ -106,6 +116,20 @@
             <p v-if="getWorkshopDescription(ws)" class="text-sm text-muted-foreground leading-relaxed mb-3">
               {{ getWorkshopDescription(ws) }}
             </p>
+
+            <!-- Premium provider strip -->
+            <div v-if="isPremiumWorkshop(ws) && getWorkshopProvider(ws)?.name"
+                 class="mt-2 mb-2 flex items-center justify-between gap-2 text-xs">
+              <span class="text-muted-foreground">
+                {{ isDE ? 'Angeboten von' : 'Offered by' }}
+                <strong class="text-foreground">{{ getWorkshopProvider(ws).name }}</strong>
+              </span>
+              <span v-if="!isWorkshopUnlocked(ws) && getWorkshopProvider(ws).price_display"
+                    class="font-semibold"
+                    :style="{ color: getWorkshopProvider(ws).accent_color || '#7c3aed' }">
+                {{ getWorkshopProvider(ws).price_display }}
+              </span>
+            </div>
 
             <div v-if="isRemoteWorkshop(learning, ws)" class="flex items-center">
               <a
@@ -179,6 +203,10 @@ import { useLanguage } from '../composables/useLanguage'
 import { formatLangName } from '../utils/formatters'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import PremiumBadge from '@/components/PremiumBadge.vue'
+import { usePremium } from '../composables/usePremium'
+
+const premium = usePremium()
 
 const emit = defineEmits(['update-title'])
 const router = useRouter()
@@ -361,6 +389,20 @@ function getWorkshopDescription(workshop) {
   return meta.description || null
 }
 
+function isPremiumWorkshop(workshop) {
+  const meta = getWorkshopMeta(learning.value, workshop)
+  return meta?.premium === true && !!meta?.provider
+}
+
+function getWorkshopProvider(workshop) {
+  const meta = getWorkshopMeta(learning.value, workshop)
+  return meta?.provider || null
+}
+
+function isWorkshopUnlocked(workshop) {
+  return premium.unlocked.value && premium.isUnlocked(learning.value, workshop)
+}
+
 function getWorkshopSourceLabel(workshop) {
   const sourceUrl = getSourceForSlug(learning.value, workshop)
   if (!sourceUrl) return ''
@@ -516,3 +558,32 @@ onUnmounted(() => {
   window.removeEventListener('content-sources-changed', onSourcesChanged)
 })
 </script>
+
+<style scoped>
+.workshop-card--premium {
+  position: relative;
+  isolation: isolate;
+}
+.workshop-card--premium::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(120deg, #7c3aed, #22d3ee, #a78bfa, #7c3aed);
+  background-size: 300% 100%;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: premiumBorderShift 8s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.85;
+}
+@keyframes premiumBorderShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+</style>
