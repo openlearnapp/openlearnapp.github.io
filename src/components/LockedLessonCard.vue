@@ -15,6 +15,9 @@
       :is-favorite="isFavorite"
       :is-next="false"
       :image-url="imageUrl"
+      :is-premium="isPremium"
+      :premium-accent="premiumAccent"
+      :premium-accent-soft="premiumAccentSoft"
       :answered-count="0"
       :learned-item-count="0"
       :next-label="nextLabel"
@@ -53,6 +56,9 @@ defineProps({
   status: { type: String, default: 'open' },
   isFavorite: { type: Boolean, default: false },
   imageUrl: { type: String, default: '' },
+  isPremium: { type: Boolean, default: false },
+  premiumAccent: { type: String, default: '#22d3ee' },
+  premiumAccentSoft: { type: String, default: '#67e8f9' },
   lockedLabel: { type: String, default: 'Mit Kauf freigeschaltet' },
   nextLabel: { type: String, default: '' },
   sectionsLabel: { type: String, default: '' },
