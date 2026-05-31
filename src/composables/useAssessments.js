@@ -77,7 +77,8 @@ function clearAnswers(learning, workshop, lessonNumber) {
 function validateAnswer(example, userAnswer) {
   if (!example) return null
 
-  const type = example.type || 'qa'
+  const rawType = example.type || 'qa'
+  const type = rawType.startsWith('terminal-') ? rawType.replace('terminal-', '') : rawType
 
   if (type === 'input') {
     if (!example.a) return null
