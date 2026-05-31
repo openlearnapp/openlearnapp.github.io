@@ -45,6 +45,33 @@ Wer eine gesperrte Lektion per Direkt-URL aufruft (`#/.../lesson/N`), wird auf d
 
 Im Banner gibt es einen „Demo entsperren"-Knopf, der einen Eintrag in LocalStorage schreibt. Damit verhalten sich alle gesperrten Lektionen so, als wäre der Workshop gekauft. Der spätere echte Kauf-Rückkehr-Flow per URL-Token (`?unlock=<token>`) ist Teil einer Folge-Iteration; das `unlock_token`-Feld im Schema ist bereits dafür reserviert.
 
+## Drei Anbieter-Szenarien (was Anbieter selbst entscheiden)
+
+Alle drei Szenarien werden nur durch Felder in der eigenen `workshops.yaml` ausgelöst — kein App-Code-Eingriff:
+
+| Szenario | YAML | Was Lernende sehen |
+|---|---|---|
+| Kostenlos (Default) | `premium:` fehlt oder `false` | Wie bisher: kein Banner, alle Lektionen offen |
+| Komplett Premium | `premium: true` + kein `free_lessons` | Banner ganz oben, **alle** Lektionen Schloss-Karten |
+| Premium mit Vorschau | `premium: true` + `free_lessons: N` oder `free_lesson_numbers: [a,b,c]` | Banner, die gewählten Lektionen frei, Rest Schloss |
+
+## Folge-Iteration: Video-Lock pro Lektion
+
+Eine Lektion kann textlich frei zugänglich sein, das Video aber gesperrt. Anbieter setzen dann pro Sektion:
+
+```yaml
+sections:
+  - title: "Was ist Linux?"
+    explanation: |
+      ... Text frei lesbar ...
+    video:
+      url: "..."
+      premium: true              # gesperrt bis Kauf
+      preview_image: "video-vorschau.png"   # optional: gedimmtes Standbild statt Player
+```
+
+Wenn das Video gesperrt ist und der Workshop nicht freigeschaltet wurde, rendert die Lektion das `preview_image` (oder einen Standard-Schloss-Block) statt des Video-Players, mit Klick auf `provider.landing_url`. Ist diese Iteration ein **separater Folge-PR** nach dem Backbone — diese PR enthält das Schema-Feld noch nicht.
+
 ## Was unverändert bleibt
 
 - Kostenlose Workshops verhalten sich exakt wie heute — kein Banner, keine Schlösser, kein Guard.
