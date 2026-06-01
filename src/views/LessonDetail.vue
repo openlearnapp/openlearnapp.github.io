@@ -74,29 +74,39 @@
         </CardHeader>
         <CardContent class="p-0">
           <div v-if="section.video && !activeLabel && !isInFocusMode" class="mb-4">
-            <iframe
-              v-if="isYouTubeUrl(section.video)"
-              :src="normalizeVideoUrl(section.video)"
-              class="w-full aspect-video rounded"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen>
-            </iframe>
-            <iframe
-              v-else-if="isHtmlVideoUrl(section.video)"
-              :src="resolveVideoPath(section.video)"
-              class="w-full aspect-video rounded"
-              frameborder="0"
-              allow="autoplay; fullscreen"
-              loading="lazy">
-            </iframe>
-            <video
-              v-else
-              :src="resolveVideoPath(section.video)"
-              class="w-full aspect-video rounded"
-              controls
-              preload="metadata">
-            </video>
+            <!-- Premium video lock: object form with premium: true, workshop not unlocked -->
+            <PremiumVideoLock
+              v-if="isVideoLocked(section.video)"
+              :preview-image="resolveVideoPreviewImage(section.video)"
+              :accent="workshopProvider?.accent_color || '#22d3ee'"
+              :accent-soft="workshopProvider?.accent_color_soft || '#67e8f9'"
+              :label="$t('lesson.unlockVideo') || (isDE ? 'Video freischalten' : 'Unlock video')"
+              @unlock="openProviderLanding" />
+            <template v-else>
+              <iframe
+                v-if="isYouTubeUrl(videoUrl(section.video))"
+                :src="normalizeVideoUrl(videoUrl(section.video))"
+                class="w-full aspect-video rounded"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+              </iframe>
+              <iframe
+                v-else-if="isHtmlVideoUrl(videoUrl(section.video))"
+                :src="resolveVideoPath(videoUrl(section.video))"
+                class="w-full aspect-video rounded"
+                frameborder="0"
+                allow="autoplay; fullscreen"
+                loading="lazy">
+              </iframe>
+              <video
+                v-else
+                :src="resolveVideoPath(videoUrl(section.video))"
+                class="w-full aspect-video rounded"
+                controls
+                preload="metadata">
+              </video>
+            </template>
           </div>
 
           <!-- Lightbox -->
@@ -338,6 +348,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useLessons } from '../composables/useLessons'
 import { usePremium } from '../composables/usePremium'
+import PremiumVideoLock from '@/components/PremiumVideoLock.vue'
 import { useSettings } from '../composables/useSettings'
 import { useProgress } from '../composables/useProgress'
 import { useAudio } from '../composables/useAudio'
@@ -472,6 +483,40 @@ function resolveLessonAssetPath(assetPath) {
 
 function resolveVideoPath(videoPath) {
   return resolveLessonAssetPath(videoPath)
+}
+
+// Premium video helpers — accept both string (legacy) and object form
+function videoUrl(v) {
+  if (!v) return ''
+  return typeof v === 'string' ? v : (v.url || '')
+}
+
+function videoIsPremium(v) {
+  return v && typeof v === 'object' && v.premium === true
+}
+
+function isVideoLocked(v) {
+  if (!videoIsPremium(v)) return false
+  const wsMeta = getWorkshopMeta(learning.value, workshop.value)
+  if (!wsMeta?.premium) return false
+  return !premiumGuard.isUnlocked(learning.value, workshop.value)
+}
+
+const isDE = computed(() => learning.value === 'deutsch')
+
+function resolveVideoPreviewImage(v) {
+  if (!v || typeof v !== 'object' || !v.preview_image) return ''
+  return resolveLessonAssetPath(v.preview_image)
+}
+
+const workshopProvider = computed(() => {
+  const wsMeta = getWorkshopMeta(learning.value, workshop.value)
+  return wsMeta?.provider || null
+})
+
+function openProviderLanding() {
+  const url = workshopProvider.value?.landing_url
+  if (url) window.open(url, '_blank', 'noopener')
 }
 
 function resolveImagePath(imagePath) {
