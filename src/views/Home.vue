@@ -589,7 +589,7 @@ import { useLanguage } from '../composables/useLanguage'
 import { formatLangName } from '../utils/formatters'
 
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { availableContent, isLoading, loadAvailableContent } = useLessons()
 const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 
@@ -613,6 +613,9 @@ function onScroll() {
 
 const learningLanguages = computed(() => [...new Set(Object.keys(availableContent.value))])
 const currentLanguage = computed(() => selectedLanguage.value || learningLanguages.value[0] || 'english')
+
+// Robust DE check: vue-i18n locale ist immer gesetzt, selectedLanguage kann null sein
+const isDE = computed(() => locale.value === 'de' || selectedLanguage.value === 'deutsch')
 
 // Seeded stars
 const stars = Array.from({ length: 55 }, (_, i) => ({
