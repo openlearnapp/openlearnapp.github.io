@@ -56,12 +56,25 @@ export function usePremium() {
     return isLessonFree(meta, lessonIndex, lessonNumber)
   }
 
+  // Attempt to unlock the workshop from a URL token, comparing against the
+  // workshop's unlock_token field. Returns true on success, false on no-op.
+  function tryUnlockFromToken(lang, workshop, meta, token) {
+    if (!token) return false
+    if (!meta?.premium) return false
+    if (!meta?.unlock_token) return false
+    if (meta.unlock_token !== token) return false
+    if (isUnlocked(lang, workshop)) return true
+    unlock(lang, workshop)
+    return true
+  }
+
   return {
     unlocked,
     isUnlocked,
     unlock,
     lock,
     isLessonFree,
-    isLessonAccessible
+    isLessonAccessible,
+    tryUnlockFromToken
   }
 }
