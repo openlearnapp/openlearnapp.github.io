@@ -236,13 +236,17 @@
 
 <script setup>
 import { computed, h } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useLanguage } from '../composables/useLanguage'
 
 const emit = defineEmits(['update-title'])
 const { selectedLanguage } = useLanguage()
+const { locale } = useI18n()
 
-const isDE = computed(() => selectedLanguage.value === 'deutsch')
-const currentLang = computed(() => selectedLanguage.value || 'deutsch')
+// Robust DE-Check: works even if user lands on /creators without picking a learning language first.
+// vue-i18n locale ('de'/'en'/'fa'/'ar') is always set; selectedLanguage may be null on first visit.
+const isDE = computed(() => locale.value === 'de' || selectedLanguage.value === 'deutsch')
+const currentLang = computed(() => selectedLanguage.value || (locale.value === 'de' ? 'deutsch' : 'english'))
 
 emit('update-title', isDE.value ? 'Workshop erstellen' : 'Create a Workshop')
 
