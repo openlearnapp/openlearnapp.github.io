@@ -3,13 +3,20 @@
     :class="[
       'group relative flex items-stretch rounded-2xl cursor-pointer overflow-hidden',
       'transition-all duration-300 ease-out',
+      isPremium ? 'lc--premium' : '',
       isNext
-        ? 'bg-white dark:bg-zinc-800/95 shadow-lg shadow-primary/15 ring-2 ring-primary/50 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-1.5 hover:ring-primary/70'
+        ? (isPremium
+          ? 'lc--premium-next bg-white/95 dark:bg-slate-900/85 hover:-translate-y-1.5'
+          : 'bg-white dark:bg-zinc-800/95 shadow-lg shadow-primary/15 ring-2 ring-primary/50 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-1.5 hover:ring-primary/70')
         : isCompleted
-          ? 'bg-gradient-to-r from-emerald-50/80 to-white dark:from-emerald-950/30 dark:to-zinc-800/90 shadow-sm hover:shadow-md hover:-translate-y-0.5'
-          : 'bg-white dark:bg-zinc-800/80 shadow-sm hover:shadow-lg hover:shadow-black/8 dark:hover:shadow-black/25 hover:-translate-y-1'
+          ? (isPremium
+            ? 'lc--premium-done bg-white/95 dark:bg-slate-900/85 hover:-translate-y-0.5'
+            : 'bg-gradient-to-r from-emerald-50/80 to-white dark:from-emerald-950/30 dark:to-zinc-800/90 shadow-sm hover:shadow-md hover:-translate-y-0.5')
+          : (isPremium
+            ? 'bg-white/95 dark:bg-slate-900/85 hover:-translate-y-1'
+            : 'bg-white dark:bg-zinc-800/80 shadow-sm hover:shadow-lg hover:shadow-black/8 dark:hover:shadow-black/25 hover:-translate-y-1')
     ]"
-    :style="{ animationDelay: `${(lesson.number - 1) * 60}ms` }"
+    :style="cardStyle"
     @click="$emit('open', lesson.number)">
 
     <!-- Left accent bar -->
@@ -156,12 +163,24 @@ const props = defineProps({
   removeFavoriteLabel: { type: String, default: 'Remove from favorites' },
   markCompleteLabel: { type: String, default: 'Mark as completed' },
   markIncompleteLabel: { type: String, default: 'Mark as incomplete' },
-  itemsLabel: { type: String, default: 'items learned' }
+  itemsLabel: { type: String, default: 'items learned' },
+  isPremium: { type: Boolean, default: false },
+  premiumAccent: { type: String, default: '#22d3ee' },
+  premiumAccentSoft: { type: String, default: '#67e8f9' }
 })
 
 defineEmits(['open', 'toggle-favorite', 'toggle-completed'])
 
 const isCompleted = computed(() => props.status === 'completed')
+
+const cardStyle = computed(() => {
+  const base = { animationDelay: `${(props.lesson.number - 1) * 60}ms` }
+  if (props.isPremium) {
+    base['--lc-a'] = props.premiumAccent
+    base['--lc-b'] = props.premiumAccentSoft
+  }
+  return base
+})
 
 const itemCount = computed(() => {
   if (!props.lesson.sections) return 0
@@ -237,3 +256,35 @@ const completedSections = computed(() => {
   return Math.floor((overallProgress.value / 100) * props.lesson.sections.length)
 })
 </script>
+
+<style scoped>
+/* Premium-Theme overrides — only active when isPremium prop is true.
+   Uses background-IMAGE (not background-color) so it composites on top of
+   the Tailwind bg-white / dark:bg-slate-900 base instead of overwriting it. */
+.lc--premium {
+  --lc-a: #22d3ee;
+  --lc-b: #67e8f9;
+  background-image: linear-gradient(135deg, color-mix(in oklab, var(--lc-a) 14%, transparent) 0%, transparent 65%);
+  border: 1px solid color-mix(in oklab, var(--lc-a) 28%, transparent) !important;
+  box-shadow:
+    0 4px 16px -8px color-mix(in oklab, var(--lc-a) 45%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--lc-a) 10%, transparent);
+}
+.lc--premium:hover {
+  border-color: color-mix(in oklab, var(--lc-a) 55%, transparent) !important;
+  box-shadow:
+    0 10px 30px -12px color-mix(in oklab, var(--lc-a) 60%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--lc-a) 16%, transparent);
+}
+.lc--premium-next {
+  background-image: linear-gradient(135deg, color-mix(in oklab, var(--lc-a) 22%, transparent) 0%, transparent 60%);
+  border: 2px solid color-mix(in oklab, var(--lc-a) 55%, transparent) !important;
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, var(--lc-a) 25%, transparent),
+    0 10px 30px -10px color-mix(in oklab, var(--lc-a) 65%, transparent);
+}
+.lc--premium-done {
+  background-image: linear-gradient(135deg, color-mix(in oklab, #10b981 18%, transparent) 0%, color-mix(in oklab, var(--lc-a) 8%, transparent) 70%);
+  border: 1px solid color-mix(in oklab, #10b981 30%, transparent) !important;
+}
+</style>
