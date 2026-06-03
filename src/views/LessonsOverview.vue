@@ -1,5 +1,15 @@
 <template>
   <div>
+    <!-- Unlock-success toast after URL-token unlock -->
+    <Transition name="unlock-toast">
+      <div v-if="unlockToast" class="unlock-toast" role="status">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+        <span>{{ unlockToast }}</span>
+      </div>
+    </Transition>
+
     <!-- Source indicator (alle Workshops) -->
     <div v-if="!isLoading && !isLinuxWorkshop && (isRemote || lessons.length > 0)" class="mb-4 flex items-center justify-between text-sm">
       <div>
@@ -454,6 +464,27 @@ async function loadLessons() {
 
   const meta = getWorkshopMeta(learning.value, workshop.value)
   emit('update-title', meta.title || formatLangName(workshop.value))
+
+  // Auto-unlock from URL token after returning from provider checkout
+  checkUnlockToken(meta)
+}
+
+const unlockToast = ref(null)
+
+function checkUnlockToken(meta) {
+  const token = route.query.unlock
+  if (!token) return
+  const ok = premium.tryUnlockFromToken(learning.value, workshop.value, meta, token)
+  if (ok) {
+    unlockToast.value = isDE.value
+      ? 'Workshop freigeschaltet — viel Spaß beim Lernen!'
+      : 'Workshop unlocked — enjoy learning!'
+    setTimeout(() => { unlockToast.value = null }, 5000)
+  }
+  // Clean ?unlock= from URL either way so it doesn't stick in history/bookmarks
+  const cleanQuery = { ...route.query }
+  delete cleanQuery.unlock
+  router.replace({ query: cleanQuery })
 }
 
 watch([learning, workshop], () => {
@@ -548,6 +579,38 @@ onUnmounted(() => {
 /* Lektionen-Bereich — Farbe über Tailwind dark: Klasse im Template */
 .unit-lessons {
   /* background via bg-white dark:bg-[#0d1320] im Template */
+}
+
+/* Unlock-Success-Toast nach Kauf-Rückkehr per ?unlock=<token> */
+.unlock-toast {
+  position: fixed;
+  top: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #064e3b;
+  background: linear-gradient(120deg, #6ee7b7, #34d399);
+  border: 1px solid rgba(16, 185, 129, 0.55);
+  box-shadow: 0 14px 32px -12px rgba(16, 185, 129, 0.7);
+}
+:global(.dark) .unlock-toast {
+  color: #ecfdf5;
+  background: linear-gradient(120deg, rgba(16, 185, 129, 0.32), rgba(20, 184, 166, 0.32));
+  border-color: rgba(110, 231, 183, 0.45);
+}
+.unlock-toast-enter-active, .unlock-toast-leave-active {
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(.2,.9,.2,1);
+}
+.unlock-toast-enter-from, .unlock-toast-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-12px);
 }
 
 /* Provider-Banner direkt im unit-frame — nahtlos angeschlossen an den Trailer */
