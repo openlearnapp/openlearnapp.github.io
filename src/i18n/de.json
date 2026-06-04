@@ -288,8 +288,8 @@
   "tour": {
     "startTour": "Tour starten",
     "overview": {
-      "title1": "Lernsprache wählen",
-      "desc1": "Hier wechselst du die Sprache, die du lernen möchtest.",
+      "title1": "Workshops-Sprache",
+      "desc1": "Wähle, in welcher Sprache deine Workshops erscheinen — nicht deine Muttersprache, sondern die Sprache, in der du lernen willst.",
       "title2": "Workshops filtern",
       "desc2": "Filtere Workshops nach Thema — z. B. Anfänger oder Fortgeschrittene.",
       "title3": "Workshop starten",
