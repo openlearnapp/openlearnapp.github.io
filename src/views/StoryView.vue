@@ -168,21 +168,11 @@
                 </div>
               </div>
 
-              <!-- Page indicator + nav -->
-              <div v-if="totalPages > 1" class="flex items-center justify-between px-6 py-3 flex-shrink-0 border-t border-amber-200/10">
-                <button @click.stop="prevPage" :disabled="currentPage === 0"
-                  class="page-nav-btn disabled:opacity-20 disabled:cursor-default">
-                  ← zurück
-                </button>
-                <div class="flex items-center gap-1.5">
-                  <span v-for="p in totalPages" :key="p"
-                    class="w-2 h-2 rounded-full transition-all duration-300"
-                    :class="p - 1 === currentPage ? 'bg-amber-200/60 scale-125' : 'bg-amber-200/15'" />
-                </div>
-                <button @click.stop="nextPage" :disabled="currentPage >= totalPages - 1"
-                  class="page-nav-btn disabled:opacity-20 disabled:cursor-default">
-                  weiter →
-                </button>
+              <!-- Page indicator (read-only — left/right tap navigates sections) -->
+              <div v-if="totalPages > 1" class="flex items-center justify-center px-6 py-3 flex-shrink-0 border-t border-amber-200/10 gap-1.5">
+                <span v-for="p in totalPages" :key="p"
+                  class="w-2 h-2 rounded-full transition-all duration-300"
+                  :class="p - 1 === currentPage ? 'bg-amber-200/60 scale-125' : 'bg-amber-200/15'" />
               </div>
             </div>
           </div>
@@ -404,18 +394,6 @@ const highlightedParagraph = computed(() => {
   if (localIdx >= 0 && localIdx < paragraphsPerPage.value) return localIdx
   return -1
 })
-
-function nextPage() {
-  if (currentPage.value < totalPages.value - 1) {
-    currentPage.value++
-  }
-}
-
-function prevPage() {
-  if (currentPage.value > 0) {
-    currentPage.value--
-  }
-}
 
 // Scene detection — determines atmosphere, particles, colors
 const sceneType = computed(() => {
@@ -857,7 +835,8 @@ function advanceExample() {
   showCurrentExample()
 }
 
-// Tap left side to go back, right side to advance — works while paused too
+// Tap left side → previous section, right side → next section.
+// Works while paused too; intro tap skips to first example.
 function handleTap(e) {
   const rect = e.currentTarget.getBoundingClientRect()
   const clickX = e.clientX - rect.left
@@ -878,23 +857,33 @@ function handleTap(e) {
   if (state.value !== 'narrating') return
 
   clearAutoAdvance()
+  stopSpeaking()
 
   if (isLeftSide) {
-    // Go back one example; update page to follow
-    if (currentExampleIndex.value > 0) {
-      currentExampleIndex.value--
-      currentPage.value = Math.floor(currentExampleIndex.value / paragraphsPerPage.value)
-      showCurrentExample()
-    }
+    goToPreviousSection()
   } else {
-    // Advance one example; update page to follow
-    const nextIdx = currentExampleIndex.value + 1
-    const section = currentLesson.value?.sections?.[currentSectionIndex.value]
-    const examplesInSection = section?.examples?.length || 0
-    if (nextIdx < examplesInSection) {
-      currentExampleIndex.value = nextIdx
-      currentPage.value = Math.floor(currentExampleIndex.value / paragraphsPerPage.value)
-      showCurrentExample()
+    advanceSection()
+  }
+}
+
+async function goToPreviousSection() {
+  if (!currentLesson.value?.sections) return
+  const prevSectionIdx = currentSectionIndex.value - 1
+  if (prevSectionIdx >= 0) {
+    currentSectionIndex.value = prevSectionIdx
+    currentExampleIndex.value = 0
+    currentPage.value = 0
+    imageLoaded.value = false
+    await playSectionIntro()
+    showCurrentExample()
+  } else {
+    // Already at first section — jump to previous lesson if any
+    const prevLesson = lessons.value.find(l => l.number === lessonNumber.value - 1)
+    if (prevLesson) {
+      router.replace({
+        name: 'story-view',
+        params: { learning: learning.value, workshop: workshop.value, number: prevLesson.number }
+      })
     }
   }
 }
@@ -1470,20 +1459,6 @@ onUnmounted(() => {
 }
 .example-q { letter-spacing: 0.01em; }
 .example-a { letter-spacing: 0.02em; }
-
-/* === Page nav buttons === */
-.page-nav-btn {
-  font-family: Georgia, serif;
-  font-size: 0.875rem;
-  color: rgba(245, 230, 211, 0.35);
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  transition: all 0.2s;
-}
-.page-nav-btn:hover:not(:disabled) {
-  color: rgba(245, 230, 211, 0.7);
-  background: rgba(245, 230, 211, 0.05);
-}
 
 .story-text {
   font-family: Georgia, 'Times New Roman', serif;
