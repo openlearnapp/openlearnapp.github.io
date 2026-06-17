@@ -329,7 +329,7 @@ const lastPR = __APP_LAST_PR__
 
 const { isLoadingAudio, isPlaying, isInFocusMode, play, pause, resume } = useAudio()
 const { settings } = useSettings()
-const { availableContent, getWorkshopMeta, workshopMeta, loadAvailableContent, loadWorkshopsForLanguage } = useLessons()
+const { availableContent, languageCodes, getWorkshopMeta, workshopMeta, loadAvailableContent, loadWorkshopsForLanguage } = useLessons()
 const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 const { nextLessonNumber: footerNextLesson, lessonLearning, lessonWorkshop } = useFooter()
 const { isLoggedIn: isGunLoggedIn, username: gunUsername } = useGun()
@@ -347,9 +347,28 @@ function simpleHash(str) {
 }
 const avatarHue = computed(() => simpleHash(gunUsername.value || '') % 360)
 
-// Deduplicated list of available languages
+// Deduplicated list of available languages.
+// Two folders can refer to the same language (e.g. "arabic" from workshop sources
+// and "العربية" from languages.yaml). Group by language code, and for each group
+// pick the folder that actually has workshops — so clicking the button leads somewhere.
 const learningLanguages = computed(() => {
-  return [...new Set(Object.keys(availableContent.value))]
+  const keys = Object.keys(availableContent.value)
+  const groups = new Map()
+  for (const key of keys) {
+    const groupKey = languageCodes.value?.[key] || key.toLowerCase().trim()
+    if (!groups.has(groupKey)) groups.set(groupKey, [])
+    groups.get(groupKey).push(key)
+  }
+  const result = []
+  for (const variants of groups.values()) {
+    variants.sort((a, b) => {
+      const aCount = Object.keys(availableContent.value[a] || {}).length
+      const bCount = Object.keys(availableContent.value[b] || {}).length
+      return bCount - aCount
+    })
+    result.push(variants[0])
+  }
+  return result
 })
 
 // Track the last content route so settings/profile back button can return there

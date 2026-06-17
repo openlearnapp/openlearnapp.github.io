@@ -1,6 +1,6 @@
-# Available interface languages
-# Users can select any language — workshops may or may not be available yet.
-# This helps us learn which languages are in demand.
+# Available interface languages — curated to school-taught regional languages
+# with broad literate reach (not every world language). Users can select any of
+# these; whether a workshop is available depends on what providers translated.
 languages:
   - folder: deutsch
     code: de-DE
@@ -14,21 +14,29 @@ languages:
     code: pt-PT
   - folder: italiano
     code: it-IT
-  - folder: türkçe
-    code: tr-TR
   - folder: polski
     code: pl-PL
+  - folder: русский
+    code: ru-RU
+  - folder: українська
+    code: uk-UA
+  - folder: türkçe
+    code: tr-TR
   - folder: العربية
     code: ar-SA
   - folder: فارسی
     code: fa-IR
+  - folder: اردو
+    code: ur-PK
   - folder: हिन्दी
     code: hi-IN
+  - folder: বাংলা
+    code: bn-BD
+  - folder: bahasa
+    code: id-ID
   - folder: 中文
     code: zh-CN
   - folder: 日本語
     code: ja-JP
   - folder: 한국어
     code: ko-KR
-  - folder: українська
-    code: uk-UA
