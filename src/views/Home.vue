@@ -98,7 +98,8 @@
             <div class="hero-split-cta">
               <!-- Linke Zone: Sprache wählen -->
               <button
-                @click.stop="showLanguageMenu = !showLanguageMenu"
+                ref="langBtnRef"
+                @click.stop="toggleLanguageMenu"
                 class="hero-split-lang"
                 :aria-label="formatLangName(currentLanguage) + ' — Sprache wechseln'"
               >
@@ -116,26 +117,30 @@
               </a>
             </div>
 
-            <!-- Dropdown -->
-            <Transition name="dropdown">
-              <div
-                v-if="showLanguageMenu"
-                class="absolute top-full left-0 mt-2 bg-popover text-popover-foreground border border-border rounded-xl shadow-2xl overflow-hidden min-w-[200px] z-[100]"
-              >
-                <button
-                  v-for="lang in learningLanguages"
-                  :key="lang"
-                  @click="selectLanguage(lang)"
-                  :class="[
-                    'flex items-center gap-2.5 w-full px-4 py-3 text-sm text-left hover:bg-accent transition',
-                    currentLanguage === lang ? 'bg-accent font-semibold' : ''
-                  ]"
+            <!-- Dropdown — teleported to body so it isn't clipped by hero's overflow-hidden -->
+            <Teleport to="body">
+              <Transition name="dropdown">
+                <div
+                  v-if="showLanguageMenu"
+                  class="fixed bg-popover text-popover-foreground border border-border rounded-xl shadow-2xl overflow-y-auto min-w-[200px] max-h-[60vh] z-[100]"
+                  :style="dropdownStyle"
+                  @click.stop
                 >
-                  <span class="text-lg leading-none">{{ getFlag(lang) }}</span>
-                  <span>{{ formatLangName(lang) }}</span>
-                </button>
-              </div>
-            </Transition>
+                  <button
+                    v-for="lang in learningLanguages"
+                    :key="lang"
+                    @click="selectLanguage(lang)"
+                    :class="[
+                      'flex items-center gap-2.5 w-full px-4 py-3 text-sm text-left hover:bg-accent transition',
+                      currentLanguage === lang ? 'bg-accent font-semibold' : ''
+                    ]"
+                  >
+                    <span class="text-lg leading-none">{{ getFlag(lang) }}</span>
+                    <span>{{ formatLangName(lang) }}</span>
+                  </button>
+                </div>
+              </Transition>
+            </Teleport>
           </div>
         </div>
 
@@ -590,12 +595,28 @@ import { formatLangName } from '../utils/formatters'
 
 const router = useRouter()
 const { t, locale } = useI18n()
-const { availableContent, isLoading, loadAvailableContent } = useLessons()
+const { availableContent, languageCodes, isLoading, loadAvailableContent } = useLessons()
 const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 
 const showLanguageMenu = ref(false)
+const langBtnRef = ref(null)
+const dropdownStyle = ref({})
 const animFrame = ref(0)
 const scrollY = ref(0)
+
+function positionDropdown() {
+  if (!langBtnRef.value) return
+  const r = langBtnRef.value.getBoundingClientRect()
+  dropdownStyle.value = {
+    top: `${r.bottom + 8}px`,
+    left: `${r.left}px`,
+  }
+}
+
+function toggleLanguageMenu() {
+  if (!showLanguageMenu.value) positionDropdown()
+  showLanguageMenu.value = !showLanguageMenu.value
+}
 let rafId = null
 
 // Parallax-Tiefe: 3 Layer.
@@ -609,9 +630,29 @@ const parallax = computed(() => ({
 
 function onScroll() {
   scrollY.value = Math.min(window.scrollY, 800)
+  if (showLanguageMenu.value) positionDropdown()
 }
 
-const learningLanguages = computed(() => [...new Set(Object.keys(availableContent.value))])
+// Same dedup logic as App.vue: group by language code, prefer variants with workshops.
+const learningLanguages = computed(() => {
+  const keys = Object.keys(availableContent.value)
+  const groups = new Map()
+  for (const key of keys) {
+    const groupKey = languageCodes.value?.[key] || key.toLowerCase().trim()
+    if (!groups.has(groupKey)) groups.set(groupKey, [])
+    groups.get(groupKey).push(key)
+  }
+  const result = []
+  for (const variants of groups.values()) {
+    variants.sort((a, b) => {
+      const aCount = Object.keys(availableContent.value[a] || {}).length
+      const bCount = Object.keys(availableContent.value[b] || {}).length
+      return bCount - aCount
+    })
+    result.push(variants[0])
+  }
+  return result
+})
 const currentLanguage = computed(() => selectedLanguage.value || learningLanguages.value[0] || 'english')
 
 // Robust DE check: vue-i18n locale ist immer gesetzt, selectedLanguage kann null sein
@@ -638,9 +679,10 @@ const langParticles = Array.from({ length: 14 }, (_, i) => ({
 }))
 
 function handleClickOutside(e) {
-  if (showLanguageMenu.value && !e.target.closest('.relative')) {
-    showLanguageMenu.value = false
-  }
+  if (!showLanguageMenu.value) return
+  // Dropdown is teleported to body — close on any outside click except the trigger button
+  if (langBtnRef.value?.contains(e.target)) return
+  showLanguageMenu.value = false
 }
 
 const features = computed(() => [

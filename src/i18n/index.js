@@ -4,7 +4,9 @@ import de from './de.json'
 import fa from './fa.json'
 import ar from './ar.json'
 
-// Map content language folders to UI locale codes
+// Map content language folders to UI locale codes.
+// Languages without their own UI translation fall back via vue-i18n's fallbackLocale.
+// For RTL languages without UI strings (e.g. اردو), map to a RTL fallback so direction matches.
 const languageToLocale = {
   'english': 'en',
   'deutsch': 'de',
@@ -12,6 +14,7 @@ const languageToLocale = {
   'فارسی': 'fa',
   'arabic': 'ar',
   'العربية': 'ar',
+  'اردو': 'ar',  // Urdu uses Arabic script (RTL) — fall back to ar UI for direction
 }
 
 // RTL languages
