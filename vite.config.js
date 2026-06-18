@@ -65,9 +65,14 @@ function localWorkshopsPlugin() {
             const localPath = path.join(localWorkshops.get(workshopName), filePath)
             if (fs.existsSync(localPath) && fs.statSync(localPath).isFile()) {
               const ext = path.extname(localPath)
+              // Text MIME types declare UTF-8 explicitly so the browser doesn't
+              // have to guess — covers all scripts (German umlauts, Arabic, CJK).
               const mimeTypes = {
-                '.yaml': 'text/yaml', '.yml': 'text/yaml',
-                '.json': 'application/json', '.svg': 'image/svg+xml',
+                '.yaml': 'text/yaml; charset=utf-8',
+                '.yml': 'text/yaml; charset=utf-8',
+                '.json': 'application/json; charset=utf-8',
+                '.md': 'text/markdown; charset=utf-8',
+                '.svg': 'image/svg+xml; charset=utf-8',
                 '.png': 'image/png', '.jpg': 'image/jpeg',
                 '.mp3': 'audio/mpeg', '.mp4': 'video/mp4',
               }

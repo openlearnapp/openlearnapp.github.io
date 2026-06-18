@@ -49,6 +49,18 @@
   "home": {
     "title": "Lerne alles. Kostenlos. In deinem Tempo.",
     "subtitle": "Ohne Konto, ohne Werbung, ohne Tracking. Dein Fortschritt bleibt in deinem Browser — immer.",
+    "workshopsInLang": "Workshops auf {lang}",
+    "providers": {
+      "badge": "Für Kursanbieter",
+      "title": "Deinen Kurs auf Open Learn verkaufen",
+      "lead": "Du bringst den Inhalt — wir machen daraus einen Lernpfad mit Audio, Quiz und Fortschritt. Lege fest, welche Lektionen frei zugänglich sind und auf welcher Seite Lernende kaufen.",
+      "step1": { "title": "Workshop schreiben", "desc": "Lektionen als YAML — wie jeder andere Open-Learn-Workshop." },
+      "step2": { "title": "Frei vs. Premium festlegen", "desc": "Per Zahl die ersten N freigeben — oder einzelne Lektionen markieren. Komplett kostenlos geht auch." },
+      "step3": { "title": "Verkaufsseite verlinken", "desc": "Eigene Landing-Page + Checkout. Open Learn führt Lernende elegant dorthin." },
+      "step4": { "title": "Importieren lassen", "desc": "Workshop-URL teilen — Open Learn rendert Banner, Schlösser und Kauf-CTA." },
+      "viewDemo": "Demo ansehen",
+      "openGuide": "Workshop-Guide öffnen"
+    },
     "getStartedTitle": "Erste Schritte",
     "getStartedDesc": "Wähle oben links deine Sprache aus, um verfügbare Workshops zu sehen.",
     "howItWorks": "So funktioniert es",
@@ -144,6 +156,65 @@
       "i18nDesc": "Die gesamte Plattform in jeder Sprache — inklusive Rechts-nach-Links-Unterstützung für Arabisch und Farsi.",
       "uploads": "Datei-Upload",
       "uploadsDesc": "PDFs, Skripte und andere Dokumente als Lernmaterial hochladen und bereitstellen."
+    }
+  },
+  "creators": {
+    "pageTitle": "Workshop erstellen",
+    "title": "Erstelle und teile deinen eigenen Workshop",
+    "intro": "Mit Open Learn kann jeder Lernmaterial bauen — gratis oder bezahlt. Workshops sind YAML-Dateien, keine Code-Kenntnisse nötig. Hoste sie kostenlos, teile sie mit einem Link.",
+    "howItWorks": "In 3 Schritten zum eigenen Workshop",
+    "structureTitle": "Ordnerstruktur",
+    "structureDesc": "Ein Workshop ist ein Ordner mit YAML-Dateien. Sprache → Workshop → Lektionen.",
+    "lessonTitle": "Lektion schreiben",
+    "lessonDesc": "Jede Lektion ist eine content.yaml. Sektionen mit Markdown-Erklärungen, Videos, Beispielen und Aufgaben.",
+    "assessmentsTitle": "Aufgabentypen",
+    "assessmentsDesc": "4 Aufgabentypen — von einfachen Karteikarten bis Multiple-Choice.",
+    "hostingTitle": "Hosting & Veröffentlichung",
+    "shareTitle": "Workshop teilen",
+    "shareDesc": "Lernende fügen deinen Workshop mit einem einzigen Link hinzu — Open Learn registriert die Quelle automatisch.",
+    "audioTitle": "Audio generieren",
+    "audioDesc": "Automatische Audio-Dateien aus deinen Lektionen — für Sprach-Workshops besonders praktisch.",
+    "ctaTitle": "Bereit loszulegen?",
+    "ctaDesc": "Schau dir den Quellcode an oder lies die vollständige Dokumentation.",
+    "viewOnGitHub": "Auf GitHub ansehen",
+    "fullDocs": "Dokumentation lesen",
+    "steps": {
+      "1": { "title": "YAML schreiben", "desc": "Lektionen mit Fragen, Antworten, Erklärungen und Videos in einfachen YAML-Dateien." },
+      "2": { "title": "Kostenlos hosten", "desc": "GitHub Pages, IPFS oder jeder beliebige statische Webserver." },
+      "3": { "title": "Link teilen", "desc": "Lernende klicken — dein Workshop erscheint sofort in Open Learn." }
+    },
+    "assess": {
+      "qa": { "title": "Frage & Antwort (Standard)", "desc": "Klassische Karteikarten — Frage anzeigen, Antwort aufdecken.", "yaml": "- q: \"Wie heißt du?\"\n  a: \"What is your name?\"" },
+      "input": { "title": "Freitext-Eingabe", "desc": "Lernende tippen ihre Antwort. Mehrere akzeptierte Antworten möglich.", "yaml": "- type: input\n  q: \"Übersetze: Guten Morgen\"\n  a: \"Good morning\"" },
+      "select": { "title": "Single-Select", "desc": "Radio-Buttons — genau eine richtige Antwort.", "yaml": "- type: select\n  q: \"Hauptstadt von Frankreich?\"\n  options:\n    - text: \"Berlin\"\n    - text: \"Paris\"\n      correct: true" },
+      "mc": { "title": "Multiple-Choice", "desc": "Checkboxen — mehrere richtige Antworten möglich.", "yaml": "- type: multiple-choice\n  q: \"Welche sind Primzahlen?\"\n  options:\n    - text: \"2\"\n      correct: true\n    - text: \"4\"\n    - text: \"7\"\n      correct: true" }
+    },
+    "hosting": {
+      "gh": { "title": "GitHub Pages", "desc": "Kostenlos. Push dein Repo, aktiviere Pages — fertig." },
+      "ipfs": { "title": "IPFS", "desc": "Dezentral, zensurresistent. Open Learn unterstützt ipfs:// nativ." },
+      "any": { "title": "Jeder Webserver", "desc": "Netlify, Vercel, eigener Server — jeder statische Host funktioniert." }
+    },
+    "folder": {
+      "commentLanguages": "Sprachen die der Workshop unterstützt",
+      "commentWorkshops": "Name, Beschreibung, Premium-Config",
+      "commentLessons": "Liste der Lektions-Ordner",
+      "commentAudio": "Optionale MP3-Dateien"
+    },
+    "hero": {
+      "badge": "Für Kursanbieter & Workshop-Autoren",
+      "ctaStart": "Loslegen",
+      "ctaPremium": "Kostenpflichtige Kurse anbieten"
+    },
+    "premium": {
+      "badge": "NEU · Bezahlte Workshops",
+      "title": "Verkaufe deinen Kurs über Open Learn",
+      "lead": "Du bestimmst welche Lektionen frei zugänglich sind und wo Lernende den Kurs kaufen. Open Learn macht aus deinem Inhalt einen interaktiven Lernpfad mit Lektion-Vorschau, Schloss-Symbolen und nahtlosem Kauf-Flow.",
+      "feature1": { "title": "Du wählst welche Lektionen frei sind", "desc": "Per Anzahl (erste N) oder einzelne Lektions-Nummern. Auch ein komplett kostenloser Workshop ist möglich." },
+      "feature2": { "title": "Deine eigene Verkaufs-Seite", "desc": "Open Learn führt Lernende per Klick zu deiner Landing-Page. Stripe, Lemon Squeezy, eigene Seite — egal." },
+      "feature3": { "title": "Branding bleibt deins", "desc": "Logo, Akzentfarbe, Headline, Bullet-Vorteile — alles erscheint im Werbe-Banner deines Kurses." },
+      "feature4": { "title": "Nach dem Kauf: alle Schlösser offen", "desc": "Open Learn entsperrt automatisch — Lernende lernen weiter ohne Reibung." },
+      "viewDemo": "Live-Demo ansehen",
+      "schemaDocs": "Schema-Doku"
     }
   },
   "settings": {

@@ -49,6 +49,18 @@
   "home": {
     "title": "Learn anything. For free. On your terms.",
     "subtitle": "No account, no ads, no tracking. Your data stays in your browser — always.",
+    "workshopsInLang": "Workshops in {lang}",
+    "providers": {
+      "badge": "For Course Providers",
+      "title": "Sell your course on Open Learn",
+      "lead": "You bring the content — we turn it into a learning path with audio, quiz and progress. Decide which lessons are free and where learners check out.",
+      "step1": { "title": "Author your workshop", "desc": "Lessons as YAML — like any other Open Learn workshop." },
+      "step2": { "title": "Choose free vs premium", "desc": "Free the first N lessons — or pick individual ones. Fully free is also fine." },
+      "step3": { "title": "Link your checkout", "desc": "Your own landing page + checkout. Open Learn guides learners there." },
+      "step4": { "title": "Get imported", "desc": "Share the workshop URL — Open Learn renders banner, locks and buy CTA." },
+      "viewDemo": "View live demo",
+      "openGuide": "Open creator guide"
+    },
     "getStartedTitle": "Get Started",
     "getStartedDesc": "Select your language in the top-left dropdown to see available workshops.",
     "howItWorks": "How It Works",
@@ -144,6 +156,65 @@
       "i18nDesc": "The entire platform in any language — including right-to-left support for Arabic and Farsi.",
       "uploads": "File Uploads",
       "uploadsDesc": "Upload PDFs, scripts, and other documents as learning material."
+    }
+  },
+  "creators": {
+    "pageTitle": "Create a Workshop",
+    "title": "Build and share your own workshop",
+    "intro": "With Open Learn anyone can build learning content — free or paid. Workshops are YAML files, no coding required. Host them for free, share with a link.",
+    "howItWorks": "3 steps to your own workshop",
+    "structureTitle": "Folder structure",
+    "structureDesc": "A workshop is a folder of YAML files. Language → Workshop → Lessons.",
+    "lessonTitle": "Writing a lesson",
+    "lessonDesc": "Each lesson is a content.yaml. Sections with markdown explanations, videos, examples and assessments.",
+    "assessmentsTitle": "Assessment types",
+    "assessmentsDesc": "4 assessment types — from simple flashcards to multiple choice.",
+    "hostingTitle": "Hosting & publishing",
+    "shareTitle": "Share your workshop",
+    "shareDesc": "Learners add your workshop with a single link — Open Learn registers the source automatically.",
+    "audioTitle": "Generate audio",
+    "audioDesc": "Automatic audio files from your lessons — handy for language workshops.",
+    "ctaTitle": "Ready to get started?",
+    "ctaDesc": "Check the source or read the full docs.",
+    "viewOnGitHub": "View on GitHub",
+    "fullDocs": "Read the docs",
+    "steps": {
+      "1": { "title": "Write YAML", "desc": "Lessons with questions, answers, explanations and videos as YAML files." },
+      "2": { "title": "Host for free", "desc": "GitHub Pages, IPFS or any static web server." },
+      "3": { "title": "Share a link", "desc": "Learners click — your workshop appears in Open Learn instantly." }
+    },
+    "assess": {
+      "qa": { "title": "Q&A (Default)", "desc": "Classic flashcards — show question, reveal answer.", "yaml": "- q: \"What is your name?\"\n  a: \"Wie heißt du?\"" },
+      "input": { "title": "Free-text input", "desc": "Learners type their answer. Supports multiple accepted answers.", "yaml": "- type: input\n  q: \"Translate: Good morning\"\n  a: \"Guten Morgen\"" },
+      "select": { "title": "Single Select", "desc": "Radio buttons — exactly one correct answer.", "yaml": "- type: select\n  q: \"Capital of France?\"\n  options:\n    - text: \"Berlin\"\n    - text: \"Paris\"\n      correct: true" },
+      "mc": { "title": "Multiple Choice", "desc": "Checkboxes — multiple correct answers possible.", "yaml": "- type: multiple-choice\n  q: \"Which are prime numbers?\"\n  options:\n    - text: \"2\"\n      correct: true\n    - text: \"4\"\n    - text: \"7\"\n      correct: true" }
+    },
+    "hosting": {
+      "gh": { "title": "GitHub Pages", "desc": "Free. Push your repo, enable Pages — done." },
+      "ipfs": { "title": "IPFS", "desc": "Decentralized, censorship-resistant. Native ipfs:// support." },
+      "any": { "title": "Any web server", "desc": "Netlify, Vercel, your own server — any static host works." }
+    },
+    "folder": {
+      "commentLanguages": "Languages this workshop supports",
+      "commentWorkshops": "Name, description, premium config",
+      "commentLessons": "List of lesson folders",
+      "commentAudio": "Optional MP3 files"
+    },
+    "hero": {
+      "badge": "For Course Providers & Workshop Authors",
+      "ctaStart": "Get started",
+      "ctaPremium": "Sell paid courses"
+    },
+    "premium": {
+      "badge": "NEW · Paid Workshops",
+      "title": "Sell your course through Open Learn",
+      "lead": "You decide which lessons are free and where learners purchase. Open Learn turns your content into an interactive learning path with lesson previews, lock indicators and a seamless checkout flow.",
+      "feature1": { "title": "You choose which lessons are free", "desc": "By count (first N) or by individual lesson numbers. Fully free is also fine." },
+      "feature2": { "title": "Your own checkout page", "desc": "Open Learn directs learners to your landing page. Stripe, Lemon Squeezy, your own page — all fine." },
+      "feature3": { "title": "Your branding stays", "desc": "Logo, accent color, headline, bullet benefits — all show in your course's ad banner." },
+      "feature4": { "title": "After purchase: every lock opens", "desc": "Open Learn unlocks automatically — learners continue without friction." },
+      "viewDemo": "View live demo",
+      "schemaDocs": "Schema docs"
     }
   },
   "settings": {

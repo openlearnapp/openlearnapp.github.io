@@ -10,17 +10,17 @@
       <div class="cr-hero__inner">
         <div class="cr-badge">
           <span class="cr-badge__dot"></span>
-          {{ isDE ? 'Für Kursanbieter & Workshop-Autoren' : 'For Course Providers & Workshop Authors' }}
+          {{ $t('creators.hero.badge') }}
         </div>
-        <h1 class="cr-hero__title">{{ t('title') }}</h1>
-        <p class="cr-hero__lead">{{ t('intro') }}</p>
+        <h1 class="cr-hero__title">{{ $t('creators.title') }}</h1>
+        <p class="cr-hero__lead">{{ $t('creators.intro') }}</p>
         <div class="cr-hero__cta">
           <a href="#start" class="cr-btn cr-btn--primary">
-            {{ isDE ? 'Loslegen' : 'Get started' }}
+            {{ $t('creators.hero.ctaStart') }}
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
           </a>
           <a href="#premium" class="cr-btn cr-btn--ghost">
-            {{ isDE ? 'Kostenpflichtige Kurse anbieten' : 'Sell paid courses' }}
+            {{ $t('creators.hero.ctaPremium') }}
           </a>
         </div>
       </div>
@@ -28,7 +28,7 @@
 
     <!-- ══ 3 STEPS ══ -->
     <section id="start" class="cr-section">
-      <h2 class="cr-h2">{{ t('howItWorks') }}</h2>
+      <h2 class="cr-h2">{{ $t('creators.howItWorks') }}</h2>
       <div class="cr-steps">
         <div v-for="(step, i) in creatorSteps" :key="i" class="cr-step">
           <div class="cr-step__num">{{ i + 1 }}</div>
@@ -40,8 +40,8 @@
 
     <!-- ══ FOLDER STRUCTURE ══ -->
     <section class="cr-section">
-      <h2 class="cr-h2">{{ t('structureTitle') }}</h2>
-      <p class="cr-lead">{{ t('structureDesc') }}</p>
+      <h2 class="cr-h2">{{ $t('creators.structureTitle') }}</h2>
+      <p class="cr-lead">{{ $t('creators.structureDesc') }}</p>
       <div class="cr-code">
         <div class="cr-code__dots">
           <span></span><span></span><span></span>
@@ -53,8 +53,8 @@
 
     <!-- ══ LESSON YAML ══ -->
     <section class="cr-section">
-      <h2 class="cr-h2">{{ t('lessonTitle') }}</h2>
-      <p class="cr-lead">{{ t('lessonDesc') }}</p>
+      <h2 class="cr-h2">{{ $t('creators.lessonTitle') }}</h2>
+      <p class="cr-lead">{{ $t('creators.lessonDesc') }}</p>
       <div class="cr-code">
         <div class="cr-code__dots">
           <span></span><span></span><span></span>
@@ -74,15 +74,13 @@
           <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
             <path d="M12 2 14.5 8.5 21.5 9 16 13.5 17.5 20.5 12 17 6.5 20.5 8 13.5 2.5 9 9.5 8.5z"/>
           </svg>
-          {{ isDE ? 'NEU · Bezahlte Workshops' : 'NEW · Paid Workshops' }}
+          {{ $t('creators.premium.badge') }}
         </div>
         <h2 class="cr-premium__title">
-          {{ isDE ? 'Verkaufe deinen Kurs über Open Learn' : 'Sell your course through Open Learn' }}
+          {{ $t('creators.premium.title') }}
         </h2>
         <p class="cr-premium__lead">
-          {{ isDE
-            ? 'Du bestimmst welche Lektionen frei zugänglich sind und wo Lernende den Kurs kaufen. Open Learn macht aus deinem Inhalt einen interaktiven Lernpfad mit Lektion-Vorschau, Schloss-Symbolen und nahtlosem Kauf-Flow.'
-            : 'You decide which lessons are free and where learners purchase. Open Learn turns your content into an interactive learning path with lesson previews, lock indicators and a seamless checkout flow.' }}
+          {{ $t('creators.premium.lead') }}
         </p>
       </div>
 
@@ -93,8 +91,8 @@
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             </span>
             <div>
-              <strong>{{ isDE ? 'Du wählst welche Lektionen frei sind' : 'You choose which lessons are free' }}</strong>
-              <p>{{ isDE ? 'Per Anzahl (erste N) oder einzelne Lektions-Nummern. Auch ein komplett kostenloser Workshop ist möglich.' : 'By count (first N) or by individual lesson numbers. Fully free is also fine.' }}</p>
+              <strong>{{ $t('creators.premium.feature1.title') }}</strong>
+              <p>{{ $t('creators.premium.feature1.desc') }}</p>
             </div>
           </li>
           <li>
@@ -102,8 +100,8 @@
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             </span>
             <div>
-              <strong>{{ isDE ? 'Deine eigene Verkaufs-Seite' : 'Your own checkout page' }}</strong>
-              <p>{{ isDE ? 'Open Learn führt Lernende per Klick zu deiner Landing-Page. Stripe, Lemon Squeezy, eigene Seite — egal.' : 'Open Learn directs learners to your landing page. Stripe, Lemon Squeezy, your own page — all fine.' }}</p>
+              <strong>{{ $t('creators.premium.feature2.title') }}</strong>
+              <p>{{ $t('creators.premium.feature2.desc') }}</p>
             </div>
           </li>
           <li>
@@ -111,8 +109,8 @@
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             </span>
             <div>
-              <strong>{{ isDE ? 'Branding bleibt deins' : 'Your branding stays' }}</strong>
-              <p>{{ isDE ? 'Logo, Akzentfarbe, Headline, Bullet-Vorteile — alles erscheint im Werbe-Banner deines Kurses.' : 'Logo, accent color, headline, bullet benefits — all show in your course\'s ad banner.' }}</p>
+              <strong>{{ $t('creators.premium.feature3.title') }}</strong>
+              <p>{{ $t('creators.premium.feature3.desc') }}</p>
             </div>
           </li>
           <li>
@@ -120,8 +118,8 @@
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             </span>
             <div>
-              <strong>{{ isDE ? 'Nach dem Kauf: alle Schlösser offen' : 'After purchase: every lock opens' }}</strong>
-              <p>{{ isDE ? 'Open Learn entsperrt automatisch — Lernende lernen weiter ohne Reibung.' : 'Open Learn unlocks automatically — learners continue without friction.' }}</p>
+              <strong>{{ $t('creators.premium.feature4.title') }}</strong>
+              <p>{{ $t('creators.premium.feature4.desc') }}</p>
             </div>
           </li>
         </ul>
@@ -151,21 +149,21 @@
 
       <div class="cr-premium__cta">
         <a :href="`#/${currentLang}/local-dev:linux-grundlagen-preview/lessons`" class="cr-btn cr-btn--primary">
-          {{ isDE ? 'Live-Demo ansehen' : 'View live demo' }}
+          {{ $t('creators.premium.viewDemo') }}
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
         </a>
         <a href="https://github.com/openlearnapp/openlearnapp.github.io/tree/main/docs"
            target="_blank" rel="noopener"
            class="cr-btn cr-btn--ghost">
-          {{ isDE ? 'Schema-Doku' : 'Schema docs' }}
+          {{ $t('creators.premium.schemaDocs') }}
         </a>
       </div>
     </section>
 
     <!-- ══ ASSESSMENT TYPES ══ -->
     <section class="cr-section">
-      <h2 class="cr-h2">{{ t('assessmentsTitle') }}</h2>
-      <p class="cr-lead">{{ t('assessmentsDesc') }}</p>
+      <h2 class="cr-h2">{{ $t('creators.assessmentsTitle') }}</h2>
+      <p class="cr-lead">{{ $t('creators.assessmentsDesc') }}</p>
       <div class="cr-assess">
         <div v-for="type in assessmentTypes" :key="type.key" class="cr-assess__item">
           <div class="cr-assess__title">{{ type.title }}</div>
@@ -177,7 +175,7 @@
 
     <!-- ══ HOSTING ══ -->
     <section class="cr-section">
-      <h2 class="cr-h2">{{ t('hostingTitle') }}</h2>
+      <h2 class="cr-h2">{{ $t('creators.hostingTitle') }}</h2>
       <div class="cr-hosting">
         <div v-for="option in hostingOptions" :key="option.key" class="cr-hosting__item">
           <component :is="option.icon" class="cr-hosting__icon" />
@@ -189,8 +187,8 @@
 
     <!-- ══ SHARE LINK ══ -->
     <section class="cr-section">
-      <h2 class="cr-h2">{{ t('shareTitle') }}</h2>
-      <p class="cr-lead">{{ t('shareDesc') }}</p>
+      <h2 class="cr-h2">{{ $t('creators.shareTitle') }}</h2>
+      <p class="cr-lead">{{ $t('creators.shareDesc') }}</p>
       <div class="cr-code">
         <div class="cr-code__dots">
           <span></span><span></span><span></span>
@@ -202,8 +200,8 @@
 
     <!-- ══ AUDIO ══ -->
     <section class="cr-section">
-      <h2 class="cr-h2">{{ t('audioTitle') }}</h2>
-      <p class="cr-lead">{{ t('audioDesc') }}</p>
+      <h2 class="cr-h2">{{ $t('creators.audioTitle') }}</h2>
+      <p class="cr-lead">{{ $t('creators.audioDesc') }}</p>
       <div class="cr-code">
         <div class="cr-code__dots">
           <span></span><span></span><span></span>
@@ -216,18 +214,18 @@
     <!-- ══ FINAL CTA ══ -->
     <section class="cr-final">
       <div class="cr-final__aurora" aria-hidden="true"></div>
-      <h2 class="cr-final__title">{{ t('ctaTitle') }}</h2>
-      <p class="cr-final__lead">{{ t('ctaDesc') }}</p>
+      <h2 class="cr-final__title">{{ $t('creators.ctaTitle') }}</h2>
+      <p class="cr-final__lead">{{ $t('creators.ctaDesc') }}</p>
       <div class="cr-final__cta">
         <a href="https://github.com/openlearnapp/openlearnapp.github.io"
            target="_blank" rel="noopener"
            class="cr-btn cr-btn--primary">
-          {{ t('viewOnGitHub') }}
+          {{ $t('creators.viewOnGitHub') }}
         </a>
         <a href="https://github.com/openlearnapp/openlearnapp.github.io/tree/main/docs"
            target="_blank" rel="noopener"
            class="cr-btn cr-btn--ghost">
-          {{ t('fullDocs') }}
+          {{ $t('creators.fullDocs') }}
         </a>
       </div>
     </section>
@@ -241,74 +239,23 @@ import { useLanguage } from '../composables/useLanguage'
 
 const emit = defineEmits(['update-title'])
 const { selectedLanguage } = useLanguage()
-const { locale } = useI18n()
+const { t, locale } = useI18n()
 
-// Robust DE-Check: works even if user lands on /creators without picking a learning language first.
-// vue-i18n locale ('de'/'en'/'fa'/'ar') is always set; selectedLanguage may be null on first visit.
-const isDE = computed(() => locale.value === 'de' || selectedLanguage.value === 'deutsch')
 const currentLang = computed(() => selectedLanguage.value || (locale.value === 'de' ? 'deutsch' : 'english'))
 
-emit('update-title', isDE.value ? 'Workshop erstellen' : 'Create a Workshop')
+emit('update-title', t('creators.pageTitle'))
 
-function t(key) {
-  const strings = {
-    title: isDE.value ? 'Erstelle und teile deinen eigenen Workshop' : 'Build and share your own workshop',
-    intro: isDE.value
-      ? 'Mit Open Learn kann jeder Lernmaterial bauen — gratis oder bezahlt. Workshops sind YAML-Dateien, keine Code-Kenntnisse nötig. Hoste sie kostenlos, teile sie mit einem Link.'
-      : 'With Open Learn anyone can build learning content — free or paid. Workshops are YAML files, no coding required. Host them for free, share with a link.',
-    howItWorks: isDE.value ? 'In 3 Schritten zum eigenen Workshop' : '3 steps to your own workshop',
-    structureTitle: isDE.value ? 'Ordnerstruktur' : 'Folder structure',
-    structureDesc: isDE.value
-      ? 'Ein Workshop ist ein Ordner mit YAML-Dateien. Sprache → Workshop → Lektionen.'
-      : 'A workshop is a folder of YAML files. Language → Workshop → Lessons.',
-    lessonTitle: isDE.value ? 'Lektion schreiben' : 'Writing a lesson',
-    lessonDesc: isDE.value
-      ? 'Jede Lektion ist eine content.yaml. Sektionen mit Markdown-Erklärungen, Videos, Beispielen und Aufgaben.'
-      : 'Each lesson is a content.yaml. Sections with markdown explanations, videos, examples and assessments.',
-    assessmentsTitle: isDE.value ? 'Aufgabentypen' : 'Assessment types',
-    assessmentsDesc: isDE.value
-      ? '4 Aufgabentypen — von einfachen Karteikarten bis Multiple-Choice.'
-      : '4 assessment types — from simple flashcards to multiple choice.',
-    hostingTitle: isDE.value ? 'Hosting & Veröffentlichung' : 'Hosting & publishing',
-    shareTitle: isDE.value ? 'Workshop teilen' : 'Share your workshop',
-    shareDesc: isDE.value
-      ? 'Lernende fügen deinen Workshop mit einem einzigen Link hinzu — Open Learn registriert die Quelle automatisch.'
-      : 'Learners add your workshop with a single link — Open Learn registers the source automatically.',
-    audioTitle: isDE.value ? 'Audio generieren' : 'Generate audio',
-    audioDesc: isDE.value
-      ? 'Automatische Audio-Dateien aus deinen Lektionen — für Sprach-Workshops besonders praktisch.'
-      : 'Automatic audio files from your lessons — handy for language workshops.',
-    ctaTitle: isDE.value ? 'Bereit loszulegen?' : 'Ready to get started?',
-    ctaDesc: isDE.value
-      ? 'Schau dir den Quellcode an oder lies die vollständige Dokumentation.'
-      : 'Check the source or read the full docs.',
-    viewOnGitHub: isDE.value ? 'Auf GitHub ansehen' : 'View on GitHub',
-    fullDocs: isDE.value ? 'Dokumentation lesen' : 'Read the docs',
-  }
-  return strings[key] || key
-}
+const creatorSteps = computed(() => [1, 2, 3].map(i => ({
+  title: t(`creators.steps.${i}.title`),
+  desc: t(`creators.steps.${i}.desc`),
+})))
 
-const creatorSteps = computed(() => isDE.value ? [
-  { title: 'YAML schreiben', desc: 'Lektionen mit Fragen, Antworten, Erklärungen und Videos in einfachen YAML-Dateien.' },
-  { title: 'Kostenlos hosten', desc: 'GitHub Pages, IPFS oder jeder beliebige statische Webserver.' },
-  { title: 'Link teilen', desc: 'Lernende klicken — dein Workshop erscheint sofort in Open Learn.' },
-] : [
-  { title: 'Write YAML', desc: 'Lessons with questions, answers, explanations and videos as YAML files.' },
-  { title: 'Host for free', desc: 'GitHub Pages, IPFS or any static web server.' },
-  { title: 'Share a link', desc: 'Learners click — your workshop appears in Open Learn instantly.' },
-])
-
-const assessmentTypes = computed(() => isDE.value ? [
-  { key: 'qa', title: 'Frage & Antwort (Standard)', desc: 'Klassische Karteikarten — Frage anzeigen, Antwort aufdecken.', yaml: '- q: "Wie heißt du?"\n  a: "What is your name?"' },
-  { key: 'input', title: 'Freitext-Eingabe', desc: 'Lernende tippen ihre Antwort. Mehrere akzeptierte Antworten möglich.', yaml: '- type: input\n  q: "Übersetze: Guten Morgen"\n  a: "Good morning"' },
-  { key: 'select', title: 'Single-Select', desc: 'Radio-Buttons — genau eine richtige Antwort.', yaml: '- type: select\n  q: "Hauptstadt von Frankreich?"\n  options:\n    - text: "Berlin"\n    - text: "Paris"\n      correct: true' },
-  { key: 'mc', title: 'Multiple-Choice', desc: 'Checkboxen — mehrere richtige Antworten möglich.', yaml: '- type: multiple-choice\n  q: "Welche sind Primzahlen?"\n  options:\n    - text: "2"\n      correct: true\n    - text: "4"\n    - text: "7"\n      correct: true' },
-] : [
-  { key: 'qa', title: 'Q&A (Default)', desc: 'Classic flashcards — show question, reveal answer.', yaml: '- q: "What is your name?"\n  a: "Wie heißt du?"' },
-  { key: 'input', title: 'Free-text input', desc: 'Learners type their answer. Supports multiple accepted answers.', yaml: '- type: input\n  q: "Translate: Good morning"\n  a: "Guten Morgen"' },
-  { key: 'select', title: 'Single Select', desc: 'Radio buttons — exactly one correct answer.', yaml: '- type: select\n  q: "Capital of France?"\n  options:\n    - text: "Berlin"\n    - text: "Paris"\n      correct: true' },
-  { key: 'mc', title: 'Multiple Choice', desc: 'Checkboxes — multiple correct answers possible.', yaml: '- type: multiple-choice\n  q: "Which are prime numbers?"\n  options:\n    - text: "2"\n      correct: true\n    - text: "4"\n    - text: "7"\n      correct: true' },
-])
+const assessmentTypes = computed(() => ['qa', 'input', 'select', 'mc'].map(key => ({
+  key,
+  title: t(`creators.assess.${key}.title`),
+  desc: t(`creators.assess.${key}.desc`),
+  yaml: t(`creators.assess.${key}.yaml`),
+})))
 
 const IconPackage = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.8', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [
   h('path', { d: 'M16.5 9.4 7.55 4.24' }),
@@ -328,32 +275,30 @@ const IconServer = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 
   h('line', { x1: '6', y1: '18', x2: '6.01', y2: '18' }),
 ])
 
-const hostingOptions = computed(() => isDE.value ? [
-  { key: 'gh', icon: IconPackage, title: 'GitHub Pages', desc: 'Kostenlos. Push dein Repo, aktiviere Pages — fertig.' },
-  { key: 'ipfs', icon: IconGlobe, title: 'IPFS', desc: 'Dezentral, zensurresistent. Open Learn unterstützt ipfs:// nativ.' },
-  { key: 'any', icon: IconServer, title: 'Jeder Webserver', desc: 'Netlify, Vercel, eigener Server — jeder statische Host funktioniert.' },
-] : [
-  { key: 'gh', icon: IconPackage, title: 'GitHub Pages', desc: 'Free. Push your repo, enable Pages — done.' },
-  { key: 'ipfs', icon: IconGlobe, title: 'IPFS', desc: 'Decentralized, censorship-resistant. Native ipfs:// support.' },
-  { key: 'any', icon: IconServer, title: 'Any web server', desc: 'Netlify, Vercel, your own server — any static host works.' },
-])
+const hostingIcons = { gh: IconPackage, ipfs: IconGlobe, any: IconServer }
+const hostingOptions = computed(() => ['gh', 'ipfs', 'any'].map(key => ({
+  key,
+  icon: hostingIcons[key],
+  title: t(`creators.hosting.${key}.title`),
+  desc: t(`creators.hosting.${key}.desc`),
+})))
 
-const folderStructure = `your-workshop/
-├── index.yaml              # Sprachen die der Workshop unterstützt
+const folderStructure = computed(() => `your-workshop/
+├── index.yaml              # ${t('creators.folder.commentLanguages')}
 ├── deutsch/
-│   ├── workshops.yaml      # Name, Beschreibung, Premium-Config
+│   ├── workshops.yaml      # ${t('creators.folder.commentWorkshops')}
 │   └── mein-workshop/
-│       ├── lessons.yaml    # Liste der Lektions-Ordner
+│       ├── lessons.yaml    # ${t('creators.folder.commentLessons')}
 │       ├── 01-basics/
 │       │   ├── content.yaml
-│       │   └── audio/      # Optionale MP3-Dateien
+│       │   └── audio/      # ${t('creators.folder.commentAudio')}
 │       └── 02-advanced/
 │           └── content.yaml
 └── english/
     ├── workshops.yaml
     └── my-workshop/
         ├── lessons.yaml
-        └── ...`
+        └── ...`)
 
 const lessonExample = `number: 1
 title: "The Basics"

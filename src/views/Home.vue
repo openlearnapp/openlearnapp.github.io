@@ -112,7 +112,7 @@
 
               <!-- Rechte Zone: zur Workshop-Übersicht -->
               <a :href="'#/' + currentLanguage" class="hero-split-action">
-                <span>{{ isDE ? 'Workshops auf' : 'Workshops in' }} {{ formatLangName(currentLanguage) }}</span>
+                <span>{{ $t('home.workshopsInLang', { lang: formatLangName(currentLanguage) }) }}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="hero-split-arrow"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
               </a>
             </div>
@@ -443,17 +443,13 @@
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12 2 14.5 8.5 21.5 9 16 13.5 17.5 20.5 12 17 6.5 20.5 8 13.5 2.5 9 9.5 8.5z" fill="currentColor"/>
             </svg>
-            {{ isDE ? 'Für Kursanbieter' : 'For Course Providers' }}
+            {{ $t('home.providers.badge') }}
           </div>
           <h3 class="provider-card__title">
-            {{ isDE
-              ? 'Deinen Kurs auf Open Learn verkaufen'
-              : 'Sell your course on Open Learn' }}
+            {{ $t('home.providers.title') }}
           </h3>
           <p class="provider-card__lead">
-            {{ isDE
-              ? 'Du bringst den Inhalt — wir machen daraus einen Lernpfad mit Audio, Quiz und Fortschritt. Lege fest, welche Lektionen frei zugänglich sind und auf welcher Seite Lernende kaufen.'
-              : 'You bring the content — we turn it into a learning path with audio, quiz and progress. Decide which lessons are free and where learners check out.' }}
+            {{ $t('home.providers.lead') }}
           </p>
         </div>
 
@@ -462,29 +458,29 @@
             <li>
               <span class="provider-card__num">1</span>
               <div>
-                <strong>{{ isDE ? 'Workshop schreiben' : 'Author your workshop' }}</strong>
-                <p>{{ isDE ? 'Lektionen als YAML — wie jeder andere Open-Learn-Workshop.' : 'Lessons as YAML — like any other Open Learn workshop.' }}</p>
+                <strong>{{ $t('home.providers.step1.title') }}</strong>
+                <p>{{ $t('home.providers.step1.desc') }}</p>
               </div>
             </li>
             <li>
               <span class="provider-card__num">2</span>
               <div>
-                <strong>{{ isDE ? 'Frei vs. Premium festlegen' : 'Choose free vs premium' }}</strong>
-                <p>{{ isDE ? 'Per Zahl die ersten N freigeben — oder einzelne Lektionen markieren. Komplett kostenlos geht auch.' : 'Free the first N lessons — or pick individual ones. Fully free is also fine.' }}</p>
+                <strong>{{ $t('home.providers.step2.title') }}</strong>
+                <p>{{ $t('home.providers.step2.desc') }}</p>
               </div>
             </li>
             <li>
               <span class="provider-card__num">3</span>
               <div>
-                <strong>{{ isDE ? 'Verkaufsseite verlinken' : 'Link your checkout' }}</strong>
-                <p>{{ isDE ? 'Eigene Landing-Page + Checkout. Open Learn führt Lernende elegant dorthin.' : 'Your own landing page + checkout. Open Learn guides learners there.' }}</p>
+                <strong>{{ $t('home.providers.step3.title') }}</strong>
+                <p>{{ $t('home.providers.step3.desc') }}</p>
               </div>
             </li>
             <li>
               <span class="provider-card__num">4</span>
               <div>
-                <strong>{{ isDE ? 'Importieren lassen' : 'Get imported' }}</strong>
-                <p>{{ isDE ? 'Workshop-URL teilen — Open Learn rendert Banner, Schlösser und Kauf-CTA.' : 'Share the workshop URL — Open Learn renders banner, locks and buy CTA.' }}</p>
+                <strong>{{ $t('home.providers.step4.title') }}</strong>
+                <p>{{ $t('home.providers.step4.desc') }}</p>
               </div>
             </li>
           </ol>
@@ -512,11 +508,11 @@
 
         <div class="provider-card__cta-row">
           <a href="#/deutsch/local-dev:linux-grundlagen-preview/lessons" class="provider-card__cta provider-card__cta--primary">
-            {{ isDE ? 'Demo ansehen' : 'View live demo' }}
+            {{ $t('home.providers.viewDemo') }}
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
           </a>
           <a href="#/creators" class="provider-card__cta provider-card__cta--ghost">
-            {{ isDE ? 'Workshop-Guide öffnen' : 'Open creator guide' }}
+            {{ $t('home.providers.openGuide') }}
           </a>
         </div>
       </div>
@@ -594,7 +590,7 @@ import { useLanguage } from '../composables/useLanguage'
 import { formatLangName } from '../utils/formatters'
 
 const router = useRouter()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const { availableContent, languageCodes, isLoading, loadAvailableContent } = useLessons()
 const { selectedLanguage, getFlag, setLanguage } = useLanguage()
 
@@ -655,8 +651,6 @@ const learningLanguages = computed(() => {
 })
 const currentLanguage = computed(() => selectedLanguage.value || learningLanguages.value[0] || 'english')
 
-// Robust DE check: vue-i18n locale ist immer gesetzt, selectedLanguage kann null sein
-const isDE = computed(() => locale.value === 'de' || selectedLanguage.value === 'deutsch')
 
 // Seeded stars
 const stars = Array.from({ length: 55 }, (_, i) => ({
